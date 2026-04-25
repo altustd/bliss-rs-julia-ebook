@@ -106,56 +106,47 @@ the value that the corresponding BB would actually produce ($Y^A$) given those i
 In @fig-sys-optimizer, coupling constraints are represented as circles where data
 flow channels from different BBs meet.
 
-```{julia}
-#| label: fig-sys-optimizer
-#| fig-cap: "BLISS-RS system optimizer data flow. Each coupling constraint (circle) enforces that the output of one BB equals the input to another. The system optimizer proposes Y* and Z; the RS models replace direct BB calls. Reproduced from Altus (2002) Fig. 11."
-#| code-fold: true
+```{mermaid}
+%%| label: fig-sys-optimizer
+%%| fig-cap: "BLISS-RS system optimizer data flow. The system optimizer proposes shared variables Z and coupling targets Y*, which are read from the quadratic RS models. Coupling constraints (○) enforce Y* = Y^A at convergence. Reproduced from Altus (2002) Fig. 11."
+%%| fig-width: 6.5
 
-p = plot(xlim=(0,12), ylim=(0,10), axis=false, grid=false,
-         size=(700,420), title="BLISS-RS System Optimizer")
+flowchart TB
+    SysOpt(["**System Optimizer**\nProposes Z · Y* · w"])
 
-# BB boxes
-bb_data = [(2.0, 7.5, "Structures RS", :lightblue),
-           (6.0, 7.5, "Aero RS",       :lightgreen),
-           (10.0,7.5, "Power RS",      :lightyellow),
-           (6.0, 3.0, "Performance\n(Range)",     :lightsalmon)]
+    subgraph rsmods ["  Response Surface Models  "]
+        direction LR
+        S["**Structures RS**\nOutputs: W_T, Ω, W_F"]
+        A["**Aero RS**\nOutputs: L, D, L/D"]
+        P["**Power RS**\nOutputs: SFC, W_E, ESF"]
+    end
 
-for (x, y, lbl, col) in bb_data
-    plot!(Shape([x-1.5,x+1.5,x+1.5,x-1.5],[y-0.8,y-0.8,y+0.8,y+0.8]),
-          fill=col, linecolor=:black, lw=1.5, label="")
-    annotate!(x, y, text(lbl, 8, :center))
-end
+    Perf[/"**Performance**\n(Breguet Range)"/]
 
-# System optimizer box
-plot!(Shape([4.5,7.5,7.5,4.5],[1.0,1.0,2.0,2.0]),
-      fill=:thistle, linecolor=:black, lw=2.0, label="")
-annotate!(6.0, 1.5, text("System Optimizer\n(proposes Z, Y*, w)", 7, :center))
+    SysOpt -- "Z" --> S & A & P
 
-# Coupling constraint circles (where flows cross)
-for (cx, cy) in [(4.0, 5.5), (6.0, 5.5), (8.0, 5.5), (4.5, 3.0), (7.5, 3.0)]
-    scatter!([cx], [cy], color=:white, markerstrokecolor=:black,
-             markerstrokewidth=2, markersize=12, label="")
-end
-annotate!(3.2, 5.5, text("WT,Ω", 7))
-annotate!(6.0, 5.5, text("L,D", 7))
-annotate!(8.8, 5.5, text("ESF,WE", 7))
+    S -- "W_T, Ω" --> A
+    P -- "W_E" --> S
+    A -- "D" --> P
+    P -- "ESF" --> A
 
-# Arrows (simplified)
-for (x1,y1,x2,y2) in [
-        (2.0,6.7,4.0,5.9), (6.0,6.7,6.0,5.9), (10.0,6.7,8.0,5.9),
-        (4.0,5.1,4.5,2.0), (6.0,5.1,6.0,3.8),  (8.0,5.1,7.5,2.0),
-        (6.0,2.2,6.0,2.0), (5.0,2.0,5.0,1.0),  (7.0,2.0,7.0,1.0)]
-    plot!([x1,x2],[y1,y2], arrow=true, color=:black, lw=1.2, label="")
-end
+    S -- "W_F" --> Perf
+    A -- "L/D" --> Perf
+    P -- "SFC" --> Perf
 
-# Z arrows from optimizer to BBs
-for (bx, by) in [(2.0,7.5),(6.0,7.5),(10.0,7.5)]
-    plot!([6.0,bx],[2.0,by-0.8], arrow=true, color=:crimson,
-          lw=1.2, linestyle=:dash, label="")
-end
-annotate!(1.0, 4.5, text("Z", 9, :crimson))
+    Perf -- "Range" --> SysOpt
 
-p
+    classDef sysopt fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#2e1065
+    classDef rsmod  fill:#dbeafe,stroke:#3b82f6,stroke-width:1.5px,color:#1e3a5f
+    classDef aero   fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+    classDef power  fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#422006
+    classDef perf   fill:#fff1f2,stroke:#e11d48,stroke-width:1.5px,color:#4c0519
+
+    class SysOpt sysopt
+    class S rsmod
+    class A aero
+    class P power
+    class Perf perf
 ```
 
 ## Weighting Factors as System Degrees of Freedom
@@ -182,61 +173,46 @@ through expensive BB calls), this additional complexity is acceptable.
 computation is the BB optimization loop; all other operations are
 inexpensive polynomial evaluations.
 
-```{julia}
-#| label: fig-blissrs-flow
-#| fig-cap: "BLISS-RS algorithm flowchart. The dashed inner box represents concurrent computations. Reproduced from Altus (2002) Fig. 10."
-#| code-fold: true
+```{mermaid}
+%%| label: fig-blissrs-flow
+%%| fig-cap: "BLISS-RS algorithm flowchart. Local BB optimizations (green) run concurrently at every DOE sample point. The system optimizer reads the fitted RS models — no sensitivity derivatives are required. Reproduced from Altus (2002) Fig. 10."
+%%| fig-width: 4.5
 
-p = plot(xlim=(0,12), ylim=(0,14), axis=false, grid=false,
-         size=(640,560), title="BLISS-RS Algorithm")
+flowchart TD
+    A([Initialise X, Z, Y, w\nSet LB₀, UB₀])
+    B["Optional: System Analysis\n(initialise coupling Y)"]
+    C["Set bounds on Y\nGenerate D-Optimal DOE"]
+    E["Fit quadratic RS\nto each BB output"]
+    F["System Optimisation\nMaximise objective over RS"]
+    G{"Converged?\n|Y_RS − Y_BB| ≤ ε"}
+    H["Final BB Analysis\nRetrieve local X"]
 
-steps = [
-    (6.0, 13.3, "Initialise X, Z, Y, w\nSet LBo, UBo", :lightblue),
-    (6.0, 11.5, "Optional:\nSystem Analysis", :lightyellow),
-    (6.0,  9.8, "Select bounds on Y\nGenerate DOE (D-Optimal)", :lightyellow),
-    (2.5,  7.8, "BB₁: Local\nOptimisation", :lightgreen),
-    (6.0,  7.8, "BB₂: Local\nOptimisation", :lightgreen),
-    (9.5,  7.8, "BBₙ: Local\nOptimisation", :lightgreen),
-    (6.0,  5.8, "Fit Quadratic RS\nfor each BB output", :lightblue),
-    (6.0,  3.8, "System Optimisation\n(max Range over RS models)", :lightyellow),
-    (6.0,  2.0, "Converged?\n|YRS − YBB| < tol", :lightyellow),
-]
+    A --> B --> C
+    C --> BB1 & BB2 & BBn
+    BB1 & BB2 & BBn --> E
+    E --> F --> G
+    G -- Yes --> H --> I([Stop])
+    G -- "No — reduce\nintervals" --> C
 
-for (x, y, lbl, col) in steps
-    plot!(Shape([x-2.2,x+2.2,x+2.2,x-2.2],[y-0.7,y-0.7,y+0.7,y+0.7]),
-          fill=col, linecolor=:black, lw=1.5, label="")
-    annotate!(x, y, text(lbl, 7, :center))
-end
+    subgraph con ["  Concurrent BB evaluations  "]
+        BB1["BB₁  Local\nOptimisation"]
+        BB2["BB₂  Local\nOptimisation"]
+        BBn["BBₙ  Local\nOptimisation"]
+    end
 
-# Stop box
-plot!(Shape([4.8,7.2,7.2,4.8],[0.0,0.0,0.6,0.6]),
-      fill=:lightgray, linecolor=:black, lw=1.5, label="")
-annotate!(6.0, 0.3, text("Final Analysis / Stop", 7, :center))
+    classDef init fill:#dbeafe,stroke:#3b82f6,stroke-width:1.5px,color:#1e3a5f
+    classDef proc fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#422006
+    classDef bb   fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+    classDef fit  fill:#dbeafe,stroke:#3b82f6,stroke-width:1.5px,color:#1e3a5f
+    classDef done fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#14532d
+    classDef dec  fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#422006
 
-# Main arrows
-for (y1, y2) in [(12.6,12.2),(10.8,10.5),(9.1,8.5),(7.1,6.5),(5.1,4.5),(3.1,2.7)]
-    plot!([6.0,6.0],[y1,y2], arrow=true, color=:black, lw=1.5, label="")
-end
-# Side BB arrows
-plot!([6.0,2.5],[9.1,8.5], arrow=true, color=:gray, lw=1.2, linestyle=:dash, label="")
-plot!([6.0,9.5],[9.1,8.5], arrow=true, color=:gray, lw=1.2, linestyle=:dash, label="")
-plot!([2.5,6.0],[7.1,6.5], arrow=true, color=:gray, lw=1.2, linestyle=:dash, label="")
-plot!([9.5,6.0],[7.1,6.5], arrow=true, color=:gray, lw=1.2, linestyle=:dash, label="")
-
-# Concurrent dashed box
-plot!(Shape([0.2,11.8,11.8,0.2],[7.0,7.0,8.7,8.7]),
-      fill=nothing, linecolor=:gray50, lw=1.0, linestyle=:dash, label="")
-annotate!(0.6, 7.85, text("Concurrent", 7, :gray50, :left, rotation=90))
-
-# "Yes" → Stop, "No" → Reduce RS / loop back
-plot!([6.0,6.0],[1.3,0.6], arrow=true, color=:forestgreen, lw=1.5, label="")
-annotate!(6.5, 1.0, text("Yes", 8, :forestgreen))
-# "No" → Reduce interval and repeat
-plot!([8.2,11.0,11.0,6.0],[2.0,2.0,9.8,9.8],
-      arrow=true, color=:crimson, lw=1.5, label="")
-annotate!(9.5, 5.9, text("No:\nReduce\nintervals", 7, :crimson))
-
-p
+    class A init
+    class B,C,F proc
+    class BB1,BB2,BBn bb
+    class E fit
+    class H,I done
+    class G dec
 ```
 
 ## Comparison: BLISS-98 vs. BLISS-RS

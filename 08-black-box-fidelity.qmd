@@ -71,40 +71,36 @@ mapped to grid deformation fields. The key advantages are:
 @fig-cfd-bb shows the upgraded aerodynamics black box data flow with CFL3D and
 MASSOUD.
 
-```{julia}
-#| label: fig-cfd-bb
-#| fig-cap: "Upgraded aerodynamics black box incorporating CFL3D RANS solver and MASSOUD grid morphing. The RS wraps the entire inner loop; from BLISS-RS's perspective, the BB is still a function (Z, Y*) → (L, D, β). Reproduced from Altus (2002) Fig. 46."
-#| code-fold: true
+```{mermaid}
+%%| label: fig-cfd-bb
+%%| fig-cap: "Upgraded aerodynamics black box incorporating CFL3D RANS solver and MASSOUD grid morphing. From BLISS-RS's perspective the BB remains a function (Z, Y*) → (L, D, β), but the inner analysis is now full Navier-Stokes. Reproduced from Altus (2002) Fig. 46."
+%%| fig-width: 5.5
 
-p = plot(xlim=(0,12), ylim=(0,10), axis=false, grid=false,
-         size=(680, 400), title="Upgraded Aerodynamics Black Box (CFL3D)")
+flowchart TD
+    IN["**Z-variables (inputs)**\nt/c · AR_w · Λ_w · S_w · λ · θ_w · dA · dB"]
 
-steps = [
-    (6.0, 9.2, "Z-variables: t/c, AR_w, Λ_w, S_w, λ, θ_w, dA, dB", :white),
-    (3.0, 7.5, "MASSOUD\nWing morphing", :lightblue),
-    (9.0, 7.5, "MASSOUD\nTail morphing", :lightblue),
-    (6.0, 5.5, "Grid Splice", :lightyellow),
-    (6.0, 3.5, "CFL3D\nRANS Solver", :lightgreen),
-    (6.0, 1.5, "CFL3D Post-processor\nL, D, β(1:6), L_HT, L_w", :lightyellow),
-]
+    IN --> MW & MT
 
-for (x, y, lbl, col) in steps
-    w = (col == :white) ? 6.0 : 2.5
-    plot!(Shape([x-w/2, x+w/2, x+w/2, x-w/2],
-                [y-0.65, y-0.65, y+0.65, y+0.65]),
-          fill=col, linecolor=:black, lw=1.5, label="")
-    annotate!(x, y, text(lbl, 7, :center))
-end
+    subgraph morph ["  MASSOUD grid morphing  "]
+        direction LR
+        MW["Wing\nmorphing"]
+        MT["Tail\nmorphing"]
+    end
 
-# Arrows
-for (x1,y1,x2,y2) in [
-    (6.0, 8.6, 3.0, 8.15), (6.0, 8.6, 9.0, 8.15),
-    (3.0, 6.85, 6.0, 6.15), (9.0, 6.85, 6.0, 6.15),
-    (6.0, 4.85, 6.0, 4.15), (6.0, 2.85, 6.0, 2.15)]
-    plot!([x1, x2], [y1, y2], arrow=true, color=:black, lw=1.2, label="")
-end
+    MW & MT --> GS["Grid Splice\nwing + tail + fuselage"]
+    GS --> CFD["**CFL3D**\nRANS Solver"]
+    CFD --> POST["CFL3D Post-processor"]
+    POST --> OUT["**Outputs**\nL · D · β(1:6) · L_HT · L_w"]
 
-p
+    classDef io    fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#0f172a
+    classDef morph fill:#dbeafe,stroke:#3b82f6,stroke-width:1.5px,color:#1e3a5f
+    classDef util  fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#422006
+    classDef cfd   fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
+
+    class IN,OUT io
+    class MW,MT morph
+    class GS,POST util
+    class CFD cfd
 ```
 
 ### Improved Lift Distribution
@@ -212,48 +208,45 @@ shown in @fig-new-dataflow. The key changes are:
    compute loads more accurately along the span.
 3. The flutter constraint is enforced within the structures BB local optimization.
 
-```{julia}
-#| label: fig-new-dataflow
-#| fig-cap: "Updated BLISS-RS system data flow with upgraded aerodynamics (CFL3D) and structures (flutter constraint) BBs. Additional coupling variables dA, dB, and β(1:6) carry higher-fidelity aeroelastic information. Reproduced from Altus (2002) Fig. 48."
-#| code-fold: true
+```{mermaid}
+%%| label: fig-new-dataflow
+%%| fig-cap: "Updated BLISS-RS system data flow for the high-fidelity BBs. Coupling variables dA, dB, and β(1:6) replace the scalar twist Ω, carrying richer aeroelastic information between disciplines. Reproduced from Altus (2002) Fig. 48."
+%%| fig-width: 6.5
 
-p = plot(xlim=(0,12), ylim=(0,10), axis=false, grid=false,
-         size=(700, 420), title="New BLISS-RS System Data Flow")
+flowchart LR
+    SysOpt(["**System Optimizer**\nZ · Y* · w"])
 
-bb_boxes = [
-    (2.5, 8.0, "Structures BB\n(ELAPS + Flutter)", :lightblue),
-    (6.0, 8.0, "Aero BB\n(CFL3D + MASSOUD)", :lightgreen),
-    (9.5, 8.0, "Power BB", :lightyellow),
-    (6.0, 4.0, "Performance BB\n(Breguet Range)", :lightsalmon),
-    (6.0, 1.5, "System\nOptimizer", :thistle),
-]
+    subgraph discs ["  Disciplinary Black Boxes  "]
+        S["**Structures BB**\nELAPS + Flutter constraint"]
+        A["**Aero BB**\nCFL3D + MASSOUD"]
+        P["**Power BB**\nEngine deck"]
+    end
 
-for (x, y, lbl, col) in bb_boxes
-    plot!(Shape([x-2.0,x+2.0,x+2.0,x-2.0],[y-0.8,y-0.8,y+0.8,y+0.8]),
-          fill=col, linecolor=:black, lw=1.5, label="")
-    annotate!(x, y, text(lbl, 7, :center))
-end
+    Perf[/"**Performance BB**\nBreguet Range"/]
 
-# Key coupling arrows with labels
-coupling_arrows = [
-    (6.0, 7.2, 2.5, 6.0, "β(1:6), dA, dB"),
-    (2.5, 6.0, 6.0, 5.0, "WT, dA, dB"),
-    (6.0, 7.2, 9.5, 7.2, "D"),
-    (9.5, 7.2, 6.0, 5.0, "SFC, WE, ESF"),
-    (6.0, 3.2, 6.0, 2.3, "Range"),
-    (6.0, 0.7, 2.5, 7.2, "Z (t/c, AR, Λ, S, λ, θ)"),
-]
+    SysOpt -- "Z: t/c, AR, Λ,\nS, λ, θ_w" --> S & A & P
 
-for (x1,y1,x2,y2,lbl) in coupling_arrows
-    plot!([x1, x2], [y1, y2], arrow=true, color=:black, lw=1.2, label="")
-end
+    A -- "β(1:6), dA, dB" --> S
+    S -- "W_T, dA, dB" --> A
+    A -- "D" --> P
+    P -- "SFC, W_E, ESF" --> A
 
-annotate!(4.1, 6.6, text("β(1:6)\ndA,dB", 7, :steelblue))
-annotate!(3.5, 5.5, text("WT,dA", 7, :steelblue))
-annotate!(7.8, 7.6, text("D", 7, :darkorange))
-annotate!(7.8, 6.2, text("SFC\nWE", 7, :darkorange))
+    S -- "W_F" --> Perf
+    A -- "L/D" --> Perf
+    P -- "SFC" --> Perf
+    Perf -- "Range" --> SysOpt
 
-p
+    classDef sysopt fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#2e1065
+    classDef struct fill:#dbeafe,stroke:#3b82f6,stroke-width:1.5px,color:#1e3a5f
+    classDef aero   fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+    classDef power  fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#422006
+    classDef perf   fill:#fff1f2,stroke:#e11d48,stroke-width:1.5px,color:#4c0519
+
+    class SysOpt sysopt
+    class S struct
+    class A aero
+    class P power
+    class Perf perf
 ```
 
 ## Implications for BLISS-RS

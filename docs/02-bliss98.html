@@ -128,6 +128,9 @@ div.csl-indent {
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
@@ -355,70 +358,51 @@ window.Quarto = {
 <p><a href="#fig-bliss98-cycle" class="quarto-xref">Figure&nbsp;<span>3.1</span></a> illustrates the BLISS-98 iteration cycle. After initialization, the algorithm alternates between two steps until convergence:</p>
 <p><strong>Step 1 — Local optimizations</strong>: Each BB optimizes over its local variables <span class="math inline">\(X\)</span>, with <span class="math inline">\(Z\)</span> and <span class="math inline">\(Y^*\)</span> held fixed. Because the BBs share no local variables, these optimizations are fully independent and can run concurrently.</p>
 <p><strong>Step 2 — System optimization</strong>: Using the locally-optimal sensitivity derivatives <span class="math inline">\(\partial X^*_{opt} / \partial Z\)</span>, the system optimizer updates <span class="math inline">\(Z\)</span> to improve the overall objective. The sensitivity analysis in BLISS-98 provides a linear approximation <span class="math inline">\(Y = Y(Z)\)</span> near the current system design point.</p>
-<div id="cell-fig-bliss98-cycle" class="cell" data-execution_count="1">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">using</span> <span class="bu">Plots</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">gr</span>()</span>
-<span id="cb1-3"><a href="#cb1-3"></a></span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="co"># Schematic flowchart as a text diagram rendered via annotations</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>p <span class="op">=</span> <span class="fu">plot</span>(xlim<span class="op">=</span>(<span class="fl">0</span>,<span class="fl">10</span>), ylim<span class="op">=</span>(<span class="fl">0</span>,<span class="fl">10</span>), axis<span class="op">=</span><span class="cn">false</span>, grid<span class="op">=</span><span class="cn">false</span>,</span>
-<span id="cb1-6"><a href="#cb1-6"></a>         aspect_ratio<span class="op">=:</span>none, size<span class="op">=</span>(<span class="fl">600</span>,<span class="fl">450</span>),</span>
-<span id="cb1-7"><a href="#cb1-7"></a>         title<span class="op">=</span><span class="st">"BLISS-98 Iteration Cycle"</span>)</span>
-<span id="cb1-8"><a href="#cb1-8"></a></span>
-<span id="cb1-9"><a href="#cb1-9"></a>boxes <span class="op">=</span> [</span>
-<span id="cb1-10"><a href="#cb1-10"></a>    (<span class="fl">5.0</span>, <span class="fl">9.2</span>, <span class="st">"Initialize X, Z"</span>),</span>
-<span id="cb1-11"><a href="#cb1-11"></a>    (<span class="fl">5.0</span>, <span class="fl">7.8</span>, <span class="st">"System Analysis</span><span class="sc">\n</span><span class="st">&amp; Sensitivity"</span>),</span>
-<span id="cb1-12"><a href="#cb1-12"></a>    (<span class="fl">2.0</span>, <span class="fl">6.0</span>, <span class="st">"BB₁ Local</span><span class="sc">\n</span><span class="st">Optimisation"</span>),</span>
-<span id="cb1-13"><a href="#cb1-13"></a>    (<span class="fl">5.0</span>, <span class="fl">6.0</span>, <span class="st">"BB₂ Local</span><span class="sc">\n</span><span class="st">Optimisation"</span>),</span>
-<span id="cb1-14"><a href="#cb1-14"></a>    (<span class="fl">8.0</span>, <span class="fl">6.0</span>, <span class="st">"BBₙ Local</span><span class="sc">\n</span><span class="st">Optimisation"</span>),</span>
-<span id="cb1-15"><a href="#cb1-15"></a>    (<span class="fl">5.0</span>, <span class="fl">4.2</span>, <span class="st">"System</span><span class="sc">\n</span><span class="st">Optimisation"</span>),</span>
-<span id="cb1-16"><a href="#cb1-16"></a>    (<span class="fl">5.0</span>, <span class="fl">2.6</span>, <span class="st">"Converged?"</span>),</span>
-<span id="cb1-17"><a href="#cb1-17"></a>    (<span class="fl">5.0</span>, <span class="fl">1.2</span>, <span class="st">"Stop"</span>),</span>
-<span id="cb1-18"><a href="#cb1-18"></a>]</span>
-<span id="cb1-19"><a href="#cb1-19"></a></span>
-<span id="cb1-20"><a href="#cb1-20"></a>colors <span class="op">=</span> [<span class="op">:</span>lightblue, <span class="op">:</span>lightyellow, <span class="op">:</span>lightgreen, <span class="op">:</span>lightgreen, <span class="op">:</span>lightgreen,</span>
-<span id="cb1-21"><a href="#cb1-21"></a>          <span class="op">:</span>lightyellow, <span class="op">:</span>lightyellow, <span class="op">:</span>lightgray]</span>
-<span id="cb1-22"><a href="#cb1-22"></a></span>
-<span id="cb1-23"><a href="#cb1-23"></a><span class="cf">for</span> ((x, y, lbl), col) <span class="kw">in</span> <span class="fu">zip</span>(boxes, colors)</span>
-<span id="cb1-24"><a href="#cb1-24"></a>    <span class="fu">plot!</span>(<span class="fu">Shape</span>([x<span class="op">-</span><span class="fl">1.5</span>, x<span class="op">+</span><span class="fl">1.5</span>, x<span class="op">+</span><span class="fl">1.5</span>, x<span class="op">-</span><span class="fl">1.5</span>],</span>
-<span id="cb1-25"><a href="#cb1-25"></a>                [y<span class="op">-</span><span class="fl">0.5</span>, y<span class="op">-</span><span class="fl">0.5</span>, y<span class="op">+</span><span class="fl">0.5</span>, y<span class="op">+</span><span class="fl">0.5</span>]),</span>
-<span id="cb1-26"><a href="#cb1-26"></a>          fill<span class="op">=</span>col, linecolor<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.5</span>, label<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb1-27"><a href="#cb1-27"></a>    <span class="fu">annotate!</span>(x, y, <span class="fu">text</span>(lbl, <span class="fl">7</span>, <span class="op">:</span>center))</span>
-<span id="cb1-28"><a href="#cb1-28"></a><span class="cf">end</span></span>
-<span id="cb1-29"><a href="#cb1-29"></a></span>
-<span id="cb1-30"><a href="#cb1-30"></a><span class="co"># Arrows (simplified)</span></span>
-<span id="cb1-31"><a href="#cb1-31"></a><span class="cf">for</span> (y1, y2) <span class="kw">in</span> [(<span class="fl">8.7</span>, <span class="fl">8.3</span>), (<span class="fl">7.3</span>, <span class="fl">6.5</span>), (<span class="fl">6.5</span>, <span class="fl">4.7</span>), (<span class="fl">3.7</span>, <span class="fl">3.1</span>), (<span class="fl">2.1</span>, <span class="fl">1.7</span>)]</span>
-<span id="cb1-32"><a href="#cb1-32"></a>    <span class="fu">plot!</span>([<span class="fl">5.0</span>, <span class="fl">5.0</span>], [y1, y2], arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.5</span>, label<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb1-33"><a href="#cb1-33"></a><span class="cf">end</span></span>
-<span id="cb1-34"><a href="#cb1-34"></a><span class="co"># Concurrent arrows to side BBs</span></span>
-<span id="cb1-35"><a href="#cb1-35"></a><span class="fu">plot!</span>([<span class="fl">5.0</span>, <span class="fl">2.0</span>], [<span class="fl">7.3</span>, <span class="fl">6.5</span>], arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.2</span>, label<span class="op">=</span><span class="st">""</span>, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb1-36"><a href="#cb1-36"></a><span class="fu">plot!</span>([<span class="fl">5.0</span>, <span class="fl">8.0</span>], [<span class="fl">7.3</span>, <span class="fl">6.5</span>], arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.2</span>, label<span class="op">=</span><span class="st">""</span>, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb1-37"><a href="#cb1-37"></a><span class="fu">plot!</span>([<span class="fl">2.0</span>, <span class="fl">5.0</span>], [<span class="fl">5.5</span>, <span class="fl">4.7</span>], arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.2</span>, label<span class="op">=</span><span class="st">""</span>, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb1-38"><a href="#cb1-38"></a><span class="fu">plot!</span>([<span class="fl">8.0</span>, <span class="fl">5.0</span>], [<span class="fl">5.5</span>, <span class="fl">4.7</span>], arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.2</span>, label<span class="op">=</span><span class="st">""</span>, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb1-39"><a href="#cb1-39"></a></span>
-<span id="cb1-40"><a href="#cb1-40"></a><span class="co"># Feedback arrow "No → back to System Analysis"</span></span>
-<span id="cb1-41"><a href="#cb1-41"></a><span class="fu">plot!</span>([<span class="fl">6.5</span>, <span class="fl">8.5</span>, <span class="fl">8.5</span>, <span class="fl">5.0</span>], [<span class="fl">2.6</span>, <span class="fl">2.6</span>, <span class="fl">7.8</span>, <span class="fl">7.8</span>],</span>
-<span id="cb1-42"><a href="#cb1-42"></a>      arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>crimson, lw<span class="op">=</span><span class="fl">1.5</span>, label<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb1-43"><a href="#cb1-43"></a><span class="fu">annotate!</span>(<span class="fl">7.5</span>, <span class="fl">5.2</span>, <span class="fu">text</span>(<span class="st">"No"</span>, <span class="fl">9</span>, <span class="op">:</span>crimson))</span>
-<span id="cb1-44"><a href="#cb1-44"></a><span class="fu">annotate!</span>(<span class="fl">5.8</span>, <span class="fl">2.6</span>, <span class="fu">text</span>(<span class="st">"Yes"</span>, <span class="fl">9</span>, <span class="op">:</span>forestgreen))</span>
-<span id="cb1-45"><a href="#cb1-45"></a></span>
-<span id="cb1-46"><a href="#cb1-46"></a><span class="co"># Dashed concurrent box</span></span>
-<span id="cb1-47"><a href="#cb1-47"></a><span class="fu">plot!</span>(<span class="fu">Shape</span>([<span class="fl">0.5</span>,<span class="fl">9.5</span>,<span class="fl">9.5</span>,<span class="fl">0.5</span>],[<span class="fl">5.4</span>,<span class="fl">5.4</span>,<span class="fl">6.6</span>,<span class="fl">6.6</span>]),</span>
-<span id="cb1-48"><a href="#cb1-48"></a>      fill<span class="op">=</span><span class="cn">nothing</span>, linecolor<span class="op">=:</span>gray, lw<span class="op">=</span><span class="fl">1.0</span>, linestyle<span class="op">=:</span>dash, label<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb1-49"><a href="#cb1-49"></a><span class="fu">annotate!</span>(<span class="fl">0.5</span>, <span class="fl">5.95</span>, <span class="fu">text</span>(<span class="st">"Concurrent</span><span class="sc">\n</span><span class="st">Opportunity"</span>, <span class="fl">7</span>, <span class="op">:</span>gray, <span class="op">:</span>left))</span>
-<span id="cb1-50"><a href="#cb1-50"></a></span>
-<span id="cb1-51"><a href="#cb1-51"></a>p</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div id="fig-bliss98-cycle" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="1">
+<div class="cell" data-fig-width="4.5" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-bliss98-cycle" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bliss98-cycle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="data:image/png;base64,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" class="figure-img">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-bliss98-cycle">flowchart TD
+    A([Initialise X, Z])
+    B["System Analysis &amp;\nSensitivity Derivatives"]
+    D["System\nOptimisation\nUpdate Z"]
+    E{Converged?}
+    F([Stop])
+
+    A --&gt; B
+    B --&gt; BB1 &amp; BB2 &amp; BBn
+    BB1 &amp; BB2 &amp; BBn --&gt; D
+    D --&gt; E
+    E -- Yes --&gt; F
+    E -- No --&gt; B
+
+    subgraph con ["  Concurrent opportunity  "]
+        BB1["BB₁  Local\nOptimisation"]
+        BB2["BB₂  Local\nOptimisation"]
+        BBn["BBₙ  Local\nOptimisation"]
+    end
+
+    classDef init  fill:#dbeafe,stroke:#3b82f6,stroke-width:1.5px,color:#1e3a5f
+    classDef proc  fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#422006
+    classDef bb    fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+    classDef done  fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#14532d
+    classDef dec   fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#422006
+
+    class A init
+    class B,D proc
+    class BB1,BB2,BBn bb
+    class F done
+    class E dec
+</pre>
+</div>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bliss98-cycle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3.1: BLISS-98 iteration cycle. Steps inside the dashed region can be executed concurrently for each black box. Reproduced from Altus &amp; Sobieski (2002).
+Figure&nbsp;3.1: BLISS-98 iteration cycle. Concurrent local optimizations (green) run in parallel for each black box, then a single system-level optimization updates the shared design variables Z. Reproduced from Altus &amp; Sobieski (2002).
 </figcaption>
 </figure>
+</div>
 </div>
 </div>
 </section>
@@ -594,25 +578,25 @@ Table&nbsp;3.1: System and coupling variables for the supersonic business jet
 <div id="cell-fig-shrenk" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1"></a>b_semi <span class="op">=</span> <span class="fl">1.0</span>   <span class="co"># normalized semi-span [0, 1]</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>η <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length<span class="op">=</span><span class="fl">200</span>)</span>
-<span id="cb2-3"><a href="#cb2-3"></a></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># Elliptical distribution (normalized)</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="fu">ℓ_ell</span>(η) <span class="op">=</span> (<span class="fl">4</span><span class="op">/</span><span class="cn">π</span>) <span class="op">*</span> <span class="fu">sqrt</span>(<span class="fu">max</span>(<span class="fl">1</span> <span class="op">-</span> η<span class="op">^</span><span class="fl">2</span>, <span class="fl">0.0</span>))</span>
-<span id="cb2-6"><a href="#cb2-6"></a></span>
-<span id="cb2-7"><a href="#cb2-7"></a><span class="co"># Trapezoidal (chord taper): chord decreases linearly from root to tip</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>λ_taper <span class="op">=</span> <span class="fl">0.2</span>    <span class="co"># taper ratio</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a><span class="fu">ℓ_trap</span>(η) <span class="op">=</span> <span class="fl">2</span><span class="fu">*</span>(<span class="fl">1</span> <span class="op">-</span> (<span class="fl">1</span><span class="op">-</span>λ_taper)<span class="op">*</span>η) <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> λ_taper)   <span class="co"># normalized</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a></span>
-<span id="cb2-11"><a href="#cb2-11"></a><span class="fu">ℓ_shrenk</span>(η) <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (<span class="fu">ℓ_ell</span>(η) <span class="op">+</span> <span class="fu">ℓ_trap</span>(η))</span>
-<span id="cb2-12"><a href="#cb2-12"></a></span>
-<span id="cb2-13"><a href="#cb2-13"></a>p <span class="op">=</span> <span class="fu">plot</span>(η, <span class="fu">ℓ_ell</span>.(η), lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>steelblue, label<span class="op">=</span><span class="st">"Elliptical"</span>, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb2-14"><a href="#cb2-14"></a><span class="fu">plot!</span>(η, <span class="fu">ℓ_trap</span>.(η), lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>darkorange, label<span class="op">=</span><span class="st">"Trapezoidal (λ=0.2)"</span>, linestyle<span class="op">=:</span>dot)</span>
-<span id="cb2-15"><a href="#cb2-15"></a><span class="fu">plot!</span>(η, <span class="fu">ℓ_shrenk</span>.(η), lw<span class="op">=</span><span class="fl">2.5</span>, color<span class="op">=:</span>crimson, label<span class="op">=</span><span class="st">"Shrenk average"</span>)</span>
-<span id="cb2-16"><a href="#cb2-16"></a><span class="fu">plot!</span>(xlabel<span class="op">=</span>L<span class="st">"Spanwise location </span><span class="sc">$</span><span class="st">\</span>eta<span class="st"> = 2y/b</span><span class="sc">$</span><span class="st">",</span></span>
-<span id="cb2-17"><a href="#cb2-17"></a><span class="st">      </span>ylabel<span class="st">="</span>Normalised lift per unit span<span class="st">",</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>      title<span class="op">=</span><span class="st">"Shrenk Lift Distribution"</span>,</span>
-<span id="cb2-19"><a href="#cb2-19"></a>      legend<span class="op">=:</span>topright, grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1"></a>b_semi <span class="op">=</span> <span class="fl">1.0</span>   <span class="co"># normalized semi-span [0, 1]</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>η <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length<span class="op">=</span><span class="fl">200</span>)</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co"># Elliptical distribution (normalized)</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="fu">ℓ_ell</span>(η) <span class="op">=</span> (<span class="fl">4</span><span class="op">/</span><span class="cn">π</span>) <span class="op">*</span> <span class="fu">sqrt</span>(<span class="fu">max</span>(<span class="fl">1</span> <span class="op">-</span> η<span class="op">^</span><span class="fl">2</span>, <span class="fl">0.0</span>))</span>
+<span id="cb1-6"><a href="#cb1-6"></a></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="co"># Trapezoidal (chord taper): chord decreases linearly from root to tip</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>λ_taper <span class="op">=</span> <span class="fl">0.2</span>    <span class="co"># taper ratio</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a><span class="fu">ℓ_trap</span>(η) <span class="op">=</span> <span class="fl">2</span><span class="fu">*</span>(<span class="fl">1</span> <span class="op">-</span> (<span class="fl">1</span><span class="op">-</span>λ_taper)<span class="op">*</span>η) <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> λ_taper)   <span class="co"># normalized</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a></span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="fu">ℓ_shrenk</span>(η) <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (<span class="fu">ℓ_ell</span>(η) <span class="op">+</span> <span class="fu">ℓ_trap</span>(η))</span>
+<span id="cb1-12"><a href="#cb1-12"></a></span>
+<span id="cb1-13"><a href="#cb1-13"></a>p <span class="op">=</span> <span class="fu">plot</span>(η, <span class="fu">ℓ_ell</span>.(η), lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>steelblue, label<span class="op">=</span><span class="st">"Elliptical"</span>, linestyle<span class="op">=:</span>dash)</span>
+<span id="cb1-14"><a href="#cb1-14"></a><span class="fu">plot!</span>(η, <span class="fu">ℓ_trap</span>.(η), lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>darkorange, label<span class="op">=</span><span class="st">"Trapezoidal (λ=0.2)"</span>, linestyle<span class="op">=:</span>dot)</span>
+<span id="cb1-15"><a href="#cb1-15"></a><span class="fu">plot!</span>(η, <span class="fu">ℓ_shrenk</span>.(η), lw<span class="op">=</span><span class="fl">2.5</span>, color<span class="op">=:</span>crimson, label<span class="op">=</span><span class="st">"Shrenk average"</span>)</span>
+<span id="cb1-16"><a href="#cb1-16"></a><span class="fu">plot!</span>(xlabel<span class="op">=</span>L<span class="st">"Spanwise location </span><span class="sc">$</span><span class="st">\</span>eta<span class="st"> = 2y/b</span><span class="sc">$</span><span class="st">",</span></span>
+<span id="cb1-17"><a href="#cb1-17"></a><span class="st">      </span>ylabel<span class="st">="</span>Normalised lift per unit span<span class="st">",</span></span>
+<span id="cb1-18"><a href="#cb1-18"></a>      title<span class="op">=</span><span class="st">"Shrenk Lift Distribution"</span>,</span>
+<span id="cb1-19"><a href="#cb1-19"></a>      legend<span class="op">=:</span>topright, grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div id="fig-shrenk" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="1">
 <figure class="quarto-float quarto-float-fig figure">
@@ -653,37 +637,37 @@ R = \frac{aM}{SFC} \cdot \frac{L}{D} \cdot \ln\!\left(\frac{W_i}{W_f}\right)
 <div id="cell-fig-breguet-sensitivity" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">using</span> <span class="bu">Plots</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">gr</span>()</span>
-<span id="cb3-3"><a href="#cb3-3"></a></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># Parametric Breguet range study</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a><span class="co"># Fix: h = 50,000 ft, M = 1.8, SFC = 1.2 lb/(lbf·hr), WT = 70,000 lbf</span></span>
-<span id="cb3-6"><a href="#cb3-6"></a>h_ft <span class="op">=</span> <span class="fl">50_000.0</span></span>
-<span id="cb3-7"><a href="#cb3-7"></a>M    <span class="op">=</span> <span class="fl">1.8</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a>SFC  <span class="op">=</span> <span class="fl">1.2</span>     <span class="co"># lb/(lbf·hr)</span></span>
-<span id="cb3-9"><a href="#cb3-9"></a>WT   <span class="op">=</span> <span class="fl">70_000.0</span>  <span class="co"># lbf</span></span>
-<span id="cb3-10"><a href="#cb3-10"></a></span>
-<span id="cb3-11"><a href="#cb3-11"></a>LD_range  <span class="op">=</span> <span class="fu">range</span>(<span class="fl">3.0</span>, <span class="fl">10.0</span>, length<span class="op">=</span><span class="fl">50</span>)</span>
-<span id="cb3-12"><a href="#cb3-12"></a>WF_frac   <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0.15</span>, <span class="fl">0.55</span>, length<span class="op">=</span><span class="fl">50</span>)   <span class="co"># WF/WT</span></span>
-<span id="cb3-13"><a href="#cb3-13"></a></span>
-<span id="cb3-14"><a href="#cb3-14"></a><span class="fu">range_nm</span>(LD, wf_frac) <span class="op">=</span> <span class="cf">begin</span></span>
-<span id="cb3-15"><a href="#cb3-15"></a>    _, a <span class="op">=</span> <span class="fu">std_atmosphere</span>(h_ft)</span>
-<span id="cb3-16"><a href="#cb3-16"></a>    a_kts <span class="op">=</span> a <span class="op">/</span> <span class="fl">1.68781</span></span>
-<span id="cb3-17"><a href="#cb3-17"></a>    WF <span class="op">=</span> wf_frac <span class="op">*</span> WT</span>
-<span id="cb3-18"><a href="#cb3-18"></a>    Wf <span class="op">=</span> WT <span class="op">-</span> WF</span>
-<span id="cb3-19"><a href="#cb3-19"></a>    Wf <span class="op">&lt;=</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="cf">return</span> <span class="fl">0.0</span></span>
-<span id="cb3-20"><a href="#cb3-20"></a>    (a_kts <span class="op">*</span> M <span class="op">/</span> SFC) <span class="op">*</span> LD <span class="op">*</span> <span class="fu">log</span>(WT <span class="op">/</span> Wf)</span>
-<span id="cb3-21"><a href="#cb3-21"></a><span class="cf">end</span></span>
-<span id="cb3-22"><a href="#cb3-22"></a></span>
-<span id="cb3-23"><a href="#cb3-23"></a>R_grid <span class="op">=</span> [<span class="fu">range_nm</span>(ld, wf) for wf <span class="kw">in</span> WF_frac, ld <span class="kw">in</span> LD_range]</span>
-<span id="cb3-24"><a href="#cb3-24"></a></span>
-<span id="cb3-25"><a href="#cb3-25"></a><span class="fu">contourf</span>(LD_range, WF_frac, R_grid,</span>
-<span id="cb3-26"><a href="#cb3-26"></a>         xlabel<span class="op">=</span>L<span class="st">"Lift-to-drag ratio </span><span class="sc">$</span>L<span class="st">/D</span><span class="sc">$</span><span class="st">",</span></span>
-<span id="cb3-27"><a href="#cb3-27"></a><span class="st">         </span>ylabel<span class="st">=L"</span>Fuel weight fraction <span class="op">$</span>W_F<span class="op">/</span>W_T<span class="op">$</span><span class="st">",</span></span>
-<span id="cb3-28"><a href="#cb3-28"></a>         title<span class="op">=</span><span class="st">"Breguet Range (NM), M=1.8, h=50,000 ft"</span>,</span>
-<span id="cb3-29"><a href="#cb3-29"></a>         colorbar_title<span class="op">=</span><span class="st">"Range (NM)"</span>,</span>
-<span id="cb3-30"><a href="#cb3-30"></a>         color<span class="op">=:</span>viridis, levels<span class="op">=</span><span class="fl">15</span>,</span>
-<span id="cb3-31"><a href="#cb3-31"></a>         grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1"></a><span class="im">using</span> <span class="bu">Plots</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">gr</span>()</span>
+<span id="cb2-3"><a href="#cb2-3"></a></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># Parametric Breguet range study</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="co"># Fix: h = 50,000 ft, M = 1.8, SFC = 1.2 lb/(lbf·hr), WT = 70,000 lbf</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>h_ft <span class="op">=</span> <span class="fl">50_000.0</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>M    <span class="op">=</span> <span class="fl">1.8</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>SFC  <span class="op">=</span> <span class="fl">1.2</span>     <span class="co"># lb/(lbf·hr)</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>WT   <span class="op">=</span> <span class="fl">70_000.0</span>  <span class="co"># lbf</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a></span>
+<span id="cb2-11"><a href="#cb2-11"></a>LD_range  <span class="op">=</span> <span class="fu">range</span>(<span class="fl">3.0</span>, <span class="fl">10.0</span>, length<span class="op">=</span><span class="fl">50</span>)</span>
+<span id="cb2-12"><a href="#cb2-12"></a>WF_frac   <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0.15</span>, <span class="fl">0.55</span>, length<span class="op">=</span><span class="fl">50</span>)   <span class="co"># WF/WT</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a></span>
+<span id="cb2-14"><a href="#cb2-14"></a><span class="fu">range_nm</span>(LD, wf_frac) <span class="op">=</span> <span class="cf">begin</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>    _, a <span class="op">=</span> <span class="fu">std_atmosphere</span>(h_ft)</span>
+<span id="cb2-16"><a href="#cb2-16"></a>    a_kts <span class="op">=</span> a <span class="op">/</span> <span class="fl">1.68781</span></span>
+<span id="cb2-17"><a href="#cb2-17"></a>    WF <span class="op">=</span> wf_frac <span class="op">*</span> WT</span>
+<span id="cb2-18"><a href="#cb2-18"></a>    Wf <span class="op">=</span> WT <span class="op">-</span> WF</span>
+<span id="cb2-19"><a href="#cb2-19"></a>    Wf <span class="op">&lt;=</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="cf">return</span> <span class="fl">0.0</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a>    (a_kts <span class="op">*</span> M <span class="op">/</span> SFC) <span class="op">*</span> LD <span class="op">*</span> <span class="fu">log</span>(WT <span class="op">/</span> Wf)</span>
+<span id="cb2-21"><a href="#cb2-21"></a><span class="cf">end</span></span>
+<span id="cb2-22"><a href="#cb2-22"></a></span>
+<span id="cb2-23"><a href="#cb2-23"></a>R_grid <span class="op">=</span> [<span class="fu">range_nm</span>(ld, wf) for wf <span class="kw">in</span> WF_frac, ld <span class="kw">in</span> LD_range]</span>
+<span id="cb2-24"><a href="#cb2-24"></a></span>
+<span id="cb2-25"><a href="#cb2-25"></a><span class="fu">contourf</span>(LD_range, WF_frac, R_grid,</span>
+<span id="cb2-26"><a href="#cb2-26"></a>         xlabel<span class="op">=</span>L<span class="st">"Lift-to-drag ratio </span><span class="sc">$</span>L<span class="st">/D</span><span class="sc">$</span><span class="st">",</span></span>
+<span id="cb2-27"><a href="#cb2-27"></a><span class="st">         </span>ylabel<span class="st">=L"</span>Fuel weight fraction <span class="op">$</span>W_F<span class="op">/</span>W_T<span class="op">$</span><span class="st">",</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a>         title<span class="op">=</span><span class="st">"Breguet Range (NM), M=1.8, h=50,000 ft"</span>,</span>
+<span id="cb2-29"><a href="#cb2-29"></a>         colorbar_title<span class="op">=</span><span class="st">"Range (NM)"</span>,</span>
+<span id="cb2-30"><a href="#cb2-30"></a>         color<span class="op">=:</span>viridis, levels<span class="op">=</span><span class="fl">15</span>,</span>
+<span id="cb2-31"><a href="#cb2-31"></a>         grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div id="fig-breguet-sensitivity" class="cell-output cell-output-display quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="1">
 <figure class="quarto-float quarto-float-fig figure">
@@ -703,30 +687,30 @@ Figure&nbsp;3.3: Breguet range sensitivity to L/D and fuel weight fraction. High
 <p>The Julia implementation in <code>src/supersonic_jet.jl</code> provides a coupled system analysis that chains all four black boxes. The following example evaluates the baseline design from <span class="citation" data-cites="altus2002blissrs">[<a href="references.html#ref-altus2002blissrs" role="doc-biblioref">4</a>]</span>:</p>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># Baseline design vector: [t_c, ARw, Λw, Sw, SHT, ARHT, λ]</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a>Z_baseline <span class="op">=</span> [<span class="fl">0.075</span>, <span class="fl">4.0</span>, <span class="fl">45.0</span>, <span class="fl">400.0</span>, <span class="fl">120.0</span>, <span class="fl">4.5</span>, <span class="fl">0.2</span>]</span>
-<span id="cb4-3"><a href="#cb4-3"></a>h_cruise   <span class="op">=</span> <span class="fl">45_000.0</span>   <span class="co"># ft</span></span>
-<span id="cb4-4"><a href="#cb4-4"></a>M_cruise   <span class="op">=</span> <span class="fl">1.8</span></span>
-<span id="cb4-5"><a href="#cb4-5"></a></span>
-<span id="cb4-6"><a href="#cb4-6"></a>result <span class="op">=</span> <span class="fu">ssbj_analysis</span>(Z_baseline, h_cruise, M_cruise;</span>
-<span id="cb4-7"><a href="#cb4-7"></a>                        WF_init<span class="op">=</span><span class="fl">15_000.0</span>, WT_empty<span class="op">=</span><span class="fl">28_000.0</span>)</span>
-<span id="cb4-8"><a href="#cb4-8"></a></span>
-<span id="cb4-9"><a href="#cb4-9"></a>rows <span class="op">=</span> [</span>
-<span id="cb4-10"><a href="#cb4-10"></a>    (<span class="st">"Total weight W_T"</span>,         <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WT)),</span>
-<span id="cb4-11"><a href="#cb4-11"></a>    (<span class="st">"Fuel weight W_F"</span>,          <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WF)),</span>
-<span id="cb4-12"><a href="#cb4-12"></a>    (<span class="st">"Engine scale factor ESF"</span>,  <span class="pp">@sprintf</span>(<span class="st">"%.3f"</span>,      result.ESF)),</span>
-<span id="cb4-13"><a href="#cb4-13"></a>    (<span class="st">"Lift L"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.L)),</span>
-<span id="cb4-14"><a href="#cb4-14"></a>    (<span class="st">"Drag D"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.D)),</span>
-<span id="cb4-15"><a href="#cb4-15"></a>    (<span class="st">"Lift-to-drag ratio L/D"</span>,   <span class="pp">@sprintf</span>(<span class="st">"%.2f"</span>,      result.LD)),</span>
-<span id="cb4-16"><a href="#cb4-16"></a>    (<span class="st">"SFC"</span>,                      <span class="pp">@sprintf</span>(<span class="st">"%.3f lb/(lbf·hr)"</span>, result.SFC)),</span>
-<span id="cb4-17"><a href="#cb4-17"></a>    (<span class="st">"Range"</span>,                    <span class="pp">@sprintf</span>(<span class="st">"%.0f NM"</span>,   result.<span class="dt">Range</span>)),</span>
-<span id="cb4-18"><a href="#cb4-18"></a>]</span>
-<span id="cb4-19"><a href="#cb4-19"></a></span>
-<span id="cb4-20"><a href="#cb4-20"></a><span class="fu">println</span>(<span class="st">"| Quantity | Value |"</span>)</span>
-<span id="cb4-21"><a href="#cb4-21"></a><span class="fu">println</span>(<span class="st">"|----------|-------|"</span>)</span>
-<span id="cb4-22"><a href="#cb4-22"></a><span class="cf">for</span> (name, val) <span class="kw">in</span> rows</span>
-<span id="cb4-23"><a href="#cb4-23"></a>    <span class="fu">println</span>(<span class="st">"| </span><span class="sc">$</span>name<span class="st"> | </span><span class="sc">$</span>val<span class="st"> |"</span>)</span>
-<span id="cb4-24"><a href="#cb4-24"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Baseline design vector: [t_c, ARw, Λw, Sw, SHT, ARHT, λ]</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>Z_baseline <span class="op">=</span> [<span class="fl">0.075</span>, <span class="fl">4.0</span>, <span class="fl">45.0</span>, <span class="fl">400.0</span>, <span class="fl">120.0</span>, <span class="fl">4.5</span>, <span class="fl">0.2</span>]</span>
+<span id="cb3-3"><a href="#cb3-3"></a>h_cruise   <span class="op">=</span> <span class="fl">45_000.0</span>   <span class="co"># ft</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>M_cruise   <span class="op">=</span> <span class="fl">1.8</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a></span>
+<span id="cb3-6"><a href="#cb3-6"></a>result <span class="op">=</span> <span class="fu">ssbj_analysis</span>(Z_baseline, h_cruise, M_cruise;</span>
+<span id="cb3-7"><a href="#cb3-7"></a>                        WF_init<span class="op">=</span><span class="fl">15_000.0</span>, WT_empty<span class="op">=</span><span class="fl">28_000.0</span>)</span>
+<span id="cb3-8"><a href="#cb3-8"></a></span>
+<span id="cb3-9"><a href="#cb3-9"></a>rows <span class="op">=</span> [</span>
+<span id="cb3-10"><a href="#cb3-10"></a>    (<span class="st">"Total weight W_T"</span>,         <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WT)),</span>
+<span id="cb3-11"><a href="#cb3-11"></a>    (<span class="st">"Fuel weight W_F"</span>,          <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WF)),</span>
+<span id="cb3-12"><a href="#cb3-12"></a>    (<span class="st">"Engine scale factor ESF"</span>,  <span class="pp">@sprintf</span>(<span class="st">"%.3f"</span>,      result.ESF)),</span>
+<span id="cb3-13"><a href="#cb3-13"></a>    (<span class="st">"Lift L"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.L)),</span>
+<span id="cb3-14"><a href="#cb3-14"></a>    (<span class="st">"Drag D"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.D)),</span>
+<span id="cb3-15"><a href="#cb3-15"></a>    (<span class="st">"Lift-to-drag ratio L/D"</span>,   <span class="pp">@sprintf</span>(<span class="st">"%.2f"</span>,      result.LD)),</span>
+<span id="cb3-16"><a href="#cb3-16"></a>    (<span class="st">"SFC"</span>,                      <span class="pp">@sprintf</span>(<span class="st">"%.3f lb/(lbf·hr)"</span>, result.SFC)),</span>
+<span id="cb3-17"><a href="#cb3-17"></a>    (<span class="st">"Range"</span>,                    <span class="pp">@sprintf</span>(<span class="st">"%.0f NM"</span>,   result.<span class="dt">Range</span>)),</span>
+<span id="cb3-18"><a href="#cb3-18"></a>]</span>
+<span id="cb3-19"><a href="#cb3-19"></a></span>
+<span id="cb3-20"><a href="#cb3-20"></a><span class="fu">println</span>(<span class="st">"| Quantity | Value |"</span>)</span>
+<span id="cb3-21"><a href="#cb3-21"></a><span class="fu">println</span>(<span class="st">"|----------|-------|"</span>)</span>
+<span id="cb3-22"><a href="#cb3-22"></a><span class="cf">for</span> (name, val) <span class="kw">in</span> rows</span>
+<span id="cb3-23"><a href="#cb3-23"></a>    <span class="fu">println</span>(<span class="st">"| </span><span class="sc">$</span>name<span class="st"> | </span><span class="sc">$</span>val<span class="st"> |"</span>)</span>
+<span id="cb3-24"><a href="#cb3-24"></a><span class="cf">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div id="tbl-baseline-analysis" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="1">
 <figure class="quarto-float quarto-float-tbl figure">
@@ -1233,308 +1217,288 @@ Table&nbsp;3.2: Baseline supersonic business jet analysis at the initial design 
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" data-shortcodes="false"><pre class="sourceCode numberSource markdown number-lines code-with-copy"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">---</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="an">title:</span><span class="co"> "BLISS-98: System Architecture and Subsystem Analyses"</span></span>
-<span id="cb6-3"><a href="#cb6-3"></a><span class="co">---</span></span>
-<span id="cb6-4"><a href="#cb6-4"></a></span>
-<span id="cb6-7"><a href="#cb6-7"></a><span class="in">```{julia}</span></span>
-<span id="cb6-8"><a href="#cb6-8"></a><span class="co">#| include: false</span></span>
-<span id="cb6-9"><a href="#cb6-9"></a><span class="fu">include</span>(<span class="st">"src/bliss_rs.jl"</span>)</span>
-<span id="cb6-10"><a href="#cb6-10"></a><span class="fu">include</span>(<span class="st">"src/supersonic_jet.jl"</span>)</span>
-<span id="cb6-11"><a href="#cb6-11"></a><span class="im">using</span> <span class="bu">Printf</span>, <span class="bu">Plots</span>, <span class="bu">LaTeXStrings</span>, <span class="bu">Statistics</span></span>
-<span id="cb6-12"><a href="#cb6-12"></a><span class="fu">gr</span>()</span>
-<span id="cb6-13"><a href="#cb6-13"></a><span class="in">```</span></span>
-<span id="cb6-14"><a href="#cb6-14"></a></span>
-<span id="cb6-15"><a href="#cb6-15"></a><span class="fu">## System Architecture</span></span>
-<span id="cb6-16"><a href="#cb6-16"></a></span>
-<span id="cb6-17"><a href="#cb6-17"></a>The BLISS framework begins with a formal decomposition of the full design problem</span>
-<span id="cb6-18"><a href="#cb6-18"></a>into a hierarchy of black boxes. Regardless of which BLISS variant is used,</span>
-<span id="cb6-19"><a href="#cb6-19"></a>the system architecture follows the same three-level structure:</span>
-<span id="cb6-20"><a href="#cb6-20"></a></span>
-<span id="cb6-21"><a href="#cb6-21"></a>**Level 1 — System variables $Z$**: Shared quantities that influence the objective</span>
-<span id="cb6-22"><a href="#cb6-22"></a>or coupling variables across at least two disciplines. In the supersonic business</span>
-<span id="cb6-23"><a href="#cb6-23"></a>jet, wing geometry parameters (aspect ratio, sweep, area) appear as inputs to both</span>
-<span id="cb6-24"><a href="#cb6-24"></a>the structures and aerodynamics black boxes.</span>
-<span id="cb6-25"><a href="#cb6-25"></a></span>
-<span id="cb6-26"><a href="#cb6-26"></a>**Level 2 — Local variables $X$**: Variables private to a single black box.</span>
-<span id="cb6-27"><a href="#cb6-27"></a>Structural skin panel thicknesses, for example, are optimized inside the structures</span>
-<span id="cb6-28"><a href="#cb6-28"></a>BB and never seen by the aerodynamics or power BBs.</span>
-<span id="cb6-29"><a href="#cb6-29"></a></span>
-<span id="cb6-30"><a href="#cb6-30"></a>**Level 3 — Coupling variables $Y^*$ / $Y^A$**: Quantities that flow between</span>
-<span id="cb6-31"><a href="#cb6-31"></a>disciplines. Lift computed by the aerodynamics BB becomes a load input to the</span>
-<span id="cb6-32"><a href="#cb6-32"></a>structures BB; structural weight and twist feed back to the aerodynamics BB.</span>
-<span id="cb6-33"><a href="#cb6-33"></a></span>
-<span id="cb6-34"><a href="#cb6-34"></a>The coupling variables are where the MDO problem is hard. Every coupling variable</span>
-<span id="cb6-35"><a href="#cb6-35"></a>must satisfy a *compatibility constraint*: the value proposed by the system</span>
-<span id="cb6-36"><a href="#cb6-36"></a>optimizer ($Y^*$) must match the value produced by BB analysis ($Y^A$) at</span>
-<span id="cb6-37"><a href="#cb6-37"></a>convergence.</span>
-<span id="cb6-38"><a href="#cb6-38"></a></span>
-<span id="cb6-39"><a href="#cb6-39"></a><span class="fu">## BLISS-98 Cycle</span></span>
-<span id="cb6-40"><a href="#cb6-40"></a></span>
-<span id="cb6-41"><a href="#cb6-41"></a>@fig-bliss98-cycle illustrates the BLISS-98 iteration cycle. After initialization,</span>
-<span id="cb6-42"><a href="#cb6-42"></a>the algorithm alternates between two steps until convergence:</span>
-<span id="cb6-43"><a href="#cb6-43"></a></span>
-<span id="cb6-44"><a href="#cb6-44"></a>**Step 1 — Local optimizations**: Each BB optimizes over its local variables $X$,</span>
-<span id="cb6-45"><a href="#cb6-45"></a>with $Z$ and $Y^*$ held fixed. Because the BBs share no local variables, these</span>
-<span id="cb6-46"><a href="#cb6-46"></a>optimizations are fully independent and can run concurrently.</span>
-<span id="cb6-47"><a href="#cb6-47"></a></span>
-<span id="cb6-48"><a href="#cb6-48"></a>**Step 2 — System optimization**: Using the locally-optimal sensitivity derivatives</span>
-<span id="cb6-49"><a href="#cb6-49"></a>$\partial X^*_{opt} / \partial Z$, the system optimizer updates $Z$ to improve the</span>
-<span id="cb6-50"><a href="#cb6-50"></a>overall objective. The sensitivity analysis in BLISS-98 provides a linear</span>
-<span id="cb6-51"><a href="#cb6-51"></a>approximation $Y = Y(Z)$ near the current system design point.</span>
-<span id="cb6-52"><a href="#cb6-52"></a></span>
-<span id="cb6-55"><a href="#cb6-55"></a><span class="in">```{julia}</span></span>
-<span id="cb6-56"><a href="#cb6-56"></a><span class="co">#| label: fig-bliss98-cycle</span></span>
-<span id="cb6-57"><a href="#cb6-57"></a><span class="co">#| fig-cap: "BLISS-98 iteration cycle. Steps inside the dashed region can be executed concurrently for each black box. Reproduced from Altus &amp; Sobieski (2002)."</span></span>
-<span id="cb6-58"><a href="#cb6-58"></a><span class="co">#| code-fold: true</span></span>
-<span id="cb6-59"><a href="#cb6-59"></a></span>
-<span id="cb6-60"><a href="#cb6-60"></a><span class="im">using</span> <span class="bu">Plots</span></span>
-<span id="cb6-61"><a href="#cb6-61"></a><span class="fu">gr</span>()</span>
-<span id="cb6-62"><a href="#cb6-62"></a></span>
-<span id="cb6-63"><a href="#cb6-63"></a><span class="co"># Schematic flowchart as a text diagram rendered via annotations</span></span>
-<span id="cb6-64"><a href="#cb6-64"></a>p <span class="op">=</span> <span class="fu">plot</span>(xlim<span class="op">=</span>(<span class="fl">0</span>,<span class="fl">10</span>), ylim<span class="op">=</span>(<span class="fl">0</span>,<span class="fl">10</span>), axis<span class="op">=</span><span class="cn">false</span>, grid<span class="op">=</span><span class="cn">false</span>,</span>
-<span id="cb6-65"><a href="#cb6-65"></a>         aspect_ratio<span class="op">=:</span>none, size<span class="op">=</span>(<span class="fl">600</span>,<span class="fl">450</span>),</span>
-<span id="cb6-66"><a href="#cb6-66"></a>         title<span class="op">=</span><span class="st">"BLISS-98 Iteration Cycle"</span>)</span>
-<span id="cb6-67"><a href="#cb6-67"></a></span>
-<span id="cb6-68"><a href="#cb6-68"></a>boxes <span class="op">=</span> [</span>
-<span id="cb6-69"><a href="#cb6-69"></a>    (<span class="fl">5.0</span>, <span class="fl">9.2</span>, <span class="st">"Initialize X, Z"</span>),</span>
-<span id="cb6-70"><a href="#cb6-70"></a>    (<span class="fl">5.0</span>, <span class="fl">7.8</span>, <span class="st">"System Analysis</span><span class="sc">\n</span><span class="st">&amp; Sensitivity"</span>),</span>
-<span id="cb6-71"><a href="#cb6-71"></a>    (<span class="fl">2.0</span>, <span class="fl">6.0</span>, <span class="st">"BB₁ Local</span><span class="sc">\n</span><span class="st">Optimisation"</span>),</span>
-<span id="cb6-72"><a href="#cb6-72"></a>    (<span class="fl">5.0</span>, <span class="fl">6.0</span>, <span class="st">"BB₂ Local</span><span class="sc">\n</span><span class="st">Optimisation"</span>),</span>
-<span id="cb6-73"><a href="#cb6-73"></a>    (<span class="fl">8.0</span>, <span class="fl">6.0</span>, <span class="st">"BBₙ Local</span><span class="sc">\n</span><span class="st">Optimisation"</span>),</span>
-<span id="cb6-74"><a href="#cb6-74"></a>    (<span class="fl">5.0</span>, <span class="fl">4.2</span>, <span class="st">"System</span><span class="sc">\n</span><span class="st">Optimisation"</span>),</span>
-<span id="cb6-75"><a href="#cb6-75"></a>    (<span class="fl">5.0</span>, <span class="fl">2.6</span>, <span class="st">"Converged?"</span>),</span>
-<span id="cb6-76"><a href="#cb6-76"></a>    (<span class="fl">5.0</span>, <span class="fl">1.2</span>, <span class="st">"Stop"</span>),</span>
-<span id="cb6-77"><a href="#cb6-77"></a>]</span>
-<span id="cb6-78"><a href="#cb6-78"></a></span>
-<span id="cb6-79"><a href="#cb6-79"></a>colors <span class="op">=</span> [<span class="op">:</span>lightblue, <span class="op">:</span>lightyellow, <span class="op">:</span>lightgreen, <span class="op">:</span>lightgreen, <span class="op">:</span>lightgreen,</span>
-<span id="cb6-80"><a href="#cb6-80"></a>          <span class="op">:</span>lightyellow, <span class="op">:</span>lightyellow, <span class="op">:</span>lightgray]</span>
-<span id="cb6-81"><a href="#cb6-81"></a></span>
-<span id="cb6-82"><a href="#cb6-82"></a><span class="cf">for</span> ((x, y, lbl), col) <span class="kw">in</span> <span class="fu">zip</span>(boxes, colors)</span>
-<span id="cb6-83"><a href="#cb6-83"></a>    <span class="fu">plot!</span>(<span class="fu">Shape</span>([x<span class="op">-</span><span class="fl">1.5</span>, x<span class="op">+</span><span class="fl">1.5</span>, x<span class="op">+</span><span class="fl">1.5</span>, x<span class="op">-</span><span class="fl">1.5</span>],</span>
-<span id="cb6-84"><a href="#cb6-84"></a>                [y<span class="op">-</span><span class="fl">0.5</span>, y<span class="op">-</span><span class="fl">0.5</span>, y<span class="op">+</span><span class="fl">0.5</span>, y<span class="op">+</span><span class="fl">0.5</span>]),</span>
-<span id="cb6-85"><a href="#cb6-85"></a>          fill<span class="op">=</span>col, linecolor<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.5</span>, label<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb6-86"><a href="#cb6-86"></a>    <span class="fu">annotate!</span>(x, y, <span class="fu">text</span>(lbl, <span class="fl">7</span>, <span class="op">:</span>center))</span>
-<span id="cb6-87"><a href="#cb6-87"></a><span class="cf">end</span></span>
-<span id="cb6-88"><a href="#cb6-88"></a></span>
-<span id="cb6-89"><a href="#cb6-89"></a><span class="co"># Arrows (simplified)</span></span>
-<span id="cb6-90"><a href="#cb6-90"></a><span class="cf">for</span> (y1, y2) <span class="kw">in</span> [(<span class="fl">8.7</span>, <span class="fl">8.3</span>), (<span class="fl">7.3</span>, <span class="fl">6.5</span>), (<span class="fl">6.5</span>, <span class="fl">4.7</span>), (<span class="fl">3.7</span>, <span class="fl">3.1</span>), (<span class="fl">2.1</span>, <span class="fl">1.7</span>)]</span>
-<span id="cb6-91"><a href="#cb6-91"></a>    <span class="fu">plot!</span>([<span class="fl">5.0</span>, <span class="fl">5.0</span>], [y1, y2], arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.5</span>, label<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb6-92"><a href="#cb6-92"></a><span class="cf">end</span></span>
-<span id="cb6-93"><a href="#cb6-93"></a><span class="co"># Concurrent arrows to side BBs</span></span>
-<span id="cb6-94"><a href="#cb6-94"></a><span class="fu">plot!</span>([<span class="fl">5.0</span>, <span class="fl">2.0</span>], [<span class="fl">7.3</span>, <span class="fl">6.5</span>], arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.2</span>, label<span class="op">=</span><span class="st">""</span>, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb6-95"><a href="#cb6-95"></a><span class="fu">plot!</span>([<span class="fl">5.0</span>, <span class="fl">8.0</span>], [<span class="fl">7.3</span>, <span class="fl">6.5</span>], arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.2</span>, label<span class="op">=</span><span class="st">""</span>, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb6-96"><a href="#cb6-96"></a><span class="fu">plot!</span>([<span class="fl">2.0</span>, <span class="fl">5.0</span>], [<span class="fl">5.5</span>, <span class="fl">4.7</span>], arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.2</span>, label<span class="op">=</span><span class="st">""</span>, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb6-97"><a href="#cb6-97"></a><span class="fu">plot!</span>([<span class="fl">8.0</span>, <span class="fl">5.0</span>], [<span class="fl">5.5</span>, <span class="fl">4.7</span>], arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>black, lw<span class="op">=</span><span class="fl">1.2</span>, label<span class="op">=</span><span class="st">""</span>, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb6-98"><a href="#cb6-98"></a></span>
-<span id="cb6-99"><a href="#cb6-99"></a><span class="co"># Feedback arrow "No → back to System Analysis"</span></span>
-<span id="cb6-100"><a href="#cb6-100"></a><span class="fu">plot!</span>([<span class="fl">6.5</span>, <span class="fl">8.5</span>, <span class="fl">8.5</span>, <span class="fl">5.0</span>], [<span class="fl">2.6</span>, <span class="fl">2.6</span>, <span class="fl">7.8</span>, <span class="fl">7.8</span>],</span>
-<span id="cb6-101"><a href="#cb6-101"></a>      arrow<span class="op">=</span><span class="cn">true</span>, color<span class="op">=:</span>crimson, lw<span class="op">=</span><span class="fl">1.5</span>, label<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb6-102"><a href="#cb6-102"></a><span class="fu">annotate!</span>(<span class="fl">7.5</span>, <span class="fl">5.2</span>, <span class="fu">text</span>(<span class="st">"No"</span>, <span class="fl">9</span>, <span class="op">:</span>crimson))</span>
-<span id="cb6-103"><a href="#cb6-103"></a><span class="fu">annotate!</span>(<span class="fl">5.8</span>, <span class="fl">2.6</span>, <span class="fu">text</span>(<span class="st">"Yes"</span>, <span class="fl">9</span>, <span class="op">:</span>forestgreen))</span>
-<span id="cb6-104"><a href="#cb6-104"></a></span>
-<span id="cb6-105"><a href="#cb6-105"></a><span class="co"># Dashed concurrent box</span></span>
-<span id="cb6-106"><a href="#cb6-106"></a><span class="fu">plot!</span>(<span class="fu">Shape</span>([<span class="fl">0.5</span>,<span class="fl">9.5</span>,<span class="fl">9.5</span>,<span class="fl">0.5</span>],[<span class="fl">5.4</span>,<span class="fl">5.4</span>,<span class="fl">6.6</span>,<span class="fl">6.6</span>]),</span>
-<span id="cb6-107"><a href="#cb6-107"></a>      fill<span class="op">=</span><span class="cn">nothing</span>, linecolor<span class="op">=:</span>gray, lw<span class="op">=</span><span class="fl">1.0</span>, linestyle<span class="op">=:</span>dash, label<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb6-108"><a href="#cb6-108"></a><span class="fu">annotate!</span>(<span class="fl">0.5</span>, <span class="fl">5.95</span>, <span class="fu">text</span>(<span class="st">"Concurrent</span><span class="sc">\n</span><span class="st">Opportunity"</span>, <span class="fl">7</span>, <span class="op">:</span>gray, <span class="op">:</span>left))</span>
-<span id="cb6-109"><a href="#cb6-109"></a></span>
-<span id="cb6-110"><a href="#cb6-110"></a>p</span>
-<span id="cb6-111"><a href="#cb6-111"></a><span class="in">```</span></span>
-<span id="cb6-112"><a href="#cb6-112"></a></span>
-<span id="cb6-113"><a href="#cb6-113"></a><span class="fu">## Variable Flow in the Supersonic Business Jet</span></span>
-<span id="cb6-114"><a href="#cb6-114"></a></span>
-<span id="cb6-115"><a href="#cb6-115"></a>@tbl-variables lists the system and coupling variables used in the BLISS-98</span>
-<span id="cb6-116"><a href="#cb6-116"></a>supersonic business jet test case. This variable set is preserved in BLISS-RS.</span>
-<span id="cb6-117"><a href="#cb6-117"></a></span>
-<span id="cb6-118"><a href="#cb6-118"></a><span class="pp">|</span> Variable <span class="pp">|</span> Symbol <span class="pp">|</span> Units <span class="pp">|</span> Type <span class="pp">|</span> Connects to <span class="pp">|</span></span>
-<span id="cb6-119"><a href="#cb6-119"></a><span class="pp">|----------|--------|-------|------|-------------|</span></span>
-<span id="cb6-120"><a href="#cb6-120"></a><span class="pp">|</span> Thickness/chord ratio <span class="pp">|</span> $t/c$ <span class="pp">|</span> — <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
-<span id="cb6-121"><a href="#cb6-121"></a><span class="pp">|</span> Wing aspect ratio <span class="pp">|</span> $AR_w$ <span class="pp">|</span> — <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
-<span id="cb6-122"><a href="#cb6-122"></a><span class="pp">|</span> Wing sweep <span class="pp">|</span> $\Lambda_w$ <span class="pp">|</span> deg <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
-<span id="cb6-123"><a href="#cb6-123"></a><span class="pp">|</span> Wing surface area <span class="pp">|</span> $S_w$ <span class="pp">|</span> ft² <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
-<span id="cb6-124"><a href="#cb6-124"></a><span class="pp">|</span> Tail surface area <span class="pp">|</span> $S_{HT}$ <span class="pp">|</span> ft² <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
-<span id="cb6-125"><a href="#cb6-125"></a><span class="pp">|</span> Tail aspect ratio <span class="pp">|</span> $AR_{HT}$ <span class="pp">|</span> — <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
-<span id="cb6-126"><a href="#cb6-126"></a><span class="pp">|</span> Taper ratio <span class="pp">|</span> $\lambda$ <span class="pp">|</span> — <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
-<span id="cb6-127"><a href="#cb6-127"></a><span class="pp">|</span> Altitude <span class="pp">|</span> $h$ <span class="pp">|</span> ft <span class="pp">|</span> $Z$ <span class="pp">|</span> Aero, Power <span class="pp">|</span></span>
-<span id="cb6-128"><a href="#cb6-128"></a><span class="pp">|</span> Mach number <span class="pp">|</span> $M$ <span class="pp">|</span> — <span class="pp">|</span> $Z$ <span class="pp">|</span> Aero, Power <span class="pp">|</span></span>
-<span id="cb6-129"><a href="#cb6-129"></a><span class="pp">|</span> Lift <span class="pp">|</span> $L$ <span class="pp">|</span> lbf <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Structures ← Aero <span class="pp">|</span></span>
-<span id="cb6-130"><a href="#cb6-130"></a><span class="pp">|</span> Total weight <span class="pp">|</span> $W_T$ <span class="pp">|</span> lbf <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Aero ← Structures <span class="pp">|</span></span>
-<span id="cb6-131"><a href="#cb6-131"></a><span class="pp">|</span> Aeroelastic twist <span class="pp">|</span> $\Omega$ <span class="pp">|</span> ft² <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Aero ← Structures <span class="pp">|</span></span>
-<span id="cb6-132"><a href="#cb6-132"></a><span class="pp">|</span> Drag <span class="pp">|</span> $D$ <span class="pp">|</span> lbf <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Power ← Aero <span class="pp">|</span></span>
-<span id="cb6-133"><a href="#cb6-133"></a><span class="pp">|</span> Engine scale factor <span class="pp">|</span> $ESF$ <span class="pp">|</span> — <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Aero ← Power <span class="pp">|</span></span>
-<span id="cb6-134"><a href="#cb6-134"></a><span class="pp">|</span> Specific fuel consumption <span class="pp">|</span> $SFC$ <span class="pp">|</span> lb/(lbf·hr) <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Performance ← Power <span class="pp">|</span></span>
-<span id="cb6-135"><a href="#cb6-135"></a><span class="pp">|</span> Engine weight <span class="pp">|</span> $W_E$ <span class="pp">|</span> lbf <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Structures ← Power <span class="pp">|</span></span>
-<span id="cb6-136"><a href="#cb6-136"></a><span class="pp">|</span> Fuel weight <span class="pp">|</span> $W_F$ <span class="pp">|</span> lbf <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Performance ← Structures <span class="pp">|</span></span>
-<span id="cb6-137"><a href="#cb6-137"></a><span class="pp">|</span> Lift-to-drag ratio <span class="pp">|</span> $L/D$ <span class="pp">|</span> — <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Performance ← Aero <span class="pp">|</span></span>
-<span id="cb6-138"><a href="#cb6-138"></a></span>
-<span id="cb6-139"><a href="#cb6-139"></a>: System and coupling variables for the supersonic business jet {#tbl-variables}</span>
-<span id="cb6-140"><a href="#cb6-140"></a></span>
-<span id="cb6-141"><a href="#cb6-141"></a><span class="fu">## Subsystem Analyses</span></span>
-<span id="cb6-142"><a href="#cb6-142"></a></span>
-<span id="cb6-143"><a href="#cb6-143"></a><span class="fu">### Structures Black Box (ELAPS)</span></span>
-<span id="cb6-144"><a href="#cb6-144"></a></span>
-<span id="cb6-145"><a href="#cb6-145"></a>The original structures analysis used the *Equivalent Laminated Plate Structures*</span>
-<span id="cb6-146"><a href="#cb6-146"></a>(ELAPS) code <span class="co">[</span><span class="ot">@giles1995elaps; @giles1989elaps2</span><span class="co">]</span>, a Fortran-77 finite-element-like</span>
-<span id="cb6-147"><a href="#cb6-147"></a>code that models wing-box structures using Ritz-based polynomial plate elements.</span>
-<span id="cb6-148"><a href="#cb6-148"></a></span>
-<span id="cb6-149"><a href="#cb6-149"></a>ELAPS takes as inputs the system-level geometric variables plus lift from the</span>
-<span id="cb6-150"><a href="#cb6-150"></a>aerodynamics BB and engine weight from the power BB. It computes structural</span>
-<span id="cb6-151"><a href="#cb6-151"></a>weight and an aeroelastic *twist* term — the reduction in effective lift area (ft²)</span>
-<span id="cb6-152"><a href="#cb6-152"></a>due to the combined bending and twisting deformations of the wing box.</span>
-<span id="cb6-153"><a href="#cb6-153"></a></span>
-<span id="cb6-154"><a href="#cb6-154"></a>The lift distribution along the semi-span was estimated using the **Shrenk</span>
-<span id="cb6-155"><a href="#cb6-155"></a>approximation**: the spanwise lift distribution is the average of an elliptical</span>
-<span id="cb6-156"><a href="#cb6-156"></a>distribution and a trapezoidal distribution that reflects chord taper:</span>
-<span id="cb6-157"><a href="#cb6-157"></a></span>
-<span id="cb6-158"><a href="#cb6-158"></a>$$</span>
-<span id="cb6-159"><a href="#cb6-159"></a>\ell(y) = \frac{1}{2}\left<span class="co">[</span><span class="ot">\ell_{ellipse}(y) + \ell_{trap}(y)\right</span><span class="co">]</span></span>
-<span id="cb6-160"><a href="#cb6-160"></a>$$ {#eq-shrenk}</span>
-<span id="cb6-161"><a href="#cb6-161"></a></span>
-<span id="cb6-164"><a href="#cb6-164"></a><span class="in">```{julia}</span></span>
-<span id="cb6-165"><a href="#cb6-165"></a><span class="co">#| label: fig-shrenk</span></span>
-<span id="cb6-166"><a href="#cb6-166"></a><span class="co">#| fig-cap: "Shrenk lift distribution: average of elliptical and trapezoidal components. Fuselage and tail carry-through effects are neglected. Reproduced from Altus (2002) Fig. 4."</span></span>
-<span id="cb6-167"><a href="#cb6-167"></a><span class="co">#| code-fold: true</span></span>
-<span id="cb6-168"><a href="#cb6-168"></a></span>
-<span id="cb6-169"><a href="#cb6-169"></a>b_semi <span class="op">=</span> <span class="fl">1.0</span>   <span class="co"># normalized semi-span [0, 1]</span></span>
-<span id="cb6-170"><a href="#cb6-170"></a>η <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length<span class="op">=</span><span class="fl">200</span>)</span>
-<span id="cb6-171"><a href="#cb6-171"></a></span>
-<span id="cb6-172"><a href="#cb6-172"></a><span class="co"># Elliptical distribution (normalized)</span></span>
-<span id="cb6-173"><a href="#cb6-173"></a><span class="fu">ℓ_ell</span>(η) <span class="op">=</span> (<span class="fl">4</span><span class="op">/</span><span class="cn">π</span>) <span class="op">*</span> <span class="fu">sqrt</span>(<span class="fu">max</span>(<span class="fl">1</span> <span class="op">-</span> η<span class="op">^</span><span class="fl">2</span>, <span class="fl">0.0</span>))</span>
-<span id="cb6-174"><a href="#cb6-174"></a></span>
-<span id="cb6-175"><a href="#cb6-175"></a><span class="co"># Trapezoidal (chord taper): chord decreases linearly from root to tip</span></span>
-<span id="cb6-176"><a href="#cb6-176"></a>λ_taper <span class="op">=</span> <span class="fl">0.2</span>    <span class="co"># taper ratio</span></span>
-<span id="cb6-177"><a href="#cb6-177"></a><span class="fu">ℓ_trap</span>(η) <span class="op">=</span> <span class="fl">2</span><span class="fu">*</span>(<span class="fl">1</span> <span class="op">-</span> (<span class="fl">1</span><span class="op">-</span>λ_taper)<span class="op">*</span>η) <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> λ_taper)   <span class="co"># normalized</span></span>
-<span id="cb6-178"><a href="#cb6-178"></a></span>
-<span id="cb6-179"><a href="#cb6-179"></a><span class="fu">ℓ_shrenk</span>(η) <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (<span class="fu">ℓ_ell</span>(η) <span class="op">+</span> <span class="fu">ℓ_trap</span>(η))</span>
-<span id="cb6-180"><a href="#cb6-180"></a></span>
-<span id="cb6-181"><a href="#cb6-181"></a>p <span class="op">=</span> <span class="fu">plot</span>(η, <span class="fu">ℓ_ell</span>.(η), lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>steelblue, label<span class="op">=</span><span class="st">"Elliptical"</span>, linestyle<span class="op">=:</span>dash)</span>
-<span id="cb6-182"><a href="#cb6-182"></a><span class="fu">plot!</span>(η, <span class="fu">ℓ_trap</span>.(η), lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>darkorange, label<span class="op">=</span><span class="st">"Trapezoidal (λ=0.2)"</span>, linestyle<span class="op">=:</span>dot)</span>
-<span id="cb6-183"><a href="#cb6-183"></a><span class="fu">plot!</span>(η, <span class="fu">ℓ_shrenk</span>.(η), lw<span class="op">=</span><span class="fl">2.5</span>, color<span class="op">=:</span>crimson, label<span class="op">=</span><span class="st">"Shrenk average"</span>)</span>
-<span id="cb6-184"><a href="#cb6-184"></a><span class="fu">plot!</span>(xlabel<span class="op">=</span>L<span class="st">"Spanwise location </span><span class="sc">$</span><span class="st">\</span>eta<span class="st"> = 2y/b</span><span class="sc">$</span><span class="st">",</span></span>
-<span id="cb6-185"><a href="#cb6-185"></a><span class="st">      </span>ylabel<span class="st">="</span>Normalised lift per unit span<span class="st">",</span></span>
-<span id="cb6-186"><a href="#cb6-186"></a>      title<span class="op">=</span><span class="st">"Shrenk Lift Distribution"</span>,</span>
-<span id="cb6-187"><a href="#cb6-187"></a>      legend<span class="op">=:</span>topright, grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
-<span id="cb6-188"><a href="#cb6-188"></a><span class="in">```</span></span>
-<span id="cb6-189"><a href="#cb6-189"></a></span>
-<span id="cb6-190"><a href="#cb6-190"></a><span class="fu">### Aerodynamics Black Box (AWAVE)</span></span>
-<span id="cb6-191"><a href="#cb6-191"></a></span>
-<span id="cb6-192"><a href="#cb6-192"></a>The aerodynamics BB uses a **Harris wave-drag** model <span class="co">[</span><span class="ot">@harris1964wave</span><span class="co">]</span> modified</span>
-<span id="cb6-193"><a href="#cb6-193"></a>with a pre-processor that deforms the aircraft cross-sectional area distribution</span>
-<span id="cb6-194"><a href="#cb6-194"></a>to account for engine nacelles and applies an area-rule correction. The drag polar</span>
-<span id="cb6-195"><a href="#cb6-195"></a>decomposes total drag into three components:</span>
-<span id="cb6-196"><a href="#cb6-196"></a></span>
-<span id="cb6-197"><a href="#cb6-197"></a>$$</span>
-<span id="cb6-198"><a href="#cb6-198"></a>C_D = C_{D_{min}} + C_{D_L} + C_{D_w}</span>
-<span id="cb6-199"><a href="#cb6-199"></a>$$ {#eq-drag-polar}</span>
-<span id="cb6-200"><a href="#cb6-200"></a></span>
-<span id="cb6-201"><a href="#cb6-201"></a>where $C_{D_{min}}$ is the minimum-drag (friction + form) coefficient,</span>
-<span id="cb6-202"><a href="#cb6-202"></a>$C_{D_L} = C_L^2 / (\pi AR_w e)$ is the induced drag</span>
-<span id="cb6-203"><a href="#cb6-203"></a>(Oswald efficiency $e \approx 0.85$), and $C_{D_w}$ is the supersonic wave drag</span>
-<span id="cb6-204"><a href="#cb6-204"></a>computed from the AWAVE code.</span>
-<span id="cb6-205"><a href="#cb6-205"></a></span>
-<span id="cb6-206"><a href="#cb6-206"></a>At cruise, total lift equals total weight: $L = W_T$, which links the aerodynamics</span>
-<span id="cb6-207"><a href="#cb6-207"></a>and structures BBs through the coupling variable.</span>
-<span id="cb6-208"><a href="#cb6-208"></a></span>
-<span id="cb6-209"><a href="#cb6-209"></a><span class="fu">### Power Black Box</span></span>
-<span id="cb6-210"><a href="#cb6-210"></a></span>
-<span id="cb6-211"><a href="#cb6-211"></a>The power BB is the simplest in the system. It uses an empirical *engine deck</span>
-<span id="cb6-212"><a href="#cb6-212"></a>approximation* — a quadratic polynomial in altitude and Mach number — to compute</span>
-<span id="cb6-213"><a href="#cb6-213"></a>specific fuel consumption (SFC). Engine weight is found from:</span>
-<span id="cb6-214"><a href="#cb6-214"></a></span>
-<span id="cb6-215"><a href="#cb6-215"></a>$$</span>
-<span id="cb6-216"><a href="#cb6-216"></a>W_E = 1200 \cdot ESF^{0.9}</span>
-<span id="cb6-217"><a href="#cb6-217"></a>$$ {#eq-engine-weight}</span>
-<span id="cb6-218"><a href="#cb6-218"></a></span>
-<span id="cb6-219"><a href="#cb6-219"></a>where $ESF$ (engine scale factor) is the ratio of required thrust to the baseline</span>
-<span id="cb6-220"><a href="#cb6-220"></a>engine's maximum thrust. The power BB requires only system variables $h$ and $M$,</span>
-<span id="cb6-221"><a href="#cb6-221"></a>plus drag $D$ from the aerodynamics BB.</span>
-<span id="cb6-222"><a href="#cb6-222"></a></span>
-<span id="cb6-223"><a href="#cb6-223"></a><span class="fu">### Performance Black Box: Breguet Range Equation</span></span>
-<span id="cb6-224"><a href="#cb6-224"></a></span>
-<span id="cb6-225"><a href="#cb6-225"></a>The performance BB closes the loop with the **Breguet range equation** — one of</span>
-<span id="cb6-226"><a href="#cb6-226"></a>the most fundamental relations in aircraft design:</span>
-<span id="cb6-227"><a href="#cb6-227"></a></span>
-<span id="cb6-228"><a href="#cb6-228"></a>$$</span>
-<span id="cb6-229"><a href="#cb6-229"></a>R = \frac{aM}{SFC} \cdot \frac{L}{D} \cdot \ln<span class="sc">\!</span>\left(\frac{W_i}{W_f}\right)</span>
-<span id="cb6-230"><a href="#cb6-230"></a>$$ {#eq-breguet}</span>
-<span id="cb6-231"><a href="#cb6-231"></a></span>
-<span id="cb6-232"><a href="#cb6-232"></a>where $a$ is the speed of sound at cruise altitude, $M$ is the Mach number,</span>
-<span id="cb6-233"><a href="#cb6-233"></a>$L/D$ is the lift-to-drag ratio, and $W_i / W_f$ is the ratio of initial to</span>
-<span id="cb6-234"><a href="#cb6-234"></a>final cruise weight (i.e., how much fuel is burned).</span>
-<span id="cb6-235"><a href="#cb6-235"></a></span>
-<span id="cb6-238"><a href="#cb6-238"></a><span class="in">```{julia}</span></span>
-<span id="cb6-239"><a href="#cb6-239"></a><span class="co">#| label: fig-breguet-sensitivity</span></span>
-<span id="cb6-240"><a href="#cb6-240"></a><span class="co">#| fig-cap: "Breguet range sensitivity to L/D and fuel weight fraction. High L/D and high fuel fraction both contribute significantly to range. The logarithmic fuel term rewards structural efficiency."</span></span>
-<span id="cb6-241"><a href="#cb6-241"></a><span class="co">#| code-fold: true</span></span>
-<span id="cb6-242"><a href="#cb6-242"></a></span>
-<span id="cb6-243"><a href="#cb6-243"></a><span class="im">using</span> <span class="bu">Plots</span></span>
-<span id="cb6-244"><a href="#cb6-244"></a><span class="fu">gr</span>()</span>
-<span id="cb6-245"><a href="#cb6-245"></a></span>
-<span id="cb6-246"><a href="#cb6-246"></a><span class="co"># Parametric Breguet range study</span></span>
-<span id="cb6-247"><a href="#cb6-247"></a><span class="co"># Fix: h = 50,000 ft, M = 1.8, SFC = 1.2 lb/(lbf·hr), WT = 70,000 lbf</span></span>
-<span id="cb6-248"><a href="#cb6-248"></a>h_ft <span class="op">=</span> <span class="fl">50_000.0</span></span>
-<span id="cb6-249"><a href="#cb6-249"></a>M    <span class="op">=</span> <span class="fl">1.8</span></span>
-<span id="cb6-250"><a href="#cb6-250"></a>SFC  <span class="op">=</span> <span class="fl">1.2</span>     <span class="co"># lb/(lbf·hr)</span></span>
-<span id="cb6-251"><a href="#cb6-251"></a>WT   <span class="op">=</span> <span class="fl">70_000.0</span>  <span class="co"># lbf</span></span>
-<span id="cb6-252"><a href="#cb6-252"></a></span>
-<span id="cb6-253"><a href="#cb6-253"></a>LD_range  <span class="op">=</span> <span class="fu">range</span>(<span class="fl">3.0</span>, <span class="fl">10.0</span>, length<span class="op">=</span><span class="fl">50</span>)</span>
-<span id="cb6-254"><a href="#cb6-254"></a>WF_frac   <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0.15</span>, <span class="fl">0.55</span>, length<span class="op">=</span><span class="fl">50</span>)   <span class="co"># WF/WT</span></span>
-<span id="cb6-255"><a href="#cb6-255"></a></span>
-<span id="cb6-256"><a href="#cb6-256"></a><span class="fu">range_nm</span>(LD, wf_frac) <span class="op">=</span> <span class="cf">begin</span></span>
-<span id="cb6-257"><a href="#cb6-257"></a>    _, a <span class="op">=</span> <span class="fu">std_atmosphere</span>(h_ft)</span>
-<span id="cb6-258"><a href="#cb6-258"></a>    a_kts <span class="op">=</span> a <span class="op">/</span> <span class="fl">1.68781</span></span>
-<span id="cb6-259"><a href="#cb6-259"></a>    WF <span class="op">=</span> wf_frac <span class="op">*</span> WT</span>
-<span id="cb6-260"><a href="#cb6-260"></a>    Wf <span class="op">=</span> WT <span class="op">-</span> WF</span>
-<span id="cb6-261"><a href="#cb6-261"></a>    Wf <span class="op">&lt;=</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="cf">return</span> <span class="fl">0.0</span></span>
-<span id="cb6-262"><a href="#cb6-262"></a>    (a_kts <span class="op">*</span> M <span class="op">/</span> SFC) <span class="op">*</span> LD <span class="op">*</span> <span class="fu">log</span>(WT <span class="op">/</span> Wf)</span>
-<span id="cb6-263"><a href="#cb6-263"></a><span class="cf">end</span></span>
-<span id="cb6-264"><a href="#cb6-264"></a></span>
-<span id="cb6-265"><a href="#cb6-265"></a>R_grid <span class="op">=</span> [<span class="fu">range_nm</span>(ld, wf) for wf <span class="kw">in</span> WF_frac, ld <span class="kw">in</span> LD_range]</span>
-<span id="cb6-266"><a href="#cb6-266"></a></span>
-<span id="cb6-267"><a href="#cb6-267"></a><span class="fu">contourf</span>(LD_range, WF_frac, R_grid,</span>
-<span id="cb6-268"><a href="#cb6-268"></a>         xlabel<span class="op">=</span>L<span class="st">"Lift-to-drag ratio </span><span class="sc">$</span>L<span class="st">/D</span><span class="sc">$</span><span class="st">",</span></span>
-<span id="cb6-269"><a href="#cb6-269"></a><span class="st">         </span>ylabel<span class="st">=L"</span>Fuel weight fraction <span class="op">$</span>W_F<span class="op">/</span>W_T<span class="op">$</span><span class="st">",</span></span>
-<span id="cb6-270"><a href="#cb6-270"></a>         title<span class="op">=</span><span class="st">"Breguet Range (NM), M=1.8, h=50,000 ft"</span>,</span>
-<span id="cb6-271"><a href="#cb6-271"></a>         colorbar_title<span class="op">=</span><span class="st">"Range (NM)"</span>,</span>
-<span id="cb6-272"><a href="#cb6-272"></a>         color<span class="op">=:</span>viridis, levels<span class="op">=</span><span class="fl">15</span>,</span>
-<span id="cb6-273"><a href="#cb6-273"></a>         grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.2</span>)</span>
-<span id="cb6-274"><a href="#cb6-274"></a><span class="in">```</span></span>
-<span id="cb6-275"><a href="#cb6-275"></a></span>
-<span id="cb6-276"><a href="#cb6-276"></a><span class="fu">## Illustrative System Analysis</span></span>
-<span id="cb6-277"><a href="#cb6-277"></a></span>
-<span id="cb6-278"><a href="#cb6-278"></a>The Julia implementation in <span class="in">`src/supersonic_jet.jl`</span> provides a coupled system</span>
-<span id="cb6-279"><a href="#cb6-279"></a>analysis that chains all four black boxes. The following example evaluates the</span>
-<span id="cb6-280"><a href="#cb6-280"></a>baseline design from @altus2002blissrs:</span>
-<span id="cb6-281"><a href="#cb6-281"></a></span>
-<span id="cb6-284"><a href="#cb6-284"></a><span class="in">```{julia}</span></span>
-<span id="cb6-285"><a href="#cb6-285"></a><span class="co">#| label: tbl-baseline-analysis</span></span>
-<span id="cb6-286"><a href="#cb6-286"></a><span class="co">#| tbl-cap: "Baseline supersonic business jet analysis at the initial design point from Altus (2002), Table 1."</span></span>
-<span id="cb6-287"><a href="#cb6-287"></a></span>
-<span id="cb6-288"><a href="#cb6-288"></a><span class="co"># Baseline design vector: [t_c, ARw, Λw, Sw, SHT, ARHT, λ]</span></span>
-<span id="cb6-289"><a href="#cb6-289"></a>Z_baseline <span class="op">=</span> [<span class="fl">0.075</span>, <span class="fl">4.0</span>, <span class="fl">45.0</span>, <span class="fl">400.0</span>, <span class="fl">120.0</span>, <span class="fl">4.5</span>, <span class="fl">0.2</span>]</span>
-<span id="cb6-290"><a href="#cb6-290"></a>h_cruise   <span class="op">=</span> <span class="fl">45_000.0</span>   <span class="co"># ft</span></span>
-<span id="cb6-291"><a href="#cb6-291"></a>M_cruise   <span class="op">=</span> <span class="fl">1.8</span></span>
-<span id="cb6-292"><a href="#cb6-292"></a></span>
-<span id="cb6-293"><a href="#cb6-293"></a>result <span class="op">=</span> <span class="fu">ssbj_analysis</span>(Z_baseline, h_cruise, M_cruise;</span>
-<span id="cb6-294"><a href="#cb6-294"></a>                        WF_init<span class="op">=</span><span class="fl">15_000.0</span>, WT_empty<span class="op">=</span><span class="fl">28_000.0</span>)</span>
-<span id="cb6-295"><a href="#cb6-295"></a></span>
-<span id="cb6-296"><a href="#cb6-296"></a>rows <span class="op">=</span> [</span>
-<span id="cb6-297"><a href="#cb6-297"></a>    (<span class="st">"Total weight W_T"</span>,         <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WT)),</span>
-<span id="cb6-298"><a href="#cb6-298"></a>    (<span class="st">"Fuel weight W_F"</span>,          <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WF)),</span>
-<span id="cb6-299"><a href="#cb6-299"></a>    (<span class="st">"Engine scale factor ESF"</span>,  <span class="pp">@sprintf</span>(<span class="st">"%.3f"</span>,      result.ESF)),</span>
-<span id="cb6-300"><a href="#cb6-300"></a>    (<span class="st">"Lift L"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.L)),</span>
-<span id="cb6-301"><a href="#cb6-301"></a>    (<span class="st">"Drag D"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.D)),</span>
-<span id="cb6-302"><a href="#cb6-302"></a>    (<span class="st">"Lift-to-drag ratio L/D"</span>,   <span class="pp">@sprintf</span>(<span class="st">"%.2f"</span>,      result.LD)),</span>
-<span id="cb6-303"><a href="#cb6-303"></a>    (<span class="st">"SFC"</span>,                      <span class="pp">@sprintf</span>(<span class="st">"%.3f lb/(lbf·hr)"</span>, result.SFC)),</span>
-<span id="cb6-304"><a href="#cb6-304"></a>    (<span class="st">"Range"</span>,                    <span class="pp">@sprintf</span>(<span class="st">"%.0f NM"</span>,   result.<span class="dt">Range</span>)),</span>
-<span id="cb6-305"><a href="#cb6-305"></a>]</span>
-<span id="cb6-306"><a href="#cb6-306"></a></span>
-<span id="cb6-307"><a href="#cb6-307"></a><span class="fu">println</span>(<span class="st">"| Quantity | Value |"</span>)</span>
-<span id="cb6-308"><a href="#cb6-308"></a><span class="fu">println</span>(<span class="st">"|----------|-------|"</span>)</span>
-<span id="cb6-309"><a href="#cb6-309"></a><span class="cf">for</span> (name, val) <span class="kw">in</span> rows</span>
-<span id="cb6-310"><a href="#cb6-310"></a>    <span class="fu">println</span>(<span class="st">"| </span><span class="sc">$</span>name<span class="st"> | </span><span class="sc">$</span>val<span class="st"> |"</span>)</span>
-<span id="cb6-311"><a href="#cb6-311"></a><span class="cf">end</span></span>
-<span id="cb6-312"><a href="#cb6-312"></a><span class="in">```</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode numberSource markdown number-lines code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">---</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="an">title:</span><span class="co"> "BLISS-98: System Architecture and Subsystem Analyses"</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="co">---</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="in">```{julia}</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="co">#| include: false</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a><span class="fu">include</span>(<span class="st">"src/bliss_rs.jl"</span>)</span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="fu">include</span>(<span class="st">"src/supersonic_jet.jl"</span>)</span>
+<span id="cb5-11"><a href="#cb5-11"></a><span class="im">using</span> <span class="bu">Printf</span>, <span class="bu">Plots</span>, <span class="bu">LaTeXStrings</span>, <span class="bu">Statistics</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="fu">gr</span>()</span>
+<span id="cb5-13"><a href="#cb5-13"></a><span class="in">```</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a></span>
+<span id="cb5-15"><a href="#cb5-15"></a><span class="fu">## System Architecture</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a></span>
+<span id="cb5-17"><a href="#cb5-17"></a>The BLISS framework begins with a formal decomposition of the full design problem</span>
+<span id="cb5-18"><a href="#cb5-18"></a>into a hierarchy of black boxes. Regardless of which BLISS variant is used,</span>
+<span id="cb5-19"><a href="#cb5-19"></a>the system architecture follows the same three-level structure:</span>
+<span id="cb5-20"><a href="#cb5-20"></a></span>
+<span id="cb5-21"><a href="#cb5-21"></a>**Level 1 — System variables $Z$**: Shared quantities that influence the objective</span>
+<span id="cb5-22"><a href="#cb5-22"></a>or coupling variables across at least two disciplines. In the supersonic business</span>
+<span id="cb5-23"><a href="#cb5-23"></a>jet, wing geometry parameters (aspect ratio, sweep, area) appear as inputs to both</span>
+<span id="cb5-24"><a href="#cb5-24"></a>the structures and aerodynamics black boxes.</span>
+<span id="cb5-25"><a href="#cb5-25"></a></span>
+<span id="cb5-26"><a href="#cb5-26"></a>**Level 2 — Local variables $X$**: Variables private to a single black box.</span>
+<span id="cb5-27"><a href="#cb5-27"></a>Structural skin panel thicknesses, for example, are optimized inside the structures</span>
+<span id="cb5-28"><a href="#cb5-28"></a>BB and never seen by the aerodynamics or power BBs.</span>
+<span id="cb5-29"><a href="#cb5-29"></a></span>
+<span id="cb5-30"><a href="#cb5-30"></a>**Level 3 — Coupling variables $Y^*$ / $Y^A$**: Quantities that flow between</span>
+<span id="cb5-31"><a href="#cb5-31"></a>disciplines. Lift computed by the aerodynamics BB becomes a load input to the</span>
+<span id="cb5-32"><a href="#cb5-32"></a>structures BB; structural weight and twist feed back to the aerodynamics BB.</span>
+<span id="cb5-33"><a href="#cb5-33"></a></span>
+<span id="cb5-34"><a href="#cb5-34"></a>The coupling variables are where the MDO problem is hard. Every coupling variable</span>
+<span id="cb5-35"><a href="#cb5-35"></a>must satisfy a *compatibility constraint*: the value proposed by the system</span>
+<span id="cb5-36"><a href="#cb5-36"></a>optimizer ($Y^*$) must match the value produced by BB analysis ($Y^A$) at</span>
+<span id="cb5-37"><a href="#cb5-37"></a>convergence.</span>
+<span id="cb5-38"><a href="#cb5-38"></a></span>
+<span id="cb5-39"><a href="#cb5-39"></a><span class="fu">## BLISS-98 Cycle</span></span>
+<span id="cb5-40"><a href="#cb5-40"></a></span>
+<span id="cb5-41"><a href="#cb5-41"></a>@fig-bliss98-cycle illustrates the BLISS-98 iteration cycle. After initialization,</span>
+<span id="cb5-42"><a href="#cb5-42"></a>the algorithm alternates between two steps until convergence:</span>
+<span id="cb5-43"><a href="#cb5-43"></a></span>
+<span id="cb5-44"><a href="#cb5-44"></a>**Step 1 — Local optimizations**: Each BB optimizes over its local variables $X$,</span>
+<span id="cb5-45"><a href="#cb5-45"></a>with $Z$ and $Y^*$ held fixed. Because the BBs share no local variables, these</span>
+<span id="cb5-46"><a href="#cb5-46"></a>optimizations are fully independent and can run concurrently.</span>
+<span id="cb5-47"><a href="#cb5-47"></a></span>
+<span id="cb5-48"><a href="#cb5-48"></a>**Step 2 — System optimization**: Using the locally-optimal sensitivity derivatives</span>
+<span id="cb5-49"><a href="#cb5-49"></a>$\partial X^*_{opt} / \partial Z$, the system optimizer updates $Z$ to improve the</span>
+<span id="cb5-50"><a href="#cb5-50"></a>overall objective. The sensitivity analysis in BLISS-98 provides a linear</span>
+<span id="cb5-51"><a href="#cb5-51"></a>approximation $Y = Y(Z)$ near the current system design point.</span>
+<span id="cb5-52"><a href="#cb5-52"></a></span>
+<span id="cb5-55"><a href="#cb5-55"></a><span class="in">```{mermaid}</span></span>
+<span id="cb5-56"><a href="#cb5-56"></a>%%| label: fig-bliss98-cycle</span>
+<span id="cb5-57"><a href="#cb5-57"></a>%%| fig-cap: <span class="ot">"</span><span class="st">BLISS-98 iteration cycle. Concurrent local optimizations (green) run in parallel for each black box, then a single system-level optimization updates the shared design variables Z. Reproduced from Altus &amp; Sobieski (2002).</span><span class="ot">"</span></span>
+<span id="cb5-58"><a href="#cb5-58"></a>%%| fig-width: <span class="fl">4.5</span></span>
+<span id="cb5-59"><a href="#cb5-59"></a></span>
+<span id="cb5-60"><a href="#cb5-60"></a>flowchart TD</span>
+<span id="cb5-61"><a href="#cb5-61"></a>    A([Initialise X, Z])</span>
+<span id="cb5-62"><a href="#cb5-62"></a>    B[<span class="ot">"</span><span class="st">System Analysis &amp;</span><span class="ch">\n</span><span class="st">Sensitivity Derivatives</span><span class="ot">"</span>]</span>
+<span id="cb5-63"><a href="#cb5-63"></a>    D[<span class="ot">"</span><span class="st">System</span><span class="ch">\n</span><span class="st">Optimisation</span><span class="ch">\n</span><span class="st">Update Z</span><span class="ot">"</span>]</span>
+<span id="cb5-64"><a href="#cb5-64"></a>    E{Converged?}</span>
+<span id="cb5-65"><a href="#cb5-65"></a>    F([Stop])</span>
+<span id="cb5-66"><a href="#cb5-66"></a></span>
+<span id="cb5-67"><a href="#cb5-67"></a>    A --&gt; B</span>
+<span id="cb5-68"><a href="#cb5-68"></a>    B --&gt; BB1 &amp; BB2 &amp; BBn</span>
+<span id="cb5-69"><a href="#cb5-69"></a>    BB1 &amp; BB2 &amp; BBn --&gt; D</span>
+<span id="cb5-70"><a href="#cb5-70"></a>    D --&gt; E</span>
+<span id="cb5-71"><a href="#cb5-71"></a>    E -- Yes --&gt; F</span>
+<span id="cb5-72"><a href="#cb5-72"></a>    E -- No --&gt; B</span>
+<span id="cb5-73"><a href="#cb5-73"></a></span>
+<span id="cb5-74"><a href="#cb5-74"></a>    subgraph con [<span class="ot">"</span><span class="st">  Concurrent opportunity  </span><span class="ot">"</span>]</span>
+<span id="cb5-75"><a href="#cb5-75"></a>        BB1[<span class="ot">"</span><span class="st">BB₁  Local</span><span class="ch">\n</span><span class="st">Optimisation</span><span class="ot">"</span>]</span>
+<span id="cb5-76"><a href="#cb5-76"></a>        BB2[<span class="ot">"</span><span class="st">BB₂  Local</span><span class="ch">\n</span><span class="st">Optimisation</span><span class="ot">"</span>]</span>
+<span id="cb5-77"><a href="#cb5-77"></a>        BBn[<span class="ot">"</span><span class="st">BBₙ  Local</span><span class="ch">\n</span><span class="st">Optimisation</span><span class="ot">"</span>]</span>
+<span id="cb5-78"><a href="#cb5-78"></a>    end</span>
+<span id="cb5-79"><a href="#cb5-79"></a></span>
+<span id="cb5-80"><a href="#cb5-80"></a>    classDef init  fill:<span class="co">#dbeafe,stroke:#3b82f6,stroke-width:1.5px,color:#1e3a5f</span></span>
+<span id="cb5-81"><a href="#cb5-81"></a>    classDef proc  fill:<span class="co">#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#422006</span></span>
+<span id="cb5-82"><a href="#cb5-82"></a>    classDef bb    fill:<span class="co">#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d</span></span>
+<span id="cb5-83"><a href="#cb5-83"></a>    classDef done  fill:<span class="co">#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#14532d</span></span>
+<span id="cb5-84"><a href="#cb5-84"></a>    classDef dec   fill:<span class="co">#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#422006</span></span>
+<span id="cb5-85"><a href="#cb5-85"></a></span>
+<span id="cb5-86"><a href="#cb5-86"></a>    class A init</span>
+<span id="cb5-87"><a href="#cb5-87"></a>    class B,D proc</span>
+<span id="cb5-88"><a href="#cb5-88"></a>    class BB1,BB2,BBn bb</span>
+<span id="cb5-89"><a href="#cb5-89"></a>    class F done</span>
+<span id="cb5-90"><a href="#cb5-90"></a>    class E dec</span>
+<span id="cb5-91"><a href="#cb5-91"></a><span class="in">```</span></span>
+<span id="cb5-92"><a href="#cb5-92"></a></span>
+<span id="cb5-93"><a href="#cb5-93"></a><span class="fu">## Variable Flow in the Supersonic Business Jet</span></span>
+<span id="cb5-94"><a href="#cb5-94"></a></span>
+<span id="cb5-95"><a href="#cb5-95"></a>@tbl-variables lists the system and coupling variables used in the BLISS-98</span>
+<span id="cb5-96"><a href="#cb5-96"></a>supersonic business jet test case. This variable set is preserved in BLISS-RS.</span>
+<span id="cb5-97"><a href="#cb5-97"></a></span>
+<span id="cb5-98"><a href="#cb5-98"></a><span class="pp">|</span> Variable <span class="pp">|</span> Symbol <span class="pp">|</span> Units <span class="pp">|</span> Type <span class="pp">|</span> Connects to <span class="pp">|</span></span>
+<span id="cb5-99"><a href="#cb5-99"></a><span class="pp">|----------|--------|-------|------|-------------|</span></span>
+<span id="cb5-100"><a href="#cb5-100"></a><span class="pp">|</span> Thickness/chord ratio <span class="pp">|</span> $t/c$ <span class="pp">|</span> — <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
+<span id="cb5-101"><a href="#cb5-101"></a><span class="pp">|</span> Wing aspect ratio <span class="pp">|</span> $AR_w$ <span class="pp">|</span> — <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
+<span id="cb5-102"><a href="#cb5-102"></a><span class="pp">|</span> Wing sweep <span class="pp">|</span> $\Lambda_w$ <span class="pp">|</span> deg <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
+<span id="cb5-103"><a href="#cb5-103"></a><span class="pp">|</span> Wing surface area <span class="pp">|</span> $S_w$ <span class="pp">|</span> ft² <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
+<span id="cb5-104"><a href="#cb5-104"></a><span class="pp">|</span> Tail surface area <span class="pp">|</span> $S_{HT}$ <span class="pp">|</span> ft² <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
+<span id="cb5-105"><a href="#cb5-105"></a><span class="pp">|</span> Tail aspect ratio <span class="pp">|</span> $AR_{HT}$ <span class="pp">|</span> — <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
+<span id="cb5-106"><a href="#cb5-106"></a><span class="pp">|</span> Taper ratio <span class="pp">|</span> $\lambda$ <span class="pp">|</span> — <span class="pp">|</span> $Z$ <span class="pp">|</span> Structures, Aero <span class="pp">|</span></span>
+<span id="cb5-107"><a href="#cb5-107"></a><span class="pp">|</span> Altitude <span class="pp">|</span> $h$ <span class="pp">|</span> ft <span class="pp">|</span> $Z$ <span class="pp">|</span> Aero, Power <span class="pp">|</span></span>
+<span id="cb5-108"><a href="#cb5-108"></a><span class="pp">|</span> Mach number <span class="pp">|</span> $M$ <span class="pp">|</span> — <span class="pp">|</span> $Z$ <span class="pp">|</span> Aero, Power <span class="pp">|</span></span>
+<span id="cb5-109"><a href="#cb5-109"></a><span class="pp">|</span> Lift <span class="pp">|</span> $L$ <span class="pp">|</span> lbf <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Structures ← Aero <span class="pp">|</span></span>
+<span id="cb5-110"><a href="#cb5-110"></a><span class="pp">|</span> Total weight <span class="pp">|</span> $W_T$ <span class="pp">|</span> lbf <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Aero ← Structures <span class="pp">|</span></span>
+<span id="cb5-111"><a href="#cb5-111"></a><span class="pp">|</span> Aeroelastic twist <span class="pp">|</span> $\Omega$ <span class="pp">|</span> ft² <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Aero ← Structures <span class="pp">|</span></span>
+<span id="cb5-112"><a href="#cb5-112"></a><span class="pp">|</span> Drag <span class="pp">|</span> $D$ <span class="pp">|</span> lbf <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Power ← Aero <span class="pp">|</span></span>
+<span id="cb5-113"><a href="#cb5-113"></a><span class="pp">|</span> Engine scale factor <span class="pp">|</span> $ESF$ <span class="pp">|</span> — <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Aero ← Power <span class="pp">|</span></span>
+<span id="cb5-114"><a href="#cb5-114"></a><span class="pp">|</span> Specific fuel consumption <span class="pp">|</span> $SFC$ <span class="pp">|</span> lb/(lbf·hr) <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Performance ← Power <span class="pp">|</span></span>
+<span id="cb5-115"><a href="#cb5-115"></a><span class="pp">|</span> Engine weight <span class="pp">|</span> $W_E$ <span class="pp">|</span> lbf <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Structures ← Power <span class="pp">|</span></span>
+<span id="cb5-116"><a href="#cb5-116"></a><span class="pp">|</span> Fuel weight <span class="pp">|</span> $W_F$ <span class="pp">|</span> lbf <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Performance ← Structures <span class="pp">|</span></span>
+<span id="cb5-117"><a href="#cb5-117"></a><span class="pp">|</span> Lift-to-drag ratio <span class="pp">|</span> $L/D$ <span class="pp">|</span> — <span class="pp">|</span> $Y^A$ <span class="pp">|</span> Performance ← Aero <span class="pp">|</span></span>
+<span id="cb5-118"><a href="#cb5-118"></a></span>
+<span id="cb5-119"><a href="#cb5-119"></a>: System and coupling variables for the supersonic business jet {#tbl-variables}</span>
+<span id="cb5-120"><a href="#cb5-120"></a></span>
+<span id="cb5-121"><a href="#cb5-121"></a><span class="fu">## Subsystem Analyses</span></span>
+<span id="cb5-122"><a href="#cb5-122"></a></span>
+<span id="cb5-123"><a href="#cb5-123"></a><span class="fu">### Structures Black Box (ELAPS)</span></span>
+<span id="cb5-124"><a href="#cb5-124"></a></span>
+<span id="cb5-125"><a href="#cb5-125"></a>The original structures analysis used the *Equivalent Laminated Plate Structures*</span>
+<span id="cb5-126"><a href="#cb5-126"></a>(ELAPS) code <span class="co">[</span><span class="ot">@giles1995elaps; @giles1989elaps2</span><span class="co">]</span>, a Fortran-77 finite-element-like</span>
+<span id="cb5-127"><a href="#cb5-127"></a>code that models wing-box structures using Ritz-based polynomial plate elements.</span>
+<span id="cb5-128"><a href="#cb5-128"></a></span>
+<span id="cb5-129"><a href="#cb5-129"></a>ELAPS takes as inputs the system-level geometric variables plus lift from the</span>
+<span id="cb5-130"><a href="#cb5-130"></a>aerodynamics BB and engine weight from the power BB. It computes structural</span>
+<span id="cb5-131"><a href="#cb5-131"></a>weight and an aeroelastic *twist* term — the reduction in effective lift area (ft²)</span>
+<span id="cb5-132"><a href="#cb5-132"></a>due to the combined bending and twisting deformations of the wing box.</span>
+<span id="cb5-133"><a href="#cb5-133"></a></span>
+<span id="cb5-134"><a href="#cb5-134"></a>The lift distribution along the semi-span was estimated using the **Shrenk</span>
+<span id="cb5-135"><a href="#cb5-135"></a>approximation**: the spanwise lift distribution is the average of an elliptical</span>
+<span id="cb5-136"><a href="#cb5-136"></a>distribution and a trapezoidal distribution that reflects chord taper:</span>
+<span id="cb5-137"><a href="#cb5-137"></a></span>
+<span id="cb5-138"><a href="#cb5-138"></a>$$</span>
+<span id="cb5-139"><a href="#cb5-139"></a>\ell(y) = \frac{1}{2}\left<span class="co">[</span><span class="ot">\ell_{ellipse}(y) + \ell_{trap}(y)\right</span><span class="co">]</span></span>
+<span id="cb5-140"><a href="#cb5-140"></a>$$ {#eq-shrenk}</span>
+<span id="cb5-141"><a href="#cb5-141"></a></span>
+<span id="cb5-144"><a href="#cb5-144"></a><span class="in">```{julia}</span></span>
+<span id="cb5-145"><a href="#cb5-145"></a><span class="co">#| label: fig-shrenk</span></span>
+<span id="cb5-146"><a href="#cb5-146"></a><span class="co">#| fig-cap: "Shrenk lift distribution: average of elliptical and trapezoidal components. Fuselage and tail carry-through effects are neglected. Reproduced from Altus (2002) Fig. 4."</span></span>
+<span id="cb5-147"><a href="#cb5-147"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb5-148"><a href="#cb5-148"></a></span>
+<span id="cb5-149"><a href="#cb5-149"></a>b_semi <span class="op">=</span> <span class="fl">1.0</span>   <span class="co"># normalized semi-span [0, 1]</span></span>
+<span id="cb5-150"><a href="#cb5-150"></a>η <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0</span>, <span class="fl">1</span>, length<span class="op">=</span><span class="fl">200</span>)</span>
+<span id="cb5-151"><a href="#cb5-151"></a></span>
+<span id="cb5-152"><a href="#cb5-152"></a><span class="co"># Elliptical distribution (normalized)</span></span>
+<span id="cb5-153"><a href="#cb5-153"></a><span class="fu">ℓ_ell</span>(η) <span class="op">=</span> (<span class="fl">4</span><span class="op">/</span><span class="cn">π</span>) <span class="op">*</span> <span class="fu">sqrt</span>(<span class="fu">max</span>(<span class="fl">1</span> <span class="op">-</span> η<span class="op">^</span><span class="fl">2</span>, <span class="fl">0.0</span>))</span>
+<span id="cb5-154"><a href="#cb5-154"></a></span>
+<span id="cb5-155"><a href="#cb5-155"></a><span class="co"># Trapezoidal (chord taper): chord decreases linearly from root to tip</span></span>
+<span id="cb5-156"><a href="#cb5-156"></a>λ_taper <span class="op">=</span> <span class="fl">0.2</span>    <span class="co"># taper ratio</span></span>
+<span id="cb5-157"><a href="#cb5-157"></a><span class="fu">ℓ_trap</span>(η) <span class="op">=</span> <span class="fl">2</span><span class="fu">*</span>(<span class="fl">1</span> <span class="op">-</span> (<span class="fl">1</span><span class="op">-</span>λ_taper)<span class="op">*</span>η) <span class="op">/</span> (<span class="fl">1</span> <span class="op">+</span> λ_taper)   <span class="co"># normalized</span></span>
+<span id="cb5-158"><a href="#cb5-158"></a></span>
+<span id="cb5-159"><a href="#cb5-159"></a><span class="fu">ℓ_shrenk</span>(η) <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> (<span class="fu">ℓ_ell</span>(η) <span class="op">+</span> <span class="fu">ℓ_trap</span>(η))</span>
+<span id="cb5-160"><a href="#cb5-160"></a></span>
+<span id="cb5-161"><a href="#cb5-161"></a>p <span class="op">=</span> <span class="fu">plot</span>(η, <span class="fu">ℓ_ell</span>.(η), lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>steelblue, label<span class="op">=</span><span class="st">"Elliptical"</span>, linestyle<span class="op">=:</span>dash)</span>
+<span id="cb5-162"><a href="#cb5-162"></a><span class="fu">plot!</span>(η, <span class="fu">ℓ_trap</span>.(η), lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>darkorange, label<span class="op">=</span><span class="st">"Trapezoidal (λ=0.2)"</span>, linestyle<span class="op">=:</span>dot)</span>
+<span id="cb5-163"><a href="#cb5-163"></a><span class="fu">plot!</span>(η, <span class="fu">ℓ_shrenk</span>.(η), lw<span class="op">=</span><span class="fl">2.5</span>, color<span class="op">=:</span>crimson, label<span class="op">=</span><span class="st">"Shrenk average"</span>)</span>
+<span id="cb5-164"><a href="#cb5-164"></a><span class="fu">plot!</span>(xlabel<span class="op">=</span>L<span class="st">"Spanwise location </span><span class="sc">$</span><span class="st">\</span>eta<span class="st"> = 2y/b</span><span class="sc">$</span><span class="st">",</span></span>
+<span id="cb5-165"><a href="#cb5-165"></a><span class="st">      </span>ylabel<span class="st">="</span>Normalised lift per unit span<span class="st">",</span></span>
+<span id="cb5-166"><a href="#cb5-166"></a>      title<span class="op">=</span><span class="st">"Shrenk Lift Distribution"</span>,</span>
+<span id="cb5-167"><a href="#cb5-167"></a>      legend<span class="op">=:</span>topright, grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb5-168"><a href="#cb5-168"></a><span class="in">```</span></span>
+<span id="cb5-169"><a href="#cb5-169"></a></span>
+<span id="cb5-170"><a href="#cb5-170"></a><span class="fu">### Aerodynamics Black Box (AWAVE)</span></span>
+<span id="cb5-171"><a href="#cb5-171"></a></span>
+<span id="cb5-172"><a href="#cb5-172"></a>The aerodynamics BB uses a **Harris wave-drag** model <span class="co">[</span><span class="ot">@harris1964wave</span><span class="co">]</span> modified</span>
+<span id="cb5-173"><a href="#cb5-173"></a>with a pre-processor that deforms the aircraft cross-sectional area distribution</span>
+<span id="cb5-174"><a href="#cb5-174"></a>to account for engine nacelles and applies an area-rule correction. The drag polar</span>
+<span id="cb5-175"><a href="#cb5-175"></a>decomposes total drag into three components:</span>
+<span id="cb5-176"><a href="#cb5-176"></a></span>
+<span id="cb5-177"><a href="#cb5-177"></a>$$</span>
+<span id="cb5-178"><a href="#cb5-178"></a>C_D = C_{D_{min}} + C_{D_L} + C_{D_w}</span>
+<span id="cb5-179"><a href="#cb5-179"></a>$$ {#eq-drag-polar}</span>
+<span id="cb5-180"><a href="#cb5-180"></a></span>
+<span id="cb5-181"><a href="#cb5-181"></a>where $C_{D_{min}}$ is the minimum-drag (friction + form) coefficient,</span>
+<span id="cb5-182"><a href="#cb5-182"></a>$C_{D_L} = C_L^2 / (\pi AR_w e)$ is the induced drag</span>
+<span id="cb5-183"><a href="#cb5-183"></a>(Oswald efficiency $e \approx 0.85$), and $C_{D_w}$ is the supersonic wave drag</span>
+<span id="cb5-184"><a href="#cb5-184"></a>computed from the AWAVE code.</span>
+<span id="cb5-185"><a href="#cb5-185"></a></span>
+<span id="cb5-186"><a href="#cb5-186"></a>At cruise, total lift equals total weight: $L = W_T$, which links the aerodynamics</span>
+<span id="cb5-187"><a href="#cb5-187"></a>and structures BBs through the coupling variable.</span>
+<span id="cb5-188"><a href="#cb5-188"></a></span>
+<span id="cb5-189"><a href="#cb5-189"></a><span class="fu">### Power Black Box</span></span>
+<span id="cb5-190"><a href="#cb5-190"></a></span>
+<span id="cb5-191"><a href="#cb5-191"></a>The power BB is the simplest in the system. It uses an empirical *engine deck</span>
+<span id="cb5-192"><a href="#cb5-192"></a>approximation* — a quadratic polynomial in altitude and Mach number — to compute</span>
+<span id="cb5-193"><a href="#cb5-193"></a>specific fuel consumption (SFC). Engine weight is found from:</span>
+<span id="cb5-194"><a href="#cb5-194"></a></span>
+<span id="cb5-195"><a href="#cb5-195"></a>$$</span>
+<span id="cb5-196"><a href="#cb5-196"></a>W_E = 1200 \cdot ESF^{0.9}</span>
+<span id="cb5-197"><a href="#cb5-197"></a>$$ {#eq-engine-weight}</span>
+<span id="cb5-198"><a href="#cb5-198"></a></span>
+<span id="cb5-199"><a href="#cb5-199"></a>where $ESF$ (engine scale factor) is the ratio of required thrust to the baseline</span>
+<span id="cb5-200"><a href="#cb5-200"></a>engine's maximum thrust. The power BB requires only system variables $h$ and $M$,</span>
+<span id="cb5-201"><a href="#cb5-201"></a>plus drag $D$ from the aerodynamics BB.</span>
+<span id="cb5-202"><a href="#cb5-202"></a></span>
+<span id="cb5-203"><a href="#cb5-203"></a><span class="fu">### Performance Black Box: Breguet Range Equation</span></span>
+<span id="cb5-204"><a href="#cb5-204"></a></span>
+<span id="cb5-205"><a href="#cb5-205"></a>The performance BB closes the loop with the **Breguet range equation** — one of</span>
+<span id="cb5-206"><a href="#cb5-206"></a>the most fundamental relations in aircraft design:</span>
+<span id="cb5-207"><a href="#cb5-207"></a></span>
+<span id="cb5-208"><a href="#cb5-208"></a>$$</span>
+<span id="cb5-209"><a href="#cb5-209"></a>R = \frac{aM}{SFC} \cdot \frac{L}{D} \cdot \ln<span class="sc">\!</span>\left(\frac{W_i}{W_f}\right)</span>
+<span id="cb5-210"><a href="#cb5-210"></a>$$ {#eq-breguet}</span>
+<span id="cb5-211"><a href="#cb5-211"></a></span>
+<span id="cb5-212"><a href="#cb5-212"></a>where $a$ is the speed of sound at cruise altitude, $M$ is the Mach number,</span>
+<span id="cb5-213"><a href="#cb5-213"></a>$L/D$ is the lift-to-drag ratio, and $W_i / W_f$ is the ratio of initial to</span>
+<span id="cb5-214"><a href="#cb5-214"></a>final cruise weight (i.e., how much fuel is burned).</span>
+<span id="cb5-215"><a href="#cb5-215"></a></span>
+<span id="cb5-218"><a href="#cb5-218"></a><span class="in">```{julia}</span></span>
+<span id="cb5-219"><a href="#cb5-219"></a><span class="co">#| label: fig-breguet-sensitivity</span></span>
+<span id="cb5-220"><a href="#cb5-220"></a><span class="co">#| fig-cap: "Breguet range sensitivity to L/D and fuel weight fraction. High L/D and high fuel fraction both contribute significantly to range. The logarithmic fuel term rewards structural efficiency."</span></span>
+<span id="cb5-221"><a href="#cb5-221"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb5-222"><a href="#cb5-222"></a></span>
+<span id="cb5-223"><a href="#cb5-223"></a><span class="im">using</span> <span class="bu">Plots</span></span>
+<span id="cb5-224"><a href="#cb5-224"></a><span class="fu">gr</span>()</span>
+<span id="cb5-225"><a href="#cb5-225"></a></span>
+<span id="cb5-226"><a href="#cb5-226"></a><span class="co"># Parametric Breguet range study</span></span>
+<span id="cb5-227"><a href="#cb5-227"></a><span class="co"># Fix: h = 50,000 ft, M = 1.8, SFC = 1.2 lb/(lbf·hr), WT = 70,000 lbf</span></span>
+<span id="cb5-228"><a href="#cb5-228"></a>h_ft <span class="op">=</span> <span class="fl">50_000.0</span></span>
+<span id="cb5-229"><a href="#cb5-229"></a>M    <span class="op">=</span> <span class="fl">1.8</span></span>
+<span id="cb5-230"><a href="#cb5-230"></a>SFC  <span class="op">=</span> <span class="fl">1.2</span>     <span class="co"># lb/(lbf·hr)</span></span>
+<span id="cb5-231"><a href="#cb5-231"></a>WT   <span class="op">=</span> <span class="fl">70_000.0</span>  <span class="co"># lbf</span></span>
+<span id="cb5-232"><a href="#cb5-232"></a></span>
+<span id="cb5-233"><a href="#cb5-233"></a>LD_range  <span class="op">=</span> <span class="fu">range</span>(<span class="fl">3.0</span>, <span class="fl">10.0</span>, length<span class="op">=</span><span class="fl">50</span>)</span>
+<span id="cb5-234"><a href="#cb5-234"></a>WF_frac   <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0.15</span>, <span class="fl">0.55</span>, length<span class="op">=</span><span class="fl">50</span>)   <span class="co"># WF/WT</span></span>
+<span id="cb5-235"><a href="#cb5-235"></a></span>
+<span id="cb5-236"><a href="#cb5-236"></a><span class="fu">range_nm</span>(LD, wf_frac) <span class="op">=</span> <span class="cf">begin</span></span>
+<span id="cb5-237"><a href="#cb5-237"></a>    _, a <span class="op">=</span> <span class="fu">std_atmosphere</span>(h_ft)</span>
+<span id="cb5-238"><a href="#cb5-238"></a>    a_kts <span class="op">=</span> a <span class="op">/</span> <span class="fl">1.68781</span></span>
+<span id="cb5-239"><a href="#cb5-239"></a>    WF <span class="op">=</span> wf_frac <span class="op">*</span> WT</span>
+<span id="cb5-240"><a href="#cb5-240"></a>    Wf <span class="op">=</span> WT <span class="op">-</span> WF</span>
+<span id="cb5-241"><a href="#cb5-241"></a>    Wf <span class="op">&lt;=</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="cf">return</span> <span class="fl">0.0</span></span>
+<span id="cb5-242"><a href="#cb5-242"></a>    (a_kts <span class="op">*</span> M <span class="op">/</span> SFC) <span class="op">*</span> LD <span class="op">*</span> <span class="fu">log</span>(WT <span class="op">/</span> Wf)</span>
+<span id="cb5-243"><a href="#cb5-243"></a><span class="cf">end</span></span>
+<span id="cb5-244"><a href="#cb5-244"></a></span>
+<span id="cb5-245"><a href="#cb5-245"></a>R_grid <span class="op">=</span> [<span class="fu">range_nm</span>(ld, wf) for wf <span class="kw">in</span> WF_frac, ld <span class="kw">in</span> LD_range]</span>
+<span id="cb5-246"><a href="#cb5-246"></a></span>
+<span id="cb5-247"><a href="#cb5-247"></a><span class="fu">contourf</span>(LD_range, WF_frac, R_grid,</span>
+<span id="cb5-248"><a href="#cb5-248"></a>         xlabel<span class="op">=</span>L<span class="st">"Lift-to-drag ratio </span><span class="sc">$</span>L<span class="st">/D</span><span class="sc">$</span><span class="st">",</span></span>
+<span id="cb5-249"><a href="#cb5-249"></a><span class="st">         </span>ylabel<span class="st">=L"</span>Fuel weight fraction <span class="op">$</span>W_F<span class="op">/</span>W_T<span class="op">$</span><span class="st">",</span></span>
+<span id="cb5-250"><a href="#cb5-250"></a>         title<span class="op">=</span><span class="st">"Breguet Range (NM), M=1.8, h=50,000 ft"</span>,</span>
+<span id="cb5-251"><a href="#cb5-251"></a>         colorbar_title<span class="op">=</span><span class="st">"Range (NM)"</span>,</span>
+<span id="cb5-252"><a href="#cb5-252"></a>         color<span class="op">=:</span>viridis, levels<span class="op">=</span><span class="fl">15</span>,</span>
+<span id="cb5-253"><a href="#cb5-253"></a>         grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb5-254"><a href="#cb5-254"></a><span class="in">```</span></span>
+<span id="cb5-255"><a href="#cb5-255"></a></span>
+<span id="cb5-256"><a href="#cb5-256"></a><span class="fu">## Illustrative System Analysis</span></span>
+<span id="cb5-257"><a href="#cb5-257"></a></span>
+<span id="cb5-258"><a href="#cb5-258"></a>The Julia implementation in <span class="in">`src/supersonic_jet.jl`</span> provides a coupled system</span>
+<span id="cb5-259"><a href="#cb5-259"></a>analysis that chains all four black boxes. The following example evaluates the</span>
+<span id="cb5-260"><a href="#cb5-260"></a>baseline design from @altus2002blissrs:</span>
+<span id="cb5-261"><a href="#cb5-261"></a></span>
+<span id="cb5-264"><a href="#cb5-264"></a><span class="in">```{julia}</span></span>
+<span id="cb5-265"><a href="#cb5-265"></a><span class="co">#| label: tbl-baseline-analysis</span></span>
+<span id="cb5-266"><a href="#cb5-266"></a><span class="co">#| tbl-cap: "Baseline supersonic business jet analysis at the initial design point from Altus (2002), Table 1."</span></span>
+<span id="cb5-267"><a href="#cb5-267"></a></span>
+<span id="cb5-268"><a href="#cb5-268"></a><span class="co"># Baseline design vector: [t_c, ARw, Λw, Sw, SHT, ARHT, λ]</span></span>
+<span id="cb5-269"><a href="#cb5-269"></a>Z_baseline <span class="op">=</span> [<span class="fl">0.075</span>, <span class="fl">4.0</span>, <span class="fl">45.0</span>, <span class="fl">400.0</span>, <span class="fl">120.0</span>, <span class="fl">4.5</span>, <span class="fl">0.2</span>]</span>
+<span id="cb5-270"><a href="#cb5-270"></a>h_cruise   <span class="op">=</span> <span class="fl">45_000.0</span>   <span class="co"># ft</span></span>
+<span id="cb5-271"><a href="#cb5-271"></a>M_cruise   <span class="op">=</span> <span class="fl">1.8</span></span>
+<span id="cb5-272"><a href="#cb5-272"></a></span>
+<span id="cb5-273"><a href="#cb5-273"></a>result <span class="op">=</span> <span class="fu">ssbj_analysis</span>(Z_baseline, h_cruise, M_cruise;</span>
+<span id="cb5-274"><a href="#cb5-274"></a>                        WF_init<span class="op">=</span><span class="fl">15_000.0</span>, WT_empty<span class="op">=</span><span class="fl">28_000.0</span>)</span>
+<span id="cb5-275"><a href="#cb5-275"></a></span>
+<span id="cb5-276"><a href="#cb5-276"></a>rows <span class="op">=</span> [</span>
+<span id="cb5-277"><a href="#cb5-277"></a>    (<span class="st">"Total weight W_T"</span>,         <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WT)),</span>
+<span id="cb5-278"><a href="#cb5-278"></a>    (<span class="st">"Fuel weight W_F"</span>,          <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WF)),</span>
+<span id="cb5-279"><a href="#cb5-279"></a>    (<span class="st">"Engine scale factor ESF"</span>,  <span class="pp">@sprintf</span>(<span class="st">"%.3f"</span>,      result.ESF)),</span>
+<span id="cb5-280"><a href="#cb5-280"></a>    (<span class="st">"Lift L"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.L)),</span>
+<span id="cb5-281"><a href="#cb5-281"></a>    (<span class="st">"Drag D"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.D)),</span>
+<span id="cb5-282"><a href="#cb5-282"></a>    (<span class="st">"Lift-to-drag ratio L/D"</span>,   <span class="pp">@sprintf</span>(<span class="st">"%.2f"</span>,      result.LD)),</span>
+<span id="cb5-283"><a href="#cb5-283"></a>    (<span class="st">"SFC"</span>,                      <span class="pp">@sprintf</span>(<span class="st">"%.3f lb/(lbf·hr)"</span>, result.SFC)),</span>
+<span id="cb5-284"><a href="#cb5-284"></a>    (<span class="st">"Range"</span>,                    <span class="pp">@sprintf</span>(<span class="st">"%.0f NM"</span>,   result.<span class="dt">Range</span>)),</span>
+<span id="cb5-285"><a href="#cb5-285"></a>]</span>
+<span id="cb5-286"><a href="#cb5-286"></a></span>
+<span id="cb5-287"><a href="#cb5-287"></a><span class="fu">println</span>(<span class="st">"| Quantity | Value |"</span>)</span>
+<span id="cb5-288"><a href="#cb5-288"></a><span class="fu">println</span>(<span class="st">"|----------|-------|"</span>)</span>
+<span id="cb5-289"><a href="#cb5-289"></a><span class="cf">for</span> (name, val) <span class="kw">in</span> rows</span>
+<span id="cb5-290"><a href="#cb5-290"></a>    <span class="fu">println</span>(<span class="st">"| </span><span class="sc">$</span>name<span class="st"> | </span><span class="sc">$</span>val<span class="st"> |"</span>)</span>
+<span id="cb5-291"><a href="#cb5-291"></a><span class="cf">end</span></span>
+<span id="cb5-292"><a href="#cb5-292"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
