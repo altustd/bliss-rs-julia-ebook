@@ -1,0 +1,99 @@
+---
+title: "Preface"
+---
+
+# About This Book {.unnumbered}
+
+This ebook is a scholarly recreation and extension of a Master's thesis completed
+at George Washington University in 2002, under the joint supervision of Dr. Jaroslaw
+Sobieszczanski-Sobieski at NASA Langley Research Center. The original report was
+published as NASA Contractor Report NASA/CR-2002-211652 [@altus2002blissrs].
+
+The thesis introduced a response-surface-based variant of the *Bi-Level Integrated
+System Synthesis* (BLISS) multidisciplinary design optimization framework. Where
+earlier BLISS implementations relied on gradient-guided sensitivity derivatives to
+couple subsystem and system-level optimizations, BLISS-RS replaces those derivatives
+with quadratic response surface (RS) surrogate models. The result is an autonomous,
+decomposition-based MDO algorithm well-suited to parallel and distributed computing
+environments.
+
+## What This Book Adds
+
+This recreation does more than transcribe the original work. Each chapter includes:
+
+- **Executable Julia code** — all algorithms are implemented from scratch in
+  modern Julia, a high-performance scientific computing language. Readers can
+  run, modify, and extend every example directly.
+- **Interactive visualizations** — optimization histories, response surface plots,
+  and design space explorations are rendered as publication-quality figures.
+- **Modern extensions** (Chapter 9) — Gaussian process surrogates (Kriging),
+  Bayesian optimization, and Julia's native parallelism are discussed as natural
+  evolutions of the BLISS-RS framework.
+- **SRM application** (Chapter 10) — a complete new application of BLISS-RS to the
+  conceptual design of a solid propellant rocket motor, bridging the aerospace
+  structures / aerodynamics context of the original thesis to the propulsion domain.
+
+## Original Test Case
+
+The benchmark problem throughout the original thesis — and retained here — is the
+conceptual aerodynamic design of a **supersonic business jet** originally posed for
+the 1995 AIAA Graduate Student Design Competition. Four engineering disciplines are
+modeled as black-box analysis modules:
+
+| Black Box | Analysis | Key Outputs |
+|-----------|----------|-------------|
+| Structures | Equivalent Laminated Plate Structures (ELAPS) | Wing weight, aeroelastic twist |
+| Aerodynamics | Wave-drag model (AWAVE) + drag polar | Lift, drag, $L/D$ |
+| Power | Engine deck approximation | SFC, engine weight, ESF |
+| Performance | Breguet range equation | Range |
+
+BLISS-RS couples these four disciplines through a hierarchy of system-level and
+local-level optimizations mediated by quadratic response surface surrogates.
+
+## How to Use This Book
+
+Each chapter is self-contained. Julia code blocks illustrate the method being
+discussed and can be executed independently. The `src/` directory contains shared
+Julia modules — `bliss_rs.jl`, `supersonic_jet.jl`, and `srm.jl` — that are
+included at the start of each computational chapter.
+
+To reproduce all results locally:
+
+```bash
+# 1. Install dependencies (requires pixi)
+pixi run setup
+
+# 2. Render to HTML
+pixi run render
+
+# 3. Live preview
+pixi run preview
+```
+
+## Notation Conventions
+
+| Symbol | Meaning |
+|--------|---------|
+| $Z$ | System-level design variables (shared across disciplines) |
+| $X$ | Local design variables (private to a black box) |
+| $Y^*$ | Coupling variables (outputs of one BB used as inputs to another) |
+| $Y^A$ | Actual coupling variable outputs from BB analysis |
+| $w$ | Weighting factors for the synthetic local objective function |
+| BB | Black box (disciplinary analysis module) |
+| RS | Response surface (quadratic surrogate) |
+| DOE | Design of experiments (point placement scheme) |
+| $N_X$ | Number of design variables |
+| $N_S$ | Number of sample points |
+
+## Citation
+
+If you use material from this work, please cite the original NASA contractor report:
+
+> Altus, T. D., "A Response Surface Methodology for Bi-Level Integrated System
+> Synthesis (BLISS)," NASA/CR-2002-211652, George Washington University /
+> NASA Langley Research Center, Hampton, VA, May 2002.
+
+---
+
+*Troy David Altus*
+*Elkton, Maryland*

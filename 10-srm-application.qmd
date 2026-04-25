@@ -1,0 +1,446 @@
+---
+title: "Application to Solid Propellant Rocket Motor Design"
+---
+
+```{julia}
+#| include: false
+include("src/bliss_rs.jl")
+include("src/srm.jl")
+using Printf, Plots, LaTeXStrings, Statistics, Random, LinearAlgebra
+gr()
+```
+
+## Introduction
+
+The BLISS-RS framework is discipline-agnostic: the four-discipline supersonic
+business jet was chosen as the original test case because of the availability of
+validated analysis codes and a documented optimum, but the algorithm applies equally
+to any engineering system that can be decomposed into coupled subsystems.
+
+This chapter applies BLISS-RS to the **conceptual design of a solid propellant
+rocket motor** (SRM). Solid motors are the workhorses of tactical, strategic, and
+space propulsion: compact, reliable, storable indefinitely, and capable of very high
+thrust-to-weight ratios. Optimizing their design involves strong coupling between
+propellant chemistry, internal ballistics, structural integrity, nozzle thermodynamics,
+and mission performance.
+
+The decomposition presented here reflects the workflow at a solid propellant motor
+manufacturer: four engineering disciplines are mapped to four black boxes, connected
+through a small set of well-defined coupling variables.
+
+## Physical Background
+
+### Saint-Robert's Burn Rate Law
+
+The burn rate of a solid propellant follows Saint-Robert's (Vieille's) empirical law:
+
+$$
+r = a \cdot P_c^n
+$$ {#eq-burnrate}
+
+where $r$ [in/s] is the linear regression rate of the propellant surface, $P_c$ [psia]
+is the chamber pressure, $a$ is the burn rate coefficient, and $n$ is the pressure
+exponent. For AP/Al/HTPB composites, typical values are:
+
+| Property | Range |
+|----------|-------|
+| $a$ (burn rate coefficient) | 0.030–0.050 in/s·psia$^{-n}$ |
+| $n$ (pressure exponent) | 0.30–0.45 |
+| $T_c$ (flame temperature) | 5200–5800 °R |
+| $\gamma$ (specific heat ratio) | 1.18–1.24 |
+| $c^*$ (characteristic velocity) | 4800–5200 ft/s |
+
+### Chamber Pressure Balance
+
+In quasi-steady operation, the mass flow rate produced by propellant combustion must
+equal the mass flow rate through the nozzle throat:
+
+$$
+\dot{m}_{produced} = \rho_p \cdot A_b \cdot r = \rho_p \cdot A_b \cdot a \cdot P_c^n
+$$
+
+$$
+\dot{m}_{expelled} = \frac{P_c \cdot A_t}{c^*}
+$$
+
+Setting these equal and solving for the equilibrium chamber pressure:
+
+$$
+P_c = \left(\frac{\rho_p \cdot a \cdot A_b \cdot c^*}{A_t}\right)^{1/(1-n)}
+$$ {#eq-pc-balance}
+
+This is the fundamental design equation for an SRM: chamber pressure is determined
+by the ratio of burning surface area $A_b$ to throat area $A_t$, the propellant
+properties ($\rho_p$, $a$, $c^*$), and the pressure exponent $n$.
+
+### Breguet Analogue: Tsiolkovsky Rocket Equation
+
+For mission performance, the **Tsiolkovsky rocket equation** plays the role of the
+Breguet range equation:
+
+$$
+\Delta V = I_{sp} \cdot g_0 \cdot \ln\!\left(\frac{W_i}{W_f}\right)
+$$ {#eq-tsiolkovsky}
+
+where $I_{sp}$ is the specific impulse [seconds], $g_0 = 32.174$ ft/s², and
+$W_i / W_f$ is the initial-to-final weight ratio.
+
+## Design Variable Decomposition
+
+The BLISS-RS decomposition for the SRM problem is shown in @tbl-srm-decomp.
+
+```{julia}
+#| label: tbl-srm-decomp
+#| tbl-cap: "BLISS-RS decomposition for the SRM design problem. Four black boxes map to four engineering disciplines. System variables Z are shared across at least two BBs."
+
+println("| Level | Symbol | Description | BBs Affected |")
+println("|-------|--------|-------------|-------------|")
+println("| Z | L/D | Grain length-to-diameter ratio | Ballistics, Structural |")
+println("| Z | Pc_target | Target chamber pressure (psia) | Ballistics, Structural |")
+println("| Z | ε | Nozzle expansion ratio | Ballistics, Nozzle |")
+println("| Z | Φ_g | Volumetric loading fraction | Ballistics, Structural |")
+println("| | | | |")
+println("| Y | Pc | Actual chamber pressure (psia) | Ballistics → Structural |")
+println("| Y | F | Thrust (lbf) | Ballistics → Mission |")
+println("| Y | Isp | Specific impulse (s) | Ballistics → Mission |")
+println("| Y | It | Total impulse (lbf·s) | Ballistics → Mission |")
+println("| Y | W_prop | Propellant weight (lbf) | Ballistics → Mission |")
+println("| Y | W_case | Case weight (lbf) | Structural → Mission |")
+println("| | | | |")
+println("| X_prop | AP%, Al% | Propellant composition | Ballistics only |")
+println("| X_prop | a, n | Burn rate law coefficients | Ballistics only |")
+println("| X_struct | t_case | Case wall thickness (in) | Structural only |")
+println("| X_struct | σ_allow | Allowable case stress (ksi) | Structural only |")
+println("| X_nozzle | φ | Nozzle half-angle (deg) | Nozzle only |")
+println("| X_nozzle | ρ_noz | Nozzle material density (lb/in³) | Nozzle only |")
+```
+
+## Baseline SRM Design
+
+```{julia}
+#| label: tbl-srm-baseline
+#| tbl-cap: "Baseline SRM design parameters and analysis results."
+
+# Baseline system variables: [L_D, Pc_target, epsilon, Phi_g]
+Z_srm   = [5.0, 1000.0, 8.0, 0.85]
+# Propellant: [AP_pct, Al_pct, r_a, r_n]
+X_prop  = [68.0, 18.0, 0.038, 0.35]
+# Structural: [t_case (in), sigma_allow (ksi)]
+X_struct = [0.15, 85.0]
+# Nozzle: [half_angle (deg), rho_noz (lb/in³)]
+X_nozzle = [15.0, 0.065]
+
+baseline = srm_analysis(Z_srm, X_prop, X_struct, X_nozzle; W_payload=60.0)
+
+fields = [
+    ("Chamber pressure",     "Pc",      "psia",    baseline.Pc),
+    ("Burn rate",            "r",       "in/s",    baseline.r_dot),
+    ("Thrust",               "F",       "lbf",     baseline.F),
+    ("Specific impulse",     "Isp",     "s",       baseline.Isp),
+    ("Burn time",            "t_burn",  "s",       baseline.t_burn),
+    ("Total impulse",        "It",      "lbf·s",   baseline.It),
+    ("Propellant weight",    "W_prop",  "lbf",     baseline.W_prop),
+    ("Case weight",          "W_case",  "lbf",     baseline.W_case),
+    ("Nozzle weight",        "W_nozzle","lbf",     baseline.W_nozzle),
+    ("Total motor weight",   "W_total", "lbf",     baseline.W_total),
+    ("Delta-V",              "ΔV",      "ft/s",    baseline.delta_V),
+    ("Propellant mass frac.","PMF",     "--",      baseline.PMF),
+    ("Hoop stress",          "σ_hoop",  "psi",     baseline.sigma_hoop),
+    ("Burst factor of safety","FS",     "--",      baseline.FS_burst),
+    ("Thrust coefficient",   "CF",      "--",      baseline.CF_eff),
+]
+
+println("| Parameter | Symbol | Units | Value |")
+println("|-----------|--------|-------|-------|")
+for (name, sym, unit, val) in fields
+    @printf("| %s | %s | %s | %.3g |\n", name, sym, unit, val)
+end
+```
+
+## BB Response Surface Study
+
+Before running BLISS-RS, it is instructive to examine how the objective ($\Delta V$)
+varies across the system design space. This reveals the character of the response
+surface and informs initial bound selection.
+
+```{julia}
+#| label: fig-srm-rs-study
+#| fig-cap: "SRM ΔV response as functions of (left) chamber pressure vs. L/D ratio and (right) expansion ratio vs. volumetric loading. Higher chamber pressure and lower L/D favour high ΔV, but structural constraints (burst pressure) bound the chamber pressure."
+#| code-fold: true
+
+# Sweep Pc vs. L/D
+Pc_range = range(600.0, 1500.0, length=40)
+LD_range = range(3.0, 8.0, length=40)
+ε_fixed  = 8.0
+Φ_fixed  = 0.85
+
+ΔV_grid1 = [begin
+    Z = [ld, pc, ε_fixed, Φ_fixed]
+    r = try srm_analysis(Z, X_prop, X_struct, X_nozzle; W_payload=60.0)
+        catch; (delta_V=0.0,) end
+    r.delta_V
+end for pc in Pc_range, ld in LD_range]
+
+# Sweep epsilon vs. Phi_g
+ε_range = range(4.0, 16.0, length=40)
+Φ_range = range(0.70, 0.92, length=40)
+LD_fixed = 5.0
+Pc_fixed  = 1000.0
+
+ΔV_grid2 = [begin
+    Z = [LD_fixed, Pc_fixed, ε, φ]
+    r = try srm_analysis(Z, X_prop, X_struct, X_nozzle; W_payload=60.0)
+        catch; (delta_V=0.0,) end
+    r.delta_V
+end for φ in Φ_range, ε in ε_range]
+
+p1 = contourf(LD_range, Pc_range, ΔV_grid1,
+              xlabel="L/D ratio", ylabel="Chamber pressure Pc (psia)",
+              title="ΔV (ft/s): Pc vs. L/D",
+              color=:viridis, levels=15, colorbar_title="ΔV (ft/s)")
+
+p2 = contourf(ε_range, Φ_range .* 100, ΔV_grid2,
+              xlabel="Expansion ratio ε", ylabel="Volumetric loading Φ_g (%)",
+              title="ΔV (ft/s): ε vs. Φ_g",
+              color=:viridis, levels=15, colorbar_title="ΔV (ft/s)")
+
+plot(p1, p2, size=(800, 350))
+```
+
+## BLISS-RS Optimization of the SRM
+
+The SRM BLISS-RS optimization uses the same framework as the supersonic business jet
+but with the SRM black boxes.
+
+```{julia}
+#| label: srm-blissrs
+#| code-fold: true
+
+using Optim
+
+# System variable bounds: [L_D, Pc_target, epsilon, Phi_g]
+Z_lo_srm = [3.0, 600.0,  4.0, 0.70]
+Z_hi_srm = [8.0, 1500.0, 16.0, 0.93]
+Z_init_srm = Z_srm
+
+n_Z_srm = 4
+
+function srm_objective(Z_nat::Vector)
+    try
+        r = srm_analysis(Z_nat, X_prop, X_struct, X_nozzle; W_payload=60.0)
+        # Penalise constraint violations
+        penalty = 0.0
+        # Must have FS_burst > 1.5 (safety factor)
+        penalty += max(0.0, 1.5 - r.FS_burst) * 2000.0
+        # Pressure must be achievable (Pc within ±10% of target)
+        penalty += abs(r.Pc - Z_nat[2]) / Z_nat[2] * 1000.0
+        return r.delta_V - penalty
+    catch
+        return 0.0
+    end
+end
+
+function run_srm_blissrs(n_iter=10, K=0.8; seed=42)
+    bounds = hcat(Z_lo_srm, Z_hi_srm)
+    Z_hist   = Vector{Vector{Float64}}()
+    obj_hist = Float64[]
+    rng = MersenneTwister(seed)
+
+    for it in 1:n_iter
+        n_pts = max(min_rs_points(n_Z_srm) + 6, 25)
+        pts_c = d_optimal_points(n_Z_srm, n_pts; seed=seed + it)
+        pts_n = similar(pts_c)
+        for j in 1:n_Z_srm
+            pts_n[:, j] = bounds[j,1] .+ pts_c[:, j] .* (bounds[j,2] - bounds[j,1])
+        end
+
+        y_vals = map(1:n_pts) do i
+            srm_objective(pts_n[i, :])
+        end
+
+        b = fit_rs(pts_c, y_vals)
+
+        # Maximise RS
+        neg_rs(ξ) = -only(predict_rs(reshape(ξ, 1, :), b))
+        result = Optim.optimize(neg_rs, fill(0.5, n_Z_srm),
+                                 NelderMead(),
+                                 Optim.Options(iterations=3000, show_trace=false))
+        ξ_opt = clamp.(Optim.minimizer(result), 0.0, 1.0)
+        Z_opt = [bounds[j,1] + ξ_opt[j]*(bounds[j,2]-bounds[j,1]) for j in 1:n_Z_srm]
+        obj_opt = srm_objective(Z_opt)
+
+        push!(Z_hist, Z_opt)
+        push!(obj_hist, obj_opt)
+
+        bounds = update_intervals(ξ_opt, bounds; K=K)
+    end
+    return Z_hist, obj_hist
+end
+
+Z_srm_hist, obj_srm_hist = run_srm_blissrs(10, 0.8; seed=42)
+println("Done. Final ΔV: $(round(obj_srm_hist[end], digits=0)) ft/s")
+```
+
+## SRM Optimization Results
+
+```{julia}
+#| label: fig-srm-history
+#| fig-cap: "BLISS-RS optimization history for SRM delta-V. The algorithm increases ΔV from the baseline by optimizing L/D, chamber pressure, expansion ratio, and volumetric loading. Structural constraints (burst factor of safety) limit the maximum achievable chamber pressure."
+#| code-fold: true
+
+p = plot(1:10, obj_srm_hist,
+         lw=2.5, color=:steelblue, marker=:circle, markersize=6,
+         xlabel="Iteration number", ylabel="ΔV (ft/s)",
+         title="SRM BLISS-RS Optimization: Delta-V",
+         legend=:bottomright, grid=true, gridalpha=0.3,
+         label="BLISS-RS ΔV")
+hline!([baseline.delta_V], color=:crimson, lw=1.5, linestyle=:dash,
+       label=@sprintf("Baseline: %.0f ft/s", baseline.delta_V))
+hline!([obj_srm_hist[end]], color=:forestgreen, lw=1.5, linestyle=:dot,
+       label=@sprintf("Final: %.0f ft/s", obj_srm_hist[end]))
+
+p
+```
+
+```{julia}
+#| label: fig-srm-var-history
+#| fig-cap: "SRM system variable optimization histories. Chamber pressure and expansion ratio converge quickly (strong sensitivity to ΔV); L/D and volumetric loading take more iterations due to competing structural and propulsion trade-offs."
+#| code-fold: true
+
+var_names_srm = ["L/D", "Pc_target (psia)", "ε (expansion ratio)", "Φ_g (loading %)"]
+Z_mat_srm = hcat(Z_srm_hist...)
+
+ps = []
+for (idx, (name, col)) in enumerate(zip(var_names_srm,
+                                         [:steelblue, :crimson, :darkorange, :forestgreen]))
+    pv = plot(1:10, Z_mat_srm[idx, :], lw=2, color=col, marker=:circle, markersize=4,
+              title=name, xlabel="Iteration", ylabel="Value",
+              legend=false, grid=true, gridalpha=0.3)
+    # Add baseline dotted line
+    hline!([Z_init_srm[idx]], color=:black, linestyle=:dot, lw=1.0)
+    push!(ps, pv)
+end
+plot(ps..., layout=(2,2), size=(720, 440))
+```
+
+## Optimal Design Summary
+
+```{julia}
+#| label: tbl-srm-optimal
+#| tbl-cap: "Baseline vs. BLISS-RS optimal SRM design comparison. Improvements in ΔV come primarily from increased expansion ratio and optimized propellant loading fraction."
+
+Z_opt_srm = Z_srm_hist[end]
+opt = srm_analysis(Z_opt_srm, X_prop, X_struct, X_nozzle; W_payload=60.0)
+
+println("| Parameter | Baseline | Optimal | Change |")
+println("|-----------|----------|---------|--------|")
+for (name, sym, unit, b_val, o_val) in [
+    ("L/D",          "L/D",   "--",   Z_srm[1], Z_opt_srm[1]),
+    ("Pc target",    "Pc",    "psia", Z_srm[2], Z_opt_srm[2]),
+    ("Expansion ratio","ε",   "--",   Z_srm[3], Z_opt_srm[3]),
+    ("Vol. loading", "Φ_g",   "--",   Z_srm[4], Z_opt_srm[4]),
+    ("Thrust (F)",   "F",     "lbf",  baseline.F,     opt.F),
+    ("Isp",          "Isp",   "s",    baseline.Isp,   opt.Isp),
+    ("Total impulse","It",    "lbf·s",baseline.It,    opt.It),
+    ("W_total",      "W_tot", "lbf",  baseline.W_total, opt.W_total),
+    ("PMF",          "PMF",   "--",   baseline.PMF,   opt.PMF),
+    ("ΔV",           "ΔV",   "ft/s", baseline.delta_V, opt.delta_V),
+    ("FS burst",     "FS",    "--",   baseline.FS_burst, opt.FS_burst),
+]
+    pct = (o_val - b_val) / (abs(b_val) + 1e-9) * 100
+    @printf("| %s | %.4g %s | %.4g %s | %+.1f%% |\n",
+            name, b_val, unit, o_val, unit, pct)
+end
+```
+
+## Connection to Physical Testing and Backfitting
+
+The SRM analysis modules presented here implement *predictive* internal ballistics —
+computing $P_c(t)$ and $F(t)$ from propellant properties and grain geometry. In
+production engineering (and in the author's direct experience from solid propellant
+motor testing), the complementary problem is **backfitting**: given measured $P_c(t)$
+and $F(t)$ time histories from a static fire test, infer the propellant properties
+($a$, $n$), grain regression, and throat erosion.
+
+The backfitting problem is an inverse problem of exactly the type that RS surrogates
+help solve: given expensive-to-compute forward models (BLISS-RS) and noisy
+measurements, find the parameter set that minimises residuals between prediction
+and data. Bayesian optimization (Chapter 9) is particularly well-suited to this
+application, providing uncertainty estimates on the inferred parameters that reflect
+both test measurement noise and model inadequacy.
+
+### Temperature Sensitivity Correction
+
+A critical concern in tactical motor qualification is **temperature sensitivity**:
+solid propellants exhibit substantially different $P_c(t)$ and $F(t)$ profiles at
+hot, nominal, and cold storage temperatures (typical range: −65°F to +165°F for
+military systems). The burn rate coefficient $a$ is temperature-dependent:
+
+$$
+a(T) = a_{\text{ref}} \cdot \exp[\sigma_p (T - T_{\text{ref}})]
+$$ {#eq-temp-sensitivity}
+
+where $\sigma_p$ [°F$^{-1}$] is the temperature sensitivity coefficient.
+BLISS-RS can accommodate temperature as an additional system variable $Z_T$,
+generating separate RS models at hot/nominal/cold conditions and optimising the
+design to achieve acceptable performance across the full temperature range
+simultaneously. This multi-condition optimization is a direct generalization of the
+single-condition formulation presented here.
+
+```{julia}
+#| label: fig-temp-sensitivity
+#| fig-cap: "Effect of storage temperature on SRM thrust-time history. Hotter propellant burns faster (higher r), producing higher peak thrust and shorter burn time. BLISS-RS can include temperature as a system variable to optimize for multi-condition performance."
+#| code-fold: true
+
+# Simulate P_c(t) / F(t) at 3 temperatures
+# Temperature sensitivity: a(T) = a_ref * exp(σp * (T - T_ref))
+sigma_p = 0.001   # typical AP/HTPB value [1/°F]
+T_ref   = 70.0    # reference temperature [°F]
+temps   = [-65.0, 70.0, 165.0]
+labels_ = ["-65°F (Cold)", "70°F (Nominal)", "165°F (Hot)"]
+colors_ = [:steelblue, :black, :crimson]
+
+t_range = range(0.0, 25.0, length=300)
+
+p = plot(title="SRM Thrust vs. Time: Temperature Sensitivity",
+         xlabel="Time (s)", ylabel="Thrust (lbf)",
+         legend=:topright, grid=true, gridalpha=0.3)
+
+for (T_test, lbl, col) in zip(temps, labels_, colors_)
+    a_T    = X_prop[3] * exp(sigma_p * (T_test - T_ref))
+    X_T    = [X_prop[1], X_prop[2], a_T, X_prop[4]]
+    result = srm_analysis(Z_srm, X_T, X_struct, X_nozzle; W_payload=60.0)
+    t_burn = result.t_burn
+
+    # Simple rectangular approximation of thrust profile
+    F_vals = [t_val <= t_burn ? result.F : 0.0 for t_val in t_range]
+    plot!(t_range, F_vals, lw=2, color=col, label=lbl)
+end
+
+p
+```
+
+## Design Insights and Engineering Interpretation
+
+The BLISS-RS SRM optimization reveals several physically meaningful trends:
+
+1. **Expansion ratio** is the highest-leverage system variable for $\Delta V$:
+   increasing $\varepsilon$ from 8 to ~12–14 improves vacuum $I_{sp}$ significantly
+   at moderate additional nozzle weight.
+
+2. **Volumetric loading** should be pushed as high as the grain geometry allows
+   (subject to structural limits and adequate burning-surface regression), because
+   propellant mass fraction directly enters the Tsiolkovsky equation logarithmically.
+
+3. **Chamber pressure** has diminishing returns above ~1000 psia for AP/Al/HTPB
+   propellants: $c^*$ is weakly dependent on $P_c$ in this range, while structural
+   weight grows with $P_c$, eroding the mass fraction benefit.
+
+4. **L/D ratio** primarily affects slenderness and burn time; for a BATES grain, a
+   shorter, fatter motor (lower L/D) increases burning surface for a given web
+   thickness, enabling shorter burn time at higher thrust if so desired.
+
+These insights mirror the design heuristics developed empirically at SRM manufacturers
+and are recovered here purely from the BLISS-RS optimization, validating the
+framework's ability to capture physical design logic through the coupling of
+disciplinary analysis models.

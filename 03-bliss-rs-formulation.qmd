@@ -1,0 +1,261 @@
+---
+title: "BLISS-RS Formulation"
+---
+
+```{julia}
+#| include: false
+include("src/bliss_rs.jl")
+include("src/supersonic_jet.jl")
+using Printf, Plots, LaTeXStrings
+gr()
+```
+
+## Motivation: From Gradients to Surrogates
+
+BLISS-98 couples the local and system levels through sensitivity derivatives
+$\partial X^*_{opt} / \partial Z$. Computing these derivatives requires:
+
+1. A converged system analysis (expensive).
+2. A local optimization at each BBs (moderately expensive).
+3. A sensitivity analysis — typically finite differences or adjoint solves — at the
+   local optimum (often the most expensive step).
+
+These three requirements limit the practical applicability of BLISS-98 in two ways.
+First, the sensitivity analysis must be repeated each BLISS cycle, making the method
+computationally intensive for BBs with many variables. Second, because the coupling
+relies on a *local* linear approximation, the algorithm can be sensitive to the
+accuracy of the linearization and may stall near saddle points.
+
+BLISS-RS addresses both limitations by replacing the gradient-based coupling with
+**quadratic response surface surrogates** [@altus2002blissrs]. The key observations
+motivating this change are:
+
+- A response surface efficiently *explores the entire design space region* by
+  evaluating the BB at many sample points rather than linearizing around a single
+  point.
+- Because BBs in BLISS-RS are optimized off-line for each DOE point independently,
+  those optimizations can proceed in strict parallel — the algorithm becomes a
+  *workfront* that saturates available computing resources.
+- The RS coupling eliminates the need for a system sensitivity analysis. The system
+  optimizer reads coupling information directly from the polynomial coefficients.
+
+## Local Optimization Formulation
+
+In BLISS-RS, each black box $k$ defines a *synthetic objective function* that
+aggregates all of its outputs into a single scalar using weighting factors $w$. For
+given fixed values of $Z$, $Y^*$, and $w$, the $k$-th BB solves:
+
+$$
+\text{Given:} \quad Z, \; Y^*, \; w
+$$ {#eq-local-given}
+
+$$
+\text{Find:} \quad X \;\text{(local to BB}_k\text{)}
+$$ {#eq-local-find}
+
+$$
+\text{Minimize:} \quad F_k = \sum_i w_i \, Y^A_i
+$$ {#eq-local-obj}
+
+$$
+\text{Satisfy:} \quad \{h\} = 0, \quad \{g\} \leq 0, \quad X_L \leq X \leq X_U
+$$ {#eq-local-constraints}
+
+The term *synthetic* is used because the objective $F_k$ does not represent the
+actual system objective (range, for example). Instead, it is a proxy that drives
+each BB toward outputs that are beneficial to the system. The weighting factors $w$
+encode the relative importance of each BB output to the overall system objective.
+
+::: {.callout-note}
+**Weighting factor interpretation.** In the supersonic business jet context, the
+structures BB outputs total weight $W_T$ and aeroelastic twist $\Omega$. Both affect
+range through the Breguet equation. The weight assigned to each ($w_1$ for $W_T$,
+$w_2$ for $\Omega$) indicates how strongly minimizing that output will benefit the
+system objective. The system optimizer determines the appropriate $w$ values
+automatically as part of its decision variables.
+:::
+
+The synthetic objective is evaluated at many points $(Z, Y^*, w)$ by running the
+local optimization for each DOE sample. The collection of optimal values
+$F_k^*(Z, Y^*, w)$ forms the data cloud from which the RS is fitted.
+
+## System Optimization Formulation
+
+After the RS models are available, the system optimizer solves:
+
+$$
+\text{Given:} \quad \hat{\boldsymbol{\beta}}_k \;\text{for each BB } k
+$$ {#eq-sys-given}
+
+$$
+\text{Find:} \quad Z, \; Y^*, \; w
+$$ {#eq-sys-find}
+
+$$
+\text{Maximize:} \quad F = \text{Range}(Z, Y^*, w) \;\text{via RS models}
+$$ {#eq-sys-obj}
+
+$$
+\text{Satisfy:} \quad \{c\} = Y^A - Y^* = 0, \quad \{g\} \leq 0, \quad \text{side constraints}
+$$ {#eq-sys-constraints}
+
+where $\hat{\boldsymbol{\beta}}_k$ are the regression coefficient vectors for the
+$k$-th BB's response surface model. The coupling constraints $\{c\} = 0$ ensure that
+the value of each coupling variable proposed by the system optimizer ($Y^*$) matches
+the value that the corresponding BB would actually produce ($Y^A$) given those inputs.
+In @fig-sys-optimizer, coupling constraints are represented as circles where data
+flow channels from different BBs meet.
+
+```{julia}
+#| label: fig-sys-optimizer
+#| fig-cap: "BLISS-RS system optimizer data flow. Each coupling constraint (circle) enforces that the output of one BB equals the input to another. The system optimizer proposes Y* and Z; the RS models replace direct BB calls. Reproduced from Altus (2002) Fig. 11."
+#| code-fold: true
+
+p = plot(xlim=(0,12), ylim=(0,10), axis=false, grid=false,
+         size=(700,420), title="BLISS-RS System Optimizer")
+
+# BB boxes
+bb_data = [(2.0, 7.5, "Structures RS", :lightblue),
+           (6.0, 7.5, "Aero RS",       :lightgreen),
+           (10.0,7.5, "Power RS",      :lightyellow),
+           (6.0, 3.0, "Performance\n(Range)",     :lightsalmon)]
+
+for (x, y, lbl, col) in bb_data
+    plot!(Shape([x-1.5,x+1.5,x+1.5,x-1.5],[y-0.8,y-0.8,y+0.8,y+0.8]),
+          fill=col, linecolor=:black, lw=1.5, label="")
+    annotate!(x, y, text(lbl, 8, :center))
+end
+
+# System optimizer box
+plot!(Shape([4.5,7.5,7.5,4.5],[1.0,1.0,2.0,2.0]),
+      fill=:thistle, linecolor=:black, lw=2.0, label="")
+annotate!(6.0, 1.5, text("System Optimizer\n(proposes Z, Y*, w)", 7, :center))
+
+# Coupling constraint circles (where flows cross)
+for (cx, cy) in [(4.0, 5.5), (6.0, 5.5), (8.0, 5.5), (4.5, 3.0), (7.5, 3.0)]
+    scatter!([cx], [cy], color=:white, markerstrokecolor=:black,
+             markerstrokewidth=2, markersize=12, label="")
+end
+annotate!(3.2, 5.5, text("WT,Ω", 7))
+annotate!(6.0, 5.5, text("L,D", 7))
+annotate!(8.8, 5.5, text("ESF,WE", 7))
+
+# Arrows (simplified)
+for (x1,y1,x2,y2) in [
+        (2.0,6.7,4.0,5.9), (6.0,6.7,6.0,5.9), (10.0,6.7,8.0,5.9),
+        (4.0,5.1,4.5,2.0), (6.0,5.1,6.0,3.8),  (8.0,5.1,7.5,2.0),
+        (6.0,2.2,6.0,2.0), (5.0,2.0,5.0,1.0),  (7.0,2.0,7.0,1.0)]
+    plot!([x1,x2],[y1,y2], arrow=true, color=:black, lw=1.2, label="")
+end
+
+# Z arrows from optimizer to BBs
+for (bx, by) in [(2.0,7.5),(6.0,7.5),(10.0,7.5)]
+    plot!([6.0,bx],[2.0,by-0.8], arrow=true, color=:crimson,
+          lw=1.2, linestyle=:dash, label="")
+end
+annotate!(1.0, 4.5, text("Z", 9, :crimson))
+
+p
+```
+
+## Weighting Factors as System Degrees of Freedom
+
+One of the most important conceptual shifts in BLISS-RS relative to BLISS-98 is
+the treatment of weighting factors $w$. In BLISS-98, the weighting factors that
+define each BB's composite objective function are held fixed — they are determined
+a priori by the analyst based on engineering judgement about the relative importance
+of each output.
+
+In BLISS-RS, the weighting factors $w$ are *system-level decision variables*,
+optimized alongside $Z$ and $Y^*$ by the system optimizer. This means the system
+optimizer can autonomously determine how much each BB should favour, for example,
+minimizing weight versus maximizing lift-to-drag.
+
+This autonomy comes at a cost: the design space for the system optimizer grows to
+include $|Z| + |Y^*| + \sum_k |w_k|$ variables, which increases the complexity of
+the RS fitting. However, because the system RS is evaluated analytically (not
+through expensive BB calls), this additional complexity is acceptable.
+
+## BLISS-RS Flowchart
+
+@fig-blissrs-flow summarizes the complete algorithm. The critical path of the
+computation is the BB optimization loop; all other operations are
+inexpensive polynomial evaluations.
+
+```{julia}
+#| label: fig-blissrs-flow
+#| fig-cap: "BLISS-RS algorithm flowchart. The dashed inner box represents concurrent computations. Reproduced from Altus (2002) Fig. 10."
+#| code-fold: true
+
+p = plot(xlim=(0,12), ylim=(0,14), axis=false, grid=false,
+         size=(640,560), title="BLISS-RS Algorithm")
+
+steps = [
+    (6.0, 13.3, "Initialise X, Z, Y, w\nSet LBo, UBo", :lightblue),
+    (6.0, 11.5, "Optional:\nSystem Analysis", :lightyellow),
+    (6.0,  9.8, "Select bounds on Y\nGenerate DOE (D-Optimal)", :lightyellow),
+    (2.5,  7.8, "BB₁: Local\nOptimisation", :lightgreen),
+    (6.0,  7.8, "BB₂: Local\nOptimisation", :lightgreen),
+    (9.5,  7.8, "BBₙ: Local\nOptimisation", :lightgreen),
+    (6.0,  5.8, "Fit Quadratic RS\nfor each BB output", :lightblue),
+    (6.0,  3.8, "System Optimisation\n(max Range over RS models)", :lightyellow),
+    (6.0,  2.0, "Converged?\n|YRS − YBB| < tol", :lightyellow),
+]
+
+for (x, y, lbl, col) in steps
+    plot!(Shape([x-2.2,x+2.2,x+2.2,x-2.2],[y-0.7,y-0.7,y+0.7,y+0.7]),
+          fill=col, linecolor=:black, lw=1.5, label="")
+    annotate!(x, y, text(lbl, 7, :center))
+end
+
+# Stop box
+plot!(Shape([4.8,7.2,7.2,4.8],[0.0,0.0,0.6,0.6]),
+      fill=:lightgray, linecolor=:black, lw=1.5, label="")
+annotate!(6.0, 0.3, text("Final Analysis / Stop", 7, :center))
+
+# Main arrows
+for (y1, y2) in [(12.6,12.2),(10.8,10.5),(9.1,8.5),(7.1,6.5),(5.1,4.5),(3.1,2.7)]
+    plot!([6.0,6.0],[y1,y2], arrow=true, color=:black, lw=1.5, label="")
+end
+# Side BB arrows
+plot!([6.0,2.5],[9.1,8.5], arrow=true, color=:gray, lw=1.2, linestyle=:dash, label="")
+plot!([6.0,9.5],[9.1,8.5], arrow=true, color=:gray, lw=1.2, linestyle=:dash, label="")
+plot!([2.5,6.0],[7.1,6.5], arrow=true, color=:gray, lw=1.2, linestyle=:dash, label="")
+plot!([9.5,6.0],[7.1,6.5], arrow=true, color=:gray, lw=1.2, linestyle=:dash, label="")
+
+# Concurrent dashed box
+plot!(Shape([0.2,11.8,11.8,0.2],[7.0,7.0,8.7,8.7]),
+      fill=nothing, linecolor=:gray50, lw=1.0, linestyle=:dash, label="")
+annotate!(0.6, 7.85, text("Concurrent", 7, :gray50, :left, rotation=90))
+
+# "Yes" → Stop, "No" → Reduce RS / loop back
+plot!([6.0,6.0],[1.3,0.6], arrow=true, color=:forestgreen, lw=1.5, label="")
+annotate!(6.5, 1.0, text("Yes", 8, :forestgreen))
+# "No" → Reduce interval and repeat
+plot!([8.2,11.0,11.0,6.0],[2.0,2.0,9.8,9.8],
+      arrow=true, color=:crimson, lw=1.5, label="")
+annotate!(9.5, 5.9, text("No:\nReduce\nintervals", 7, :crimson))
+
+p
+```
+
+## Comparison: BLISS-98 vs. BLISS-RS
+
+| Feature | BLISS-98 | BLISS-RS |
+|---------|----------|---------|
+| BB-to-system coupling | Sensitivity derivatives | Quadratic RS surrogates |
+| System analysis required per cycle | Yes | No (RS serves this role) |
+| Local optimizations per cycle | 1 per BB | $N_S$ per BB (parallelisable) |
+| Gradient computation required | Yes | No |
+| Handles non-differentiable BBs | No | Yes |
+| Prone to local optima | More so | Less so |
+| Weighting factors $w$ | Fixed by analyst | Optimised by system level |
+| Primary computational cost | Sensitivity analysis | RS generation |
+
+: Comparison of BLISS-98 and BLISS-RS key features {#tbl-comparison}
+
+The central tradeoff is that BLISS-RS requires many more BB evaluations per cycle
+(one per DOE point per BB) compared to BLISS-98 (one per BB). However, because
+those evaluations are fully concurrent and because the sensitivity analysis step is
+eliminated, BLISS-RS is expected to achieve better wall-clock performance on
+multi-processor systems.

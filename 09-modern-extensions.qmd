@@ -1,0 +1,341 @@
+---
+title: "Modern Extensions"
+---
+
+```{julia}
+#| include: false
+include("src/bliss_rs.jl")
+using Printf, Plots, LaTeXStrings, LinearAlgebra, Statistics, Random, Distributions
+gr()
+```
+
+## Beyond Quadratic Surrogates
+
+Altus (2002) used quadratic response surfaces as the surrogate model connecting
+local BB optimizations to the system optimizer. This was a natural choice in 2002:
+quadratic models are simple to fit, analytically differentiable, and computationally
+trivial to evaluate. For smooth, unimodal BB responses in low-to-moderate dimensions
+($n \leq 15$), they perform well.
+
+Since 2002, the surrogate modelling field has advanced significantly. This chapter
+surveys four modern extensions to the BLISS-RS framework:
+
+1. **Gaussian Process (Kriging) surrogates** — interpolating surrogates that provide
+   uncertainty estimates alongside predictions.
+2. **Bayesian optimization** — an acquisition-function-driven strategy for
+   minimizing expensive BBs with very few evaluations.
+3. **Julia's native parallelism** — using `@distributed` and `@threads` to realize
+   the theoretical parallel speedup of BLISS-RS.
+4. **Neural network surrogates** — flexible non-parametric models suitable for
+   highly non-linear BB responses.
+
+## Gaussian Process Surrogates (Kriging)
+
+A **Gaussian Process** (GP) is a probabilistic model that treats the unknown
+function as a random process with a specified mean and covariance (kernel) function
+[@sacks1989design; @krige1951]. Given observations $\{(x_i, y_i)\}_{i=1}^n$, the GP
+posterior provides both a **mean prediction** $\hat{y}(x)$ and a **predictive
+variance** $\sigma^2(x)$ at any new input $x$:
+
+$$
+\hat{y}(x) = k(x, X)(K + \sigma_n^2 I)^{-1} y
+$$ {#eq-gp-mean}
+
+$$
+\sigma^2(x) = k(x,x) - k(x, X)(K + \sigma_n^2 I)^{-1} k(X, x)
+$$ {#eq-gp-var}
+
+where $K_{ij} = k(x_i, x_j)$ is the kernel matrix, $k(x,x')$ is the covariance
+function (typically a squared exponential or Matérn kernel), and $\sigma_n^2$ is the
+observation noise variance (set to a small value for deterministic simulations).
+
+The predictive variance $\sigma^2(x)$ is especially valuable in BLISS-RS: it
+identifies regions where the surrogate is uncertain, guiding the system optimizer
+toward either exploiting the current best estimate (low $\sigma$) or exploring
+uncertain regions (high $\sigma$) — the exploitation/exploration trade-off.
+
+```{julia}
+#| label: fig-gp-comparison
+#| fig-cap: "Gaussian Process vs. quadratic RS on the 1D Rosenbrock slice. The GP interpolates training data exactly and provides uncertainty bands; the quadratic RS cannot interpolate and provides no uncertainty. The GP uncertainty correctly widens between training points."
+#| code-fold: true
+
+# Simple GP implementation using squared exponential kernel
+function gp_predict(X_train, y_train, x_test;
+                     ℓ=0.3, σ_f=1.0, σ_n=1e-6)
+    n_train = length(y_train)
+
+    k(a, b) = σ_f^2 * exp(-0.5 * ((a-b)/ℓ)^2)
+
+    # Kernel matrix K
+    K = [k(X_train[i], X_train[j]) for i in 1:n_train, j in 1:n_train]
+    K += σ_n^2 * I
+
+    # Cross-covariance k*
+    k_star = [k(x_test[j], X_train[i]) for j in 1:length(x_test), i in 1:n_train]
+
+    # Posterior mean and variance
+    K_inv_y = K \ y_train
+    mu      = k_star * K_inv_y
+
+    k_ss = σ_f^2 .* ones(length(x_test))
+    var  = k_ss - vec(sum((k_star * (K \ k_star')), dims=2))
+    var  = max.(var, 0.0)
+
+    return mu, sqrt.(var)
+end
+
+# 1D slice of the 2D Rosenbrock
+rosen1d(x) = 100 * (0.7 - x^2)^2 + (x - 1)^2
+
+rng = MersenneTwister(123)
+n_train = 10
+x_train = sort(2 .* rand(rng, n_train) .- 1)
+y_train = rosen1d.(x_train)
+
+x_test = range(-1.0, 1.0, length=200)
+
+# GP prediction
+mu_gp, std_gp = gp_predict(x_train, y_train, collect(x_test))
+
+# Quadratic RS prediction
+X_rs = hcat(ones(n_train), x_train, x_train.^2)
+b_rs = (X_rs' * X_rs) \ (X_rs' * y_train)
+X_test_rs = hcat(ones(200), collect(x_test), collect(x_test).^2)
+y_rs_pred = X_test_rs * b_rs
+
+# Plot
+y_true = rosen1d.(x_test)
+p = plot(x_test, y_true, lw=2, color=:black, label="True function",
+         xlabel=L"x", ylabel=L"f(x)",
+         title="GP vs. Quadratic RS: 1D Rosenbrock Slice",
+         legend=:topright)
+plot!(x_test, mu_gp, lw=2, color=:steelblue, label="GP mean")
+plot!(x_test, mu_gp .- 2*std_gp, fillrange=mu_gp .+ 2*std_gp,
+      fillalpha=0.2, color=:steelblue, lw=0, label="GP ±2σ")
+plot!(x_test, y_rs_pred, lw=2, color=:crimson, linestyle=:dash,
+      label="Quadratic RS")
+scatter!(x_train, y_train, color=:black, markersize=6, label="Training pts")
+```
+
+### GP vs. Quadratic RS: Suitability for BLISS-RS
+
+| Property | Quadratic RS | Gaussian Process |
+|----------|-------------|-----------------|
+| Interpolates training data | No | Yes |
+| Provides uncertainty estimate | No | Yes |
+| Gradient analytically available | Yes | Yes |
+| Scales with $N$ | $O(N)$ fitting | $O(N^3)$ fitting |
+| High-dimensional ($n > 20$) | Acceptable | Challenging |
+| Non-stationary functions | Poor | Moderate (with ARD kernel) |
+| Implementation complexity | Low | Moderate |
+
+For the supersonic business jet problem ($n \leq 14$ per BB, $N_S \leq 120$), GP
+surrogates are computationally feasible and would likely improve accuracy in later
+iterations where the RS is evaluated over a small, highly-resolved region.
+
+## Bayesian Optimization
+
+**Bayesian optimization** (BO) [@jones1998efficient] applies GP surrogates in an
+active learning loop: after each BB evaluation, the GP is updated and an *acquisition
+function* selects the next evaluation point. The **Expected Improvement** (EI)
+acquisition function is:
+
+$$
+\text{EI}(x) = (f_{\min} - \hat{y}(x))\,\Phi\!\left(\frac{f_{\min} - \hat{y}(x)}{\sigma(x)}\right)
++ \sigma(x)\,\phi\!\left(\frac{f_{\min} - \hat{y}(x)}{\sigma(x)}\right)
+$$ {#eq-ei}
+
+where $f_{\min}$ is the current best observed function value, $\hat{y}(x)$ is the
+GP predictive mean, $\sigma(x)$ is the GP predictive standard deviation, and $\Phi$
+and $\phi$ are the standard normal CDF and PDF, respectively.
+
+EI balances exploration (high $\sigma$) and exploitation (low $\hat{y}$). In a
+BLISS-RS context, BO could replace the fixed DOE with an adaptive strategy that
+concentrates evaluations near the system optimum while maintaining adequate coverage
+for RS fitting.
+
+```{julia}
+#| label: fig-bayesian-opt
+#| fig-cap: "Bayesian optimization with Expected Improvement on the 1D Rosenbrock slice. The EI function (bottom) peaks between training points where both uncertainty and proximity to the optimum are favourable. Evaluating the next point at the EI maximum concentrates effort near the optimum."
+#| code-fold: true
+
+function expected_improvement(x_test, mu, std, f_min)
+    z   = (f_min .- mu) ./ (std .+ 1e-9)
+    ei  = (f_min .- mu) .* cdf.(Normal(), z) .+ std .* pdf.(Normal(), z)
+    return max.(ei, 0.0)
+end
+
+# Use first 6 training points
+n_init = 6
+x_tr6  = x_train[1:n_init]
+y_tr6  = y_train[1:n_init]
+f_min  = minimum(y_tr6)
+
+mu6, std6 = gp_predict(x_tr6, y_tr6, collect(x_test))
+ei_vals   = expected_improvement(x_test, mu6, std6, f_min)
+
+next_idx = argmax(ei_vals)
+x_next   = x_test[next_idx]
+
+p1 = plot(x_test, y_true, lw=2, color=:black, label="True f(x)",
+          xlabel="", ylabel=L"f(x)", title="GP Posterior")
+plot!(x_test, mu6, lw=2, color=:steelblue, label="GP mean")
+plot!(x_test, mu6 .- 2*std6, fillrange=mu6 .+ 2*std6,
+      fillalpha=0.2, color=:steelblue, lw=0, label="±2σ")
+scatter!(x_tr6, y_tr6, color=:black, markersize=6, label="Training pts")
+vline!([x_next], color=:crimson, lw=2, linestyle=:dash, label="Next EI point")
+
+p2 = plot(x_test, ei_vals, lw=2, color=:darkorange, label="EI",
+          xlabel=L"x", ylabel="EI",
+          title="Expected Improvement Acquisition",
+          legend=:topright, fill=(0, 0.2, :darkorange))
+vline!([x_next], color=:crimson, lw=2, linestyle=:dash, label="")
+
+plot(p1, p2, layout=(2,1), size=(650, 480))
+```
+
+## Julia's Native Parallelism
+
+The theoretical speedup of BLISS-RS over gradient-based methods comes entirely from
+the ability to run BB optimizations in parallel. Julia provides several parallelism
+mechanisms that map naturally to the BLISS-RS structure.
+
+### Multi-Threading (`@threads`)
+
+For BB evaluations on shared memory (multi-core workstation):
+
+```julia
+using Base.Threads
+
+function evaluate_bb_parallel(bb_fn, doe_points::Matrix{Float64})
+    n_pts = size(doe_points, 1)
+    results = Vector{Float64}(undef, n_pts)
+
+    @threads for i in 1:n_pts
+        results[i] = bb_fn(doe_points[i, :])
+    end
+    return results
+end
+```
+
+### Distributed Computing (`@distributed`)
+
+For BB evaluations across multiple nodes (HPC cluster):
+
+```julia
+using Distributed
+addprocs(4)   # add worker processes
+
+@everywhere include("src/supersonic_jet.jl")
+
+function evaluate_bb_distributed(doe_points)
+    n_pts = size(doe_points, 1)
+    results = @distributed (vcat) for i in 1:n_pts
+        Z = doe_points[i, :]
+        [ssbj_analysis(Z[1:7], Z[8], Z[9]).Range]
+    end
+    return results
+end
+```
+
+### Speedup Analysis
+
+```{julia}
+#| label: fig-parallel-speedup
+#| fig-cap: "Theoretical parallel speedup for BLISS-RS as a function of available processors and BB count. Perfect parallelism over all BBs' sample points gives near-linear speedup up to min(NS_total, N_procs). The actual speedup is limited by the longest-running BB (Amdahl's law)."
+#| code-fold: true
+
+n_procs = [1, 2, 4, 8, 16, 32, 64, 128]
+NS_total = 78 + 120 + 21 + 28   # sum of all BB sample points
+
+# Serial time = NS_total × T_BB (assume equal BB cost)
+# Parallel time = ceil(NS_total / n_procs) × T_BB (perfect parallelism)
+# Plus Amdahl overhead (10% serial fraction)
+serial_frac = 0.10   # interval reduction, RS fitting, system optimizer
+
+speedup(n) = 1.0 / (serial_frac + (1 - serial_frac) / n)
+
+theoretical_speedup = speedup.(n_procs)
+limited_speedup     = min.(n_procs, NS_total) ./ 1.0   # limited by sample count
+
+p = plot(n_procs, theoretical_speedup, lw=2, color=:steelblue,
+         label="Amdahl (10% serial fraction)",
+         xlabel="Number of processors",
+         ylabel="Speedup (×)",
+         title="BLISS-RS Parallel Speedup",
+         xscale=:log2, legend=:topleft, grid=true, gridalpha=0.3,
+         xticks=(n_procs, string.(n_procs)))
+plot!(n_procs, Float64.(n_procs), lw=1.5, color=:black, linestyle=:dash,
+      label="Perfect linear speedup")
+vline!([NS_total], color=:crimson, lw=1.5, linestyle=:dot,
+       label="NS_total = $NS_total samples")
+
+p
+```
+
+## Neural Network Surrogates
+
+For highly nonlinear BB responses — common in propulsion and aeroelastic problems —
+quadratic polynomials and even GPs may be inadequate. Modern deep learning provides
+flexible function approximators that can represent complex response surfaces given
+sufficient data.
+
+A simple feedforward network with $L$ hidden layers provides:
+
+$$
+f_{NN}(x; \theta) = W_L \cdot \sigma(\ldots W_2 \cdot \sigma(W_1 x + b_1) + b_2 \ldots) + b_L
+$$ {#eq-nn}
+
+In Julia, the `Flux.jl` package provides automatic differentiation and GPU
+acceleration for neural network training. For BLISS-RS, a neural surrogate could be
+used in the system optimization phase (replacing the quadratic polynomial evaluation)
+with gradient information obtained via automatic differentiation.
+
+The trade-off vs. quadratic RS:
+
+| Property | Quadratic RS | Neural Network |
+|----------|-------------|---------------|
+| Training cost | Negligible ($O(N^3)$ solve) | Moderate (iterative gradient descent) |
+| Evaluation cost | Negligible | Moderate |
+| Gradient availability | Analytical | Via autograd (Flux.jl) |
+| Data requirements | $N_S = O(n^2)$ | $N_S = O(n^3)$ or more |
+| Extrapolation | Smooth polynomial | Can oscillate |
+
+Neural surrogates become advantageous when $n > 20$ and the BB response has strong
+non-linearities that cannot be captured by a quadratic. For the supersonic business
+jet ($n = 14$ for the aero BB), neural surrogates would provide marginal benefit
+over GPs at much greater complexity.
+
+## Data Reuse Across Iterations
+
+A key inefficiency noted in Altus (2002) is that each BLISS-RS iteration generates
+a completely new set of DOE points, discarding data from previous iterations. This is
+conservative: as the interval shrinks, old points outside the new interval are
+useless, but points inside the new interval still contain valid information.
+
+A modern approach — called **warm starting** or **incremental surrogate updating** —
+retains points from previous iterations that fall within the current bounds:
+
+$$
+\mathcal{D}_k = \{(x_i, y_i) \mid x_i \in [L_k, H_k]\} \cup \mathcal{D}_{k-1}^{\text{interior}}
+$$ {#eq-warm-start}
+
+This can substantially reduce the number of new BB evaluations required per
+iteration, particularly in late iterations when the interval is small and most
+historical points are outside the new bounds anyway. The difficulty — as noted in
+Altus (2002) — is that with dimensionality $n = 14$, the probability of an old point
+falling inside a new, smaller interval decreases geometrically, so the benefit
+diminishes for high-dimensional problems.
+
+## Summary of Recommended Modern Upgrades
+
+| Area | 2002 Approach | Modern Recommendation |
+|------|--------------|----------------------|
+| Surrogate model | Quadratic polynomial | GP (Kriging) for $n \leq 15$; NN for $n > 20$ |
+| DOE strategy | D-optimal (fixed) | Bayesian adaptive (EI acquisition) |
+| Parallel execution | Conceptual only | Julia `@distributed` on HPC |
+| Data management | Fresh DOE each iteration | Warm-start with interior points |
+| Gradient computation | Finite differences | ForwardDiff.jl (exact autodiff) |
+| Uncertainty quantification | None | GP predictive variance → probabilistic optimum |
+
+: Recommended modern upgrades to the BLISS-RS framework {#tbl-modern-upgrades}

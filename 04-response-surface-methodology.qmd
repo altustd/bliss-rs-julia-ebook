@@ -1,0 +1,338 @@
+---
+title: "Response Surface Methodology"
+---
+
+```{julia}
+#| include: false
+include("src/bliss_rs.jl")
+using Printf, Plots, LaTeXStrings, LinearAlgebra, Statistics, Random
+gr()
+```
+
+## Overview
+
+The goal of **Response Surface Methodology** (RSM) is to construct a mathematical
+model — a *response surface* — that approximates the relationship between a set of
+input factors and an output response [@myers2002rsm; @box1987empirical]. In the
+context of BLISS-RS, the factors are the system-level design variables $Z$ and
+coupling variables $Y^*$, and the response is the locally-optimal BB output $F_k^*$.
+
+RSM was originally developed for physical experiments where noise is present. When
+applied to *computer experiments* (deterministic simulations), there is no
+measurement error: running the same code twice with the same inputs always produces
+the same output. This changes how sample points should be placed — classical designs
+that replicate observations to estimate variance are wasteful; instead, the emphasis
+shifts to efficient space-filling.
+
+BLISS-RS uses RSM in the computer-experiment sense: each "experiment" is a local
+black-box optimization, and the response surface is fitted through the resulting
+optimal outputs.
+
+## Construction of Empirical Models
+
+### Linear Regression
+
+In most RSM applications, the true response function is unknown and we seek a
+polynomial approximation. The simplest choice is a **first-order (linear) model**
+with $n$ independent variables:
+
+$$
+Y = \beta_0 + \sum_{i=1}^{n} \beta_i x_i + \varepsilon
+$$ {#eq-linear-model}
+
+where $\beta_0, \beta_1, \ldots, \beta_n$ are unknown regression coefficients and
+$\varepsilon$ is a random error (zero for deterministic computer experiments).
+
+This is a *linear model* because it is a linear function of the unknown parameters
+$\beta$, not necessarily of the variables $x_i$. Interaction terms ($\beta_{12} x_1
+x_2$) and squared terms ($\beta_{11} x_1^2$) can be added while maintaining
+linearity in parameters.
+
+Suppose the response $Y$ is observed $m$ times. Each observation $y_i$ satisfies:
+
+$$
+y_i = \beta_0 + \sum_{j=1}^n \beta_j x_{ij} + \varepsilon_i, \quad i = 1, 2, \ldots, m
+$$ {#eq-obs}
+
+In matrix form:
+
+$$
+\{y\} = [X]\{\beta\} + \{\varepsilon\}
+$$ {#eq-matrix-form}
+
+where $\{y\}$ is $m \times 1$, $[X]$ is an $m \times p$ *design matrix*, $\{\beta\}$
+is $p \times 1$, and $\{\varepsilon\}$ is $m \times 1$.
+
+**Least squares estimation** minimises the sum of squared residuals:
+
+$$
+L = \{\varepsilon\}^T\{\varepsilon\} = (\{y\} - [X]\{\beta\})^T(\{y\} - [X]\{\beta\})
+$$ {#eq-ls}
+
+Setting $\partial L / \partial \{\beta\} = 0$ yields the *normal equations*:
+
+$$
+[X]^T[X]\{b\} = [X]^T\{y\}
+$$ {#eq-normal}
+
+The least-squares estimator $\{b\}$ of $\{\beta\}$ is:
+
+$$
+\{b\} = \left([X]^T[X]\right)^{-1}[X]^T\{y\}
+$$ {#eq-ls-solution}
+
+The fitted values are:
+
+$$
+\{\hat{y}\} = [X]\{b\}
+$$ {#eq-fitted}
+
+### Second-Order Models
+
+For BLISS-RS, first-order models are generally insufficient because the BB
+responses exhibit curvature. A **second-order (quadratic) model** adds pure
+quadratic and cross-product (interaction) terms:
+
+$$
+Y = \beta_0 + \sum_{i=1}^n \beta_i x_i + \sum_{i=1}^n \beta_{ii} x_i^2
+  + \sum_{i < j} \beta_{ij} x_i x_j
+$$ {#eq-quadratic}
+
+The minimum number of observations required to uniquely fit a second-order model
+in $n$ variables is:
+
+$$
+N_S = \frac{n^2 + 3n + 2}{2}
+$$ {#eq-ns-second-order}
+
+```{julia}
+#| label: tbl-ns-table
+#| tbl-cap: "Minimum sample points for a second-order RS model by number of design variables. Columns also show the total number of regression coefficients p."
+
+println("| n | p (coefficients) | NS (min. points) | NS / p |")
+println("|---|-----------------|-----------------|-------|")
+for n in 1:12
+    p  = 1 + n + n*(n+1)÷2
+    ns = min_rs_points(n)
+    println("| $n | $p | $ns | $(round(ns/p, digits=2)) |")
+end
+```
+
+Note that $N_S = p$ — the minimum design is exactly determined, with no degrees of
+freedom for error estimation. In practice, BLISS-RS uses slightly more than $N_S$
+points (over-determined system) to improve conditioning and fit robustness.
+
+### Julia Implementation
+
+```{julia}
+#| label: lst-rs-functions
+#| code-fold: false
+
+# Build the [X] design matrix for a second-order model
+# (duplicated here for clarity; full implementation in src/bliss_rs.jl)
+function build_quadratic_X(pts::Matrix{Float64})
+    m, n = size(pts)
+    p = 1 + n + n*(n+1)÷2
+    X = ones(m, p)
+    X[:, 2:n+1] = pts
+    col = n + 2
+    for i in 1:n, j in i:n
+        X[:, col] = pts[:, i] .* pts[:, j]
+        col += 1
+    end
+    return X
+end
+
+# Demonstrate on a simple 2-variable quadratic function
+# f(x1, x2) = 3 + 2x1 - x2 + 0.5*x1^2 + x1*x2 - 0.3*x2^2
+true_β = [3.0, 2.0, -1.0, 0.5, 1.0, -0.3]
+f_true(x1, x2) = true_β' * [1, x1, x2, x1^2, x1*x2, x2^2]
+
+# Sample 12 points (> NS = 6 for n=2)
+rng = MersenneTwister(42)
+pts = 2 .* rand(rng, 12, 2) .- 1.0    # in [-1, 1]²
+y   = [f_true(pts[i,1], pts[i,2]) for i in 1:12]
+
+# Fit the RS
+X_mat = build_quadratic_X(pts)
+b_hat = (X_mat' * X_mat) \ (X_mat' * y)
+
+@printf("True β:   [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f]\n", true_β...)
+@printf("Fitted b: [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f]\n", b_hat...)
+@printf("Max coefficient error: %.4f\n", maximum(abs.(b_hat .- true_β)))
+```
+
+With 12 points for a 2-variable model ($N_S = 6$), the least-squares fit recovers
+the true quadratic exactly (within floating-point precision), confirming the
+implementation.
+
+## Error Analysis of Fitted Response Surfaces
+
+### Test Functions
+
+Altus (2002) conducted two tests to assess RS accuracy as a function of sample size
+$N_S$ and dimensionality $N_X$ [@altus2002blissrs, §4.2]:
+
+**Test 1** — Fitting a quadratic response surface to a *quadratic* function. This is
+the trivial case: a quadratic model should fit a quadratic function exactly, given
+enough points.
+
+**Test 2** — Fitting a quadratic response surface to the generalised **Rosenbrock
+(Banana) function**:
+
+$$
+f(\mathbf{x}) = \sum_{i=1}^{N_X - 1}\left[100(x_{i+1} - x_i^2)^2 + (x_i - 1)^2\right]
+$$ {#eq-rosenbrock}
+
+The Rosenbrock function has a narrow, curved valley leading to the global minimum
+at $(1, 1, \ldots, 1)$. It is significantly more complex than a quadratic, so
+approximation error is expected.
+
+The normalized error metric is:
+
+$$
+\text{Error} = \frac{|f_{\text{actual}} - f_{RS}|}{|f_{\text{actual}}|}
+$$ {#eq-error-metric}
+
+```{julia}
+#| label: fig-error-analysis
+#| fig-cap: "Normalized RS approximation error vs. sample size for the Rosenbrock (Banana) function, for various dimensionalities. More variables require proportionally more points to achieve the same accuracy. This reproduces the trend in Altus (2002) Figs. 13–16."
+#| code-fold: true
+
+rosenbrock(x) = sum(100*(x[i+1] - x[i]^2)^2 + (x[i]-1)^2 for i in 1:length(x)-1)
+
+function rs_error_study(n_vars, n_test=500; seed=42)
+    rng = MersenneTwister(seed)
+    ns_min = min_rs_points(n_vars)
+    results = Float64[]
+
+    for n_sample in ns_min:5:(ns_min + 80)
+        # Training points in [-1, 1]^n
+        pts_train = 2 .* rand(rng, n_sample, n_vars) .- 1.0
+        y_train   = [rosenbrock(pts_train[i, :]) for i in 1:n_sample]
+
+        # Fit RS
+        b = fit_rs(pts_train, y_train)
+
+        # Test points
+        pts_test = 2 .* rand(rng, n_test, n_vars) .- 1.0
+        y_test   = [rosenbrock(pts_test[i, :]) for i in 1:n_test]
+        y_pred   = predict_rs(pts_test, b)
+
+        err = mean(abs.((y_test .- y_pred) ./ (abs.(y_test) .+ 1e-8)))
+        push!(results, err)
+    end
+    ns_range = ns_min:5:(ns_min + 80)
+    return collect(ns_range), results
+end
+
+colors = [:steelblue, :crimson, :darkorange, :forestgreen]
+p = plot(title="RS Error vs. Sample Size (Rosenbrock Function)",
+         xlabel=L"Sample size $N_S$",
+         ylabel="Mean normalised error",
+         yscale=:log10, legend=:topright, grid=true, gridalpha=0.3)
+
+for (nv, col) in zip([2, 3, 5, 8], colors)
+    ns_vec, err_vec = rs_error_study(nv)
+    ns_min = min_rs_points(nv)
+    plot!(ns_vec, max.(err_vec, 1e-6), lw=2, color=col,
+          label="NX = $nv  (NS_min = $ns_min)")
+    vline!([ns_min], color=col, lw=1, linestyle=:dot, label="")
+end
+
+p
+```
+
+@fig-error-analysis confirms the key insight from the original thesis: for
+low-dimensional problems ($N_X = 2, 3$), a quadratic RS achieves acceptable accuracy
+($<10\%$ error) with a moderate number of samples. For higher-dimensional problems
+($N_X = 8$), significantly more samples are needed, reinforcing the importance of
+decomposing the problem so that each BB handles a limited number of variables.
+
+### Response Surface Visualization
+
+```{julia}
+#| label: fig-rs-surface
+#| fig-cap: "Quadratic response surface fit to the 2D Rosenbrock function. The curved valley of the Rosenbrock is approximated by a paraboloid; error is largest near the valley floor where curvature is highest."
+#| code-fold: true
+
+rng = MersenneTwister(77)
+n_train = 20
+pts = 2 .* rand(rng, n_train, 2) .- 1.0
+y   = [rosenbrock(pts[i,:]) for i in 1:n_train]
+b   = fit_rs(pts, y)
+
+xg = range(-1, 1, length=60)
+yg = range(-1, 1, length=60)
+
+Z_true = [rosenbrock([xi, yi]) for yi in yg, xi in xg]
+Z_rs   = [predict_rs(reshape([xi, yi], 1, 2), b)[1] for yi in yg, xi in xg]
+
+p1 = contourf(xg, yg, min.(Z_true, 100), color=:viridis, levels=20,
+              title="True Rosenbrock", xlabel=L"x_1", ylabel=L"x_2",
+              colorbar_title="f(x)", clim=(0,100))
+
+p2 = contourf(xg, yg, clamp.(Z_rs, 0, 100), color=:viridis, levels=20,
+              title="Quadratic RS Approximation", xlabel=L"x_1", ylabel=L"x_2",
+              colorbar_title="f̂(x)", clim=(0,100))
+scatter!(pts[:,1], pts[:,2], color=:white, markersize=4,
+         markerstrokecolor=:black, label="Training points")
+
+plot(p1, p2, size=(800, 350))
+```
+
+The contour plots in @fig-rs-surface illustrate an important limitation of quadratic
+surrogates: the actual Rosenbrock valley follows a parabolic curve $x_2 = x_1^2$,
+while the quadratic RS can only represent it as an ellipsoidal bowl. This mismatch
+motivates the *interval reduction* strategy in Chapter 6 — by shrinking the design
+space region around the optimum each iteration, subsequent RS models are fitted to
+smaller, more nearly-quadratic sub-regions where the approximation is more accurate.
+
+## Conditioning and Over-Determination
+
+The normal equations (@eq-normal) can become ill-conditioned when sample points are
+clustered or collinear. Good conditioning requires the *design matrix* $[X]$ to have
+columns that are mutually uncorrelated — a property promoted by the D-optimal design
+strategy described in Chapter 5.
+
+```{julia}
+#| label: fig-conditioning
+#| fig-cap: "Condition number of X'X as a function of sample size and point placement strategy. Clustered random points can produce high condition numbers, increasing sensitivity to numerical errors. Well-placed D-optimal designs maintain low condition numbers."
+#| code-fold: true
+
+function condition_number_study(n_vars::Int, n_pts_range, n_trials::Int=10; seed=42)
+    rng = MersenneTwister(seed)
+    cond_random = Float64[]
+    cond_dopt   = Float64[]
+
+    for n_pts in n_pts_range
+        # Random points
+        conds = Float64[]
+        for trial in 1:n_trials
+            pts = rand(rng, n_pts, n_vars)
+            X   = rs_design_matrix(pts)
+            push!(conds, cond(X' * X))
+        end
+        push!(cond_random, median(conds))
+
+        # D-optimal points
+        pts_d = d_optimal_points(n_vars, n_pts; seed=seed+1)
+        X_d   = rs_design_matrix(pts_d)
+        push!(cond_dopt, cond(X_d' * X_d))
+    end
+    return cond_random, cond_dopt
+end
+
+n_vars = 3
+ns_min = min_rs_points(n_vars)
+n_pts_range = ns_min:(ns_min + 30)
+
+cond_r, cond_d = condition_number_study(n_vars, n_pts_range)
+
+plot(n_pts_range, cond_r, lw=2, color=:crimson, label="Random placement",
+     xlabel="Sample size NS", ylabel="Condition number κ(X'X)",
+     title="Design Matrix Conditioning (n = $n_vars variables)",
+     yscale=:log10, legend=:topright, grid=true, gridalpha=0.3)
+plot!(n_pts_range, cond_d, lw=2, color=:steelblue, label="D-Optimal placement")
+hline!([1e6], color=:black, linestyle=:dash, lw=1, label="Warning threshold")
+```

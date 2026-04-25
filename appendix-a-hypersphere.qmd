@@ -1,0 +1,141 @@
+---
+title: "Appendix A: Hypersphere Point Placement Algorithm"
+---
+
+```{julia}
+#| include: false
+include("src/bliss_rs.jl")
+using Printf, Plots, LaTeXStrings, LinearAlgebra, Random
+gr()
+```
+
+## Algorithm Description
+
+The hypersphere point placement scheme generates $m$ sample points distributed
+approximately uniformly on the surface of an $n$-dimensional unit hypersphere,
+then maps them into the interior of the unit hypercube. The algorithm exploits the
+well-known result that normalised Gaussian random vectors are uniformly distributed
+on the unit sphere.
+
+### Step-by-Step Algorithm
+
+1. **Generate** $m$ vectors $\mathbf{u}_i \in \mathbb{R}^n$, each drawn from an
+   $n$-dimensional standard Gaussian distribution:
+   $$\mathbf{u}_i \sim \mathcal{N}(0, I_n)$$
+
+2. **Normalise** each vector to unit length (project to sphere surface):
+   $$\hat{\mathbf{u}}_i = \frac{\mathbf{u}_i}{\|\mathbf{u}_i\|}$$
+
+3. **Map** from $[-1, 1]^n$ (sphere surface coordinates) to $[0, 1]^n$:
+   $$\mathbf{x}_i = \frac{\hat{\mathbf{u}}_i + \mathbf{1}}{2}$$
+
+### Anti-Bunching Property
+
+For large $n$, the hypercube has most of its volume concentrated in the corners.
+Uniform random points in a hypercube tend to cluster in corners, leaving the interior
+sparsely sampled. The hypersphere scheme avoids this by ensuring points lie on a
+surface of equal radial distance from the origin — a strong anti-bunching mechanism
+that produces more even coverage of the design space.
+
+```{julia}
+#| label: fig-sphere-3d
+#| fig-cap: "Hypersphere points projected into 3D: 50 points projected from the unit sphere surface into [0,1]³. Points cover the faces of the cube more uniformly than pure random placement."
+#| code-fold: true
+
+rng = MersenneTwister(42)
+pts_hs = hypersphere_points(3, 50; seed=42)
+pts_rn = random_points(3, 50; seed=42)
+
+p1 = scatter3d(pts_hs[:,1], pts_hs[:,2], pts_hs[:,3],
+               xlabel="x₁", ylabel="x₂", zlabel="x₃",
+               title="Hypersphere (50 pts)", markersize=3,
+               color=:steelblue, alpha=0.7, legend=false)
+
+p2 = scatter3d(pts_rn[:,1], pts_rn[:,2], pts_rn[:,3],
+               xlabel="x₁", ylabel="x₂", zlabel="x₃",
+               title="Random (50 pts)", markersize=3,
+               color=:crimson, alpha=0.7, legend=false)
+
+plot(p1, p2, size=(800, 380))
+```
+
+## Minimum Point Count
+
+A key advantage of the hypersphere scheme is that the number of points is determined
+solely by the minimum required for the RS model ($N_S$ from @eq-ns-second-order),
+not by the formula of any specific classical design. This gives the designer freedom
+to generate exactly as many points as needed.
+
+```{julia}
+# For each dimensionality, show the minimum required and a recommended augmented count
+println("n | NS_min | Recommended (NS_min + 10%)")
+println("-" ^ 42)
+for n in 2:12
+    ns_min = min_rs_points(n)
+    ns_rec = ceil(Int, 1.1 * ns_min)
+    @printf("%2d | %6d | %25d\n", n, ns_min, ns_rec)
+end
+```
+
+## Julia Implementation (Full Detail)
+
+```{julia}
+#| code-fold: false
+
+function hypersphere_points_full(n::Int, m::Int; seed::Int=42) :: Matrix{Float64}
+    # Step 1: n-dimensional Gaussian samples
+    rng  = MersenneTwister(seed)
+    U    = randn(rng, m, n)             # m × n matrix of raw Gaussian samples
+
+    # Step 2: normalise each row to unit Euclidean norm
+    norms = sqrt.(sum(U .^ 2, dims=2))  # m × 1 column of norms
+    U_hat = U ./ norms                  # each row now has norm = 1
+
+    # Step 3: map from [-1,1]ⁿ to [0,1]ⁿ
+    X = (U_hat .+ 1.0) ./ 2.0
+
+    return X
+end
+
+# Verify the implementation matches src/bliss_rs.jl
+pts_ref  = hypersphere_points(3, 20; seed=99)
+pts_full = hypersphere_points_full(3, 20; seed=99)
+@printf("Max discrepancy vs. reference: %.2e\n", maximum(abs.(pts_ref .- pts_full)))
+```
+
+## Comparison with Classical Designs in 2D
+
+```{julia}
+#| label: fig-design-comparison
+#| fig-cap: "Four point placement strategies for n=2, m=15 points. The CCD includes fixed axial points at ±α; Box-Behnken uses midpoints of cube edges. D-optimal adapts to the regression model; hypersphere fills the unit sphere surface."
+#| code-fold: true
+
+# Central Composite Design (2 factors, α = √2 for rotatable)
+α = sqrt(2.0)
+cube_pts = [[-1,-1],[1,-1],[-1,1],[1,1]]
+axial_pts = [[-α,0],[α,0],[0,-α],[0,α]]
+center_pt = [[0.0,0.0],[0,0],[0,0]]
+ccd_pts = vcat(cube_pts, axial_pts, center_pt)
+ccd_mat = hcat([[p[1] for p in ccd_pts], [p[2] for p in ccd_pts]]...)'
+ccd_mat = (ccd_mat .+ α) ./ (2α)   # scale to [0,1]
+
+# Other designs
+hs_pts   = hypersphere_points(2, 15; seed=42)
+dopt_pts = d_optimal_points(2, 15; seed=42)
+rnd_pts  = random_points(2, 15; seed=42)
+
+scatter_kw = (xlim=(-0.05,1.05), ylim=(-0.05,1.05),
+              aspect_ratio=1, legend=false, grid=true, gridalpha=0.3,
+              xlabel=L"x_1", ylabel=L"x_2")
+
+p1 = scatter(ccd_mat[:,1], ccd_mat[:,2]; title="CCD (11 pts)",
+             markersize=7, color=:darkorange, markerstrokecolor=:white, scatter_kw...)
+p2 = scatter(hs_pts[:,1], hs_pts[:,2]; title="Hypersphere (15 pts)",
+             markersize=7, color=:steelblue, markerstrokecolor=:white, scatter_kw...)
+p3 = scatter(dopt_pts[:,1], dopt_pts[:,2]; title="D-Optimal (15 pts)",
+             markersize=7, color=:forestgreen, markerstrokecolor=:white, scatter_kw...)
+p4 = scatter(rnd_pts[:,1], rnd_pts[:,2]; title="Random (15 pts)",
+             markersize=7, color=:crimson, markerstrokecolor=:white, scatter_kw...)
+
+plot(p1, p2, p3, p4, layout=(2,2), size=(680, 580))
+```

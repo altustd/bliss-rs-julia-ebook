@@ -1,0 +1,302 @@
+---
+title: "BLISS-98: System Architecture and Subsystem Analyses"
+---
+
+```{julia}
+#| include: false
+include("src/bliss_rs.jl")
+include("src/supersonic_jet.jl")
+using Printf, Plots, LaTeXStrings, Statistics
+gr()
+```
+
+## System Architecture
+
+The BLISS framework begins with a formal decomposition of the full design problem
+into a hierarchy of black boxes. Regardless of which BLISS variant is used,
+the system architecture follows the same three-level structure:
+
+**Level 1 — System variables $Z$**: Shared quantities that influence the objective
+or coupling variables across at least two disciplines. In the supersonic business
+jet, wing geometry parameters (aspect ratio, sweep, area) appear as inputs to both
+the structures and aerodynamics black boxes.
+
+**Level 2 — Local variables $X$**: Variables private to a single black box.
+Structural skin panel thicknesses, for example, are optimized inside the structures
+BB and never seen by the aerodynamics or power BBs.
+
+**Level 3 — Coupling variables $Y^*$ / $Y^A$**: Quantities that flow between
+disciplines. Lift computed by the aerodynamics BB becomes a load input to the
+structures BB; structural weight and twist feed back to the aerodynamics BB.
+
+The coupling variables are where the MDO problem is hard. Every coupling variable
+must satisfy a *compatibility constraint*: the value proposed by the system
+optimizer ($Y^*$) must match the value produced by BB analysis ($Y^A$) at
+convergence.
+
+## BLISS-98 Cycle
+
+@fig-bliss98-cycle illustrates the BLISS-98 iteration cycle. After initialization,
+the algorithm alternates between two steps until convergence:
+
+**Step 1 — Local optimizations**: Each BB optimizes over its local variables $X$,
+with $Z$ and $Y^*$ held fixed. Because the BBs share no local variables, these
+optimizations are fully independent and can run concurrently.
+
+**Step 2 — System optimization**: Using the locally-optimal sensitivity derivatives
+$\partial X^*_{opt} / \partial Z$, the system optimizer updates $Z$ to improve the
+overall objective. The sensitivity analysis in BLISS-98 provides a linear
+approximation $Y = Y(Z)$ near the current system design point.
+
+```{julia}
+#| label: fig-bliss98-cycle
+#| fig-cap: "BLISS-98 iteration cycle. Steps inside the dashed region can be executed concurrently for each black box. Reproduced from Altus & Sobieski (2002)."
+#| code-fold: true
+
+using Plots
+gr()
+
+# Schematic flowchart as a text diagram rendered via annotations
+p = plot(xlim=(0,10), ylim=(0,10), axis=false, grid=false,
+         aspect_ratio=:none, size=(600,450),
+         title="BLISS-98 Iteration Cycle")
+
+boxes = [
+    (5.0, 9.2, "Initialize X, Z"),
+    (5.0, 7.8, "System Analysis\n& Sensitivity"),
+    (2.0, 6.0, "BB₁ Local\nOptimisation"),
+    (5.0, 6.0, "BB₂ Local\nOptimisation"),
+    (8.0, 6.0, "BBₙ Local\nOptimisation"),
+    (5.0, 4.2, "System\nOptimisation"),
+    (5.0, 2.6, "Converged?"),
+    (5.0, 1.2, "Stop"),
+]
+
+colors = [:lightblue, :lightyellow, :lightgreen, :lightgreen, :lightgreen,
+          :lightyellow, :lightyellow, :lightgray]
+
+for ((x, y, lbl), col) in zip(boxes, colors)
+    plot!(Shape([x-1.5, x+1.5, x+1.5, x-1.5],
+                [y-0.5, y-0.5, y+0.5, y+0.5]),
+          fill=col, linecolor=:black, lw=1.5, label="")
+    annotate!(x, y, text(lbl, 7, :center))
+end
+
+# Arrows (simplified)
+for (y1, y2) in [(8.7, 8.3), (7.3, 6.5), (6.5, 4.7), (3.7, 3.1), (2.1, 1.7)]
+    plot!([5.0, 5.0], [y1, y2], arrow=true, color=:black, lw=1.5, label="")
+end
+# Concurrent arrows to side BBs
+plot!([5.0, 2.0], [7.3, 6.5], arrow=true, color=:black, lw=1.2, label="", linestyle=:dash)
+plot!([5.0, 8.0], [7.3, 6.5], arrow=true, color=:black, lw=1.2, label="", linestyle=:dash)
+plot!([2.0, 5.0], [5.5, 4.7], arrow=true, color=:black, lw=1.2, label="", linestyle=:dash)
+plot!([8.0, 5.0], [5.5, 4.7], arrow=true, color=:black, lw=1.2, label="", linestyle=:dash)
+
+# Feedback arrow "No → back to System Analysis"
+plot!([6.5, 8.5, 8.5, 5.0], [2.6, 2.6, 7.8, 7.8],
+      arrow=true, color=:crimson, lw=1.5, label="")
+annotate!(7.5, 5.2, text("No", 9, :crimson))
+annotate!(5.8, 2.6, text("Yes", 9, :forestgreen))
+
+# Dashed concurrent box
+plot!(Shape([0.5,9.5,9.5,0.5],[5.4,5.4,6.6,6.6]),
+      fill=nothing, linecolor=:gray, lw=1.0, linestyle=:dash, label="")
+annotate!(0.5, 5.95, text("Concurrent\nOpportunity", 7, :gray, :left))
+
+p
+```
+
+## Variable Flow in the Supersonic Business Jet
+
+@tbl-variables lists the system and coupling variables used in the BLISS-98
+supersonic business jet test case. This variable set is preserved in BLISS-RS.
+
+| Variable | Symbol | Units | Type | Connects to |
+|----------|--------|-------|------|-------------|
+| Thickness/chord ratio | $t/c$ | — | $Z$ | Structures, Aero |
+| Wing aspect ratio | $AR_w$ | — | $Z$ | Structures, Aero |
+| Wing sweep | $\Lambda_w$ | deg | $Z$ | Structures, Aero |
+| Wing surface area | $S_w$ | ft² | $Z$ | Structures, Aero |
+| Tail surface area | $S_{HT}$ | ft² | $Z$ | Structures, Aero |
+| Tail aspect ratio | $AR_{HT}$ | — | $Z$ | Structures, Aero |
+| Taper ratio | $\lambda$ | — | $Z$ | Structures, Aero |
+| Altitude | $h$ | ft | $Z$ | Aero, Power |
+| Mach number | $M$ | — | $Z$ | Aero, Power |
+| Lift | $L$ | lbf | $Y^A$ | Structures ← Aero |
+| Total weight | $W_T$ | lbf | $Y^A$ | Aero ← Structures |
+| Aeroelastic twist | $\Omega$ | ft² | $Y^A$ | Aero ← Structures |
+| Drag | $D$ | lbf | $Y^A$ | Power ← Aero |
+| Engine scale factor | $ESF$ | — | $Y^A$ | Aero ← Power |
+| Specific fuel consumption | $SFC$ | lb/(lbf·hr) | $Y^A$ | Performance ← Power |
+| Engine weight | $W_E$ | lbf | $Y^A$ | Structures ← Power |
+| Fuel weight | $W_F$ | lbf | $Y^A$ | Performance ← Structures |
+| Lift-to-drag ratio | $L/D$ | — | $Y^A$ | Performance ← Aero |
+
+: System and coupling variables for the supersonic business jet {#tbl-variables}
+
+## Subsystem Analyses
+
+### Structures Black Box (ELAPS)
+
+The original structures analysis used the *Equivalent Laminated Plate Structures*
+(ELAPS) code [@giles1995elaps; @giles1989elaps2], a Fortran-77 finite-element-like
+code that models wing-box structures using Ritz-based polynomial plate elements.
+
+ELAPS takes as inputs the system-level geometric variables plus lift from the
+aerodynamics BB and engine weight from the power BB. It computes structural
+weight and an aeroelastic *twist* term — the reduction in effective lift area (ft²)
+due to the combined bending and twisting deformations of the wing box.
+
+The lift distribution along the semi-span was estimated using the **Shrenk
+approximation**: the spanwise lift distribution is the average of an elliptical
+distribution and a trapezoidal distribution that reflects chord taper:
+
+$$
+\ell(y) = \frac{1}{2}\left[\ell_{ellipse}(y) + \ell_{trap}(y)\right]
+$$ {#eq-shrenk}
+
+```{julia}
+#| label: fig-shrenk
+#| fig-cap: "Shrenk lift distribution: average of elliptical and trapezoidal components. Fuselage and tail carry-through effects are neglected. Reproduced from Altus (2002) Fig. 4."
+#| code-fold: true
+
+b_semi = 1.0   # normalized semi-span [0, 1]
+η = range(0, 1, length=200)
+
+# Elliptical distribution (normalized)
+ℓ_ell(η) = (4/π) * sqrt(max(1 - η^2, 0.0))
+
+# Trapezoidal (chord taper): chord decreases linearly from root to tip
+λ_taper = 0.2    # taper ratio
+ℓ_trap(η) = 2*(1 - (1-λ_taper)*η) / (1 + λ_taper)   # normalized
+
+ℓ_shrenk(η) = 0.5 * (ℓ_ell(η) + ℓ_trap(η))
+
+p = plot(η, ℓ_ell.(η), lw=2, color=:steelblue, label="Elliptical", linestyle=:dash)
+plot!(η, ℓ_trap.(η), lw=2, color=:darkorange, label="Trapezoidal (λ=0.2)", linestyle=:dot)
+plot!(η, ℓ_shrenk.(η), lw=2.5, color=:crimson, label="Shrenk average")
+plot!(xlabel=L"Spanwise location $\eta = 2y/b$",
+      ylabel="Normalised lift per unit span",
+      title="Shrenk Lift Distribution",
+      legend=:topright, grid=true, gridalpha=0.3)
+```
+
+### Aerodynamics Black Box (AWAVE)
+
+The aerodynamics BB uses a **Harris wave-drag** model [@harris1964wave] modified
+with a pre-processor that deforms the aircraft cross-sectional area distribution
+to account for engine nacelles and applies an area-rule correction. The drag polar
+decomposes total drag into three components:
+
+$$
+C_D = C_{D_{min}} + C_{D_L} + C_{D_w}
+$$ {#eq-drag-polar}
+
+where $C_{D_{min}}$ is the minimum-drag (friction + form) coefficient,
+$C_{D_L} = C_L^2 / (\pi AR_w e)$ is the induced drag
+(Oswald efficiency $e \approx 0.85$), and $C_{D_w}$ is the supersonic wave drag
+computed from the AWAVE code.
+
+At cruise, total lift equals total weight: $L = W_T$, which links the aerodynamics
+and structures BBs through the coupling variable.
+
+### Power Black Box
+
+The power BB is the simplest in the system. It uses an empirical *engine deck
+approximation* — a quadratic polynomial in altitude and Mach number — to compute
+specific fuel consumption (SFC). Engine weight is found from:
+
+$$
+W_E = 1200 \cdot ESF^{0.9}
+$$ {#eq-engine-weight}
+
+where $ESF$ (engine scale factor) is the ratio of required thrust to the baseline
+engine's maximum thrust. The power BB requires only system variables $h$ and $M$,
+plus drag $D$ from the aerodynamics BB.
+
+### Performance Black Box: Breguet Range Equation
+
+The performance BB closes the loop with the **Breguet range equation** — one of
+the most fundamental relations in aircraft design:
+
+$$
+R = \frac{aM}{SFC} \cdot \frac{L}{D} \cdot \ln\!\left(\frac{W_i}{W_f}\right)
+$$ {#eq-breguet}
+
+where $a$ is the speed of sound at cruise altitude, $M$ is the Mach number,
+$L/D$ is the lift-to-drag ratio, and $W_i / W_f$ is the ratio of initial to
+final cruise weight (i.e., how much fuel is burned).
+
+```{julia}
+#| label: fig-breguet-sensitivity
+#| fig-cap: "Breguet range sensitivity to L/D and fuel weight fraction. High L/D and high fuel fraction both contribute significantly to range. The logarithmic fuel term rewards structural efficiency."
+#| code-fold: true
+
+using Plots
+gr()
+
+# Parametric Breguet range study
+# Fix: h = 50,000 ft, M = 1.8, SFC = 1.2 lb/(lbf·hr), WT = 70,000 lbf
+h_ft = 50_000.0
+M    = 1.8
+SFC  = 1.2     # lb/(lbf·hr)
+WT   = 70_000.0  # lbf
+
+LD_range  = range(3.0, 10.0, length=50)
+WF_frac   = range(0.15, 0.55, length=50)   # WF/WT
+
+range_nm(LD, wf_frac) = begin
+    _, a = std_atmosphere(h_ft)
+    a_kts = a / 1.68781
+    WF = wf_frac * WT
+    Wf = WT - WF
+    Wf <= 0 && return 0.0
+    (a_kts * M / SFC) * LD * log(WT / Wf)
+end
+
+R_grid = [range_nm(ld, wf) for wf in WF_frac, ld in LD_range]
+
+contourf(LD_range, WF_frac, R_grid,
+         xlabel=L"Lift-to-drag ratio $L/D$",
+         ylabel=L"Fuel weight fraction $W_F/W_T$",
+         title="Breguet Range (NM), M=1.8, h=50,000 ft",
+         colorbar_title="Range (NM)",
+         color=:viridis, levels=15,
+         grid=true, gridalpha=0.2)
+```
+
+## Illustrative System Analysis
+
+The Julia implementation in `src/supersonic_jet.jl` provides a coupled system
+analysis that chains all four black boxes. The following example evaluates the
+baseline design from @altus2002blissrs:
+
+```{julia}
+#| label: tbl-baseline-analysis
+#| tbl-cap: "Baseline supersonic business jet analysis at the initial design point from Altus (2002), Table 1."
+
+# Baseline design vector: [t_c, ARw, Λw, Sw, SHT, ARHT, λ]
+Z_baseline = [0.075, 4.0, 45.0, 400.0, 120.0, 4.5, 0.2]
+h_cruise   = 45_000.0   # ft
+M_cruise   = 1.8
+
+result = ssbj_analysis(Z_baseline, h_cruise, M_cruise;
+                        WF_init=15_000.0, WT_empty=28_000.0)
+
+rows = [
+    ("Total weight W_T",         @sprintf("%.0f lbf",  result.WT)),
+    ("Fuel weight W_F",          @sprintf("%.0f lbf",  result.WF)),
+    ("Engine scale factor ESF",  @sprintf("%.3f",      result.ESF)),
+    ("Lift L",                   @sprintf("%.0f lbf",  result.L)),
+    ("Drag D",                   @sprintf("%.0f lbf",  result.D)),
+    ("Lift-to-drag ratio L/D",   @sprintf("%.2f",      result.LD)),
+    ("SFC",                      @sprintf("%.3f lb/(lbf·hr)", result.SFC)),
+    ("Range",                    @sprintf("%.0f NM",   result.Range)),
+]
+
+println("| Quantity | Value |")
+println("|----------|-------|")
+for (name, val) in rows
+    println("| $name | $val |")
+end
+```

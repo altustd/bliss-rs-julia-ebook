@@ -1,0 +1,205 @@
+---
+title: "Interval Reduction"
+---
+
+```{julia}
+#| include: false
+include("src/bliss_rs.jl")
+using Printf, Plots, LaTeXStrings, Random
+gr()
+```
+
+## Motivation
+
+A quadratic response surface is an accurate surrogate only within a limited
+neighbourhood of the region over which it was fitted. If the initial design space
+interval $[X_L, X_U]$ is large relative to the quadratic variation of the true
+function, the approximation may be poor — particularly near the optimum where
+accuracy matters most.
+
+The **interval reduction** strategy addresses this by shrinking the design space
+bounds each BLISS-RS iteration. After the system optimizer identifies an optimal
+point $(Z^*, Y^{*}, w^*)$, the bounds for the next iteration are centred near this
+point and contracted by a factor that depends on how far the optimum lies from the
+current interval midpoint.
+
+This strategy has two desirable properties:
+
+1. As the iteration progresses, the RS is fitted over progressively smaller
+   sub-regions, improving approximation quality.
+2. The optimum cannot escape the design space, because the new bounds are always
+   centred on or near the previous optimum.
+
+## Interval Reduction Algorithm
+
+Let $[L_i, H_i]$ denote the current bounds on the $i$-th design variable $x_i$,
+and let $C_i = (L_i + H_i)/2$ be the interval centre.
+
+### Adjustment Factor
+
+The *adjustment factor* $A_i$ measures how far the current optimum $x_i^*$ lies from
+the interval centre, normalized by the half-width:
+
+$$
+A_i = \frac{|C_i - x_i^*|}{(H_i - L_i)/2}
+$$ {#eq-adj-factor}
+
+$A_i = 0$ when the optimum is at the centre; $A_i = 1$ when it is at a boundary.
+
+### Reduction Factor
+
+The *reduction factor* $R_i \in [K, 1]$ determines how much the interval is
+contracted:
+
+$$
+R_i = A_i + (1 - A_i) K
+$$ {#eq-reduction-factor}
+
+where $K \in (0, 1)$ is a user-specified global contraction parameter (Altus 2002
+used $K \approx 0.8$). When the optimum is at the centre ($A_i = 0$), the interval
+contracts by the maximum factor $R_i = K$. When the optimum is at a boundary
+($A_i = 1$), $R_i = 1$ — the interval is not contracted, preventing premature
+shrinkage when the true optimum may lie outside the current bounds.
+
+The new interval half-width is:
+
+$$
+\Delta x_i^{\text{new}} = R_i \cdot (H_i - L_i)
+$$ {#eq-new-width}
+
+### Oscillation and Boundary Detection
+
+Two additional heuristics prevent pathological behaviour:
+
+- **Boundary hit**: If the optimum hits the same bound twice consecutively, the
+  interval is expanded by a fixed factor (×3 in Altus 2002) to allow the optimum
+  to move away from the artificial boundary.
+- **Oscillation**: If the optimum alternates between the upper and lower bounds
+  in consecutive iterations, the interval is contracted more aggressively (÷2) to
+  resolve the oscillation.
+
+## Julia Implementation
+
+```{julia}
+#| label: lst-interval-demo
+#| code-fold: false
+
+# Demonstrate interval reduction on a 1D example
+# True function: f(x) = (x - 0.65)^2 + 0.1*sin(5x)  (optimum near x=0.65)
+f_true(x) = (x - 0.65)^2 + 0.1 * sin(5 * x)
+
+# Simulate BLISS-RS iteration: fit RS, find optimum, reduce interval
+function bliss_interval_demo(n_iter::Int=10, K::Float64=0.8)
+    lo, hi = 0.0, 1.0    # initial bounds
+    x_history   = Float64[]
+    obj_history = Float64[]
+    lo_history  = Float64[]
+    hi_history  = Float64[]
+
+    rng = MersenneTwister(42)
+
+    for it in 1:n_iter
+        # Sample points in current interval
+        n_pts = 8
+        pts_1d = lo .+ rand(rng, n_pts) .* (hi - lo)
+
+        # Evaluate true function (in BLISS-RS this is the BB optimisation)
+        y_vals = f_true.(pts_1d)
+
+        # Fit a quadratic RS
+        pts_mat = reshape(pts_1d, n_pts, 1)
+        b = fit_rs(pts_mat, y_vals)
+
+        # Find RS minimum analytically (1D quadratic)
+        # RS: b[1] + b[2]*x + b[3]*x^2 → minimum at x* = -b[2]/(2*b[3])
+        x_rs_opt = clamp(-b[2] / (2 * b[3] + 1e-12), lo, hi)
+        obj_opt  = f_true(x_rs_opt)
+
+        push!(x_history,   x_rs_opt)
+        push!(obj_history, obj_opt)
+        push!(lo_history,  lo)
+        push!(hi_history,  hi)
+
+        # Reduce interval
+        lo, hi = interval_reduction_factors(x_rs_opt, lo, hi; K=K)
+    end
+
+    return x_history, obj_history, lo_history, hi_history
+end
+
+x_hist, obj_hist, lo_hist, hi_hist = bliss_interval_demo(10)
+@printf("True optimum at x ≈ 0.650, f* ≈ %.5f\n", f_true(0.65))
+@printf("BLISS-RS final: x* = %.4f, f* = %.5f\n", x_hist[end], obj_hist[end])
+```
+
+```{julia}
+#| label: fig-interval-reduction
+#| fig-cap: "Interval reduction over 10 BLISS-RS iterations on a 1D test function. Top: interval bounds (shaded) converge toward the true optimum (dashed line). Bottom: objective value history showing monotone improvement."
+#| code-fold: true
+
+x_hist, obj_hist, lo_hist, hi_hist = bliss_interval_demo(10)
+iters = 1:10
+x_true_opt = 0.65
+
+# Top plot: interval bounds vs. iteration
+p1 = plot(iters, (lo_hist .+ hi_hist) ./ 2,
+          ribbon=(hi_hist .- lo_hist) ./ 2,
+          fillalpha=0.2, color=:steelblue, lw=2,
+          label="RS search interval",
+          xlabel="Iteration", ylabel=L"x",
+          title="Interval Convergence")
+plot!(iters, x_hist, color=:crimson, lw=2, marker=:circle,
+      markersize=5, label=L"x^*_{RS}")
+hline!([x_true_opt], color=:black, linestyle=:dash, lw=1.5,
+       label="True optimum")
+
+# Bottom plot: objective history
+p2 = plot(iters, obj_hist, color=:darkorange, lw=2, marker=:circle,
+          markersize=5, label="",
+          xlabel="Iteration", ylabel=L"f(x^*)",
+          title="Objective Value History", legend=false)
+hline!([f_true(x_true_opt)], color=:black, linestyle=:dash, lw=1.5)
+
+plot(p1, p2, layout=(2,1), size=(650, 450))
+```
+
+## Effect of Contraction Factor K
+
+The parameter $K$ controls the aggressiveness of interval reduction. A value close
+to 1.0 reduces the interval slowly (conservative), while a value close to 0 collapses
+it aggressively (risky if the RS is not yet accurate).
+
+```{julia}
+#| label: fig-k-comparison
+#| fig-cap: "Convergence speed vs. contraction factor K. Small K converges quickly if the initial RS is accurate, but may prematurely fix the optimum. Large K is safer but converges slowly. Altus (2002) used K ≈ 0.8 for the supersonic business jet."
+#| code-fold: true
+
+p = plot(title="Effect of K on Interval Width",
+         xlabel="Iteration", ylabel="Interval width (hi - lo)",
+         legend=:topright, grid=true, gridalpha=0.3, yscale=:log10)
+
+for (K_val, col) in [(0.5, :crimson), (0.7, :darkorange),
+                      (0.8, :steelblue), (0.95, :forestgreen)]
+    _, _, lo_h, hi_h = bliss_interval_demo(10, K_val)
+    width = hi_h .- lo_h
+    plot!(1:10, max.(width, 1e-6), lw=2, color=col, label="K = $K_val",
+          marker=:circle, markersize=4)
+end
+
+p
+```
+
+## Coupling Variable Intervals
+
+System variables $Z$ are bounded by physical constraints (wing area cannot be
+negative; sweep cannot exceed 90°), so their intervals must always lie within the
+original physical bounds. Coupling variables $Y^*$ and weighting factors $w$,
+however, are free to drift: their intervals are allowed to shift laterally (centred
+on the current optimum) without restriction, because satisfying the coupling
+constraints $\{c\} = 0$ must always remain feasible regardless of where $Y^*$ is
+centered.
+
+This asymmetry in interval treatment — $Z$ bounded by physical limits, $Y^*$ and $w$
+free to drift — is a subtle but important implementation detail that ensures the
+system optimisation can always find a feasible point with respect to coupling
+constraints, even as the design space contracts around the system-optimal $Z$.

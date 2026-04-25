@@ -1,0 +1,117 @@
+---
+title: "Appendix B: Julia Reference — Flutter Constraint and Module Listings"
+---
+
+## Flutter Constraint Derivation
+
+The anti-flutter constraint added to the upgraded structures black box is based on a
+first-order aeroelastic stability criterion. Define:
+
+- $M_{DR}$ — deformed wing root bending moment (from ELAPS deflection solution)
+- $M_{RR}$ — rigid wing root bending moment (from applied aerodynamic loads)
+
+The bending moments are computed from the spanwise lift distribution $L(y)$:
+
+$$
+M_{root} = \int_0^{b/2} L(y) \cdot y \, \mathrm{d}y
+$$
+
+For the rigid wing, $L(y)$ is the prescribed aerodynamic load distribution. For the
+deformed wing, $L(y)$ is modified by the twist and bending deformations $d_A(y)$
+and $d_B(y)$ computed by ELAPS:
+
+$$
+M_{DR} = \int_0^{b/2} L(y)\left(1 + \frac{\partial C_L}{\partial \alpha}\frac{d_A(y) - d_B(y)}{c(y)}\right) y \, \mathrm{d}y
+$$
+
+The flutter constraint requires:
+
+$$
+\frac{M_{DR}}{M_{RR}} \leq 1.0
+$$ {#eq-flutter-constraint}
+
+When $M_{DR}/M_{RR} > 1$, the deformed wing generates more lift than the rigid wing,
+which amplifies the deflection — a divergence/flutter instability.
+
+In ELAPS, the ratio is approximated by:
+
+$$
+\frac{M_{DR}}{M_{RR}} \approx 1 + K_{flutter} \cdot AR_w^{1.5} \cdot (d_A - d_B)_{\text{max}}
+$$
+
+where $K_{flutter}$ is a calibration constant derived from higher-fidelity
+aeroelastic computations.
+
+## Source Module: `src/bliss_rs.jl`
+
+The complete BLISS-RS core implementation is in [src/bliss_rs.jl](src/bliss_rs.jl).
+Key exported functions:
+
+| Function | Purpose |
+|----------|---------|
+| `min_rs_points(n)` | Minimum sample count for second-order RS in n variables |
+| `rs_design_matrix(pts)` | Build the [X] design matrix |
+| `fit_rs(pts, y)` | Least squares RS fit |
+| `predict_rs(pts, b)` | Evaluate RS at new points |
+| `rs_normalized_error(y_actual, y_rs)` | Mean absolute normalised error |
+| `hypersphere_points(n, m)` | Hypersphere DOE |
+| `random_points(n, m)` | Uniform random DOE |
+| `d_optimal_points(n, m)` | D-optimal DOE via coordinate exchange |
+| `code_to_natural(ξ, xL, xU)` | Coded → natural variable mapping |
+| `natural_to_code(x, xL, xU)` | Natural → coded variable mapping |
+| `interval_reduction_factors(opt, lo, hi)` | Compute new bounds |
+| `update_intervals(Z_opt, bounds)` | Apply interval reduction to all variables |
+
+## Source Module: `src/supersonic_jet.jl`
+
+The supersonic business jet black boxes are in [src/supersonic_jet.jl](src/supersonic_jet.jl).
+
+| Function | Purpose |
+|----------|---------|
+| `std_atmosphere(h_ft)` | Simplified standard atmosphere model |
+| `structures_bb(Z, L, WE)` | Wing structural weight and aeroelastic twist |
+| `aero_bb(Z, h, M, WT, Ω, ESF)` | Drag polar aerodynamics |
+| `power_bb(h, M, D)` | Engine scaling and SFC |
+| `performance_bb(WT, WF, LD, SFC, h, M)` | Breguet range |
+| `ssbj_analysis(Z, h, M)` | Coupled system analysis (all four BBs) |
+
+## Source Module: `src/srm.jl`
+
+The solid propellant rocket motor black boxes are in [src/srm.jl](src/srm.jl).
+
+| Function | Purpose |
+|----------|---------|
+| `thrust_coefficient(γ, Pc, Pe, Pa, ε)` | Ideal nozzle CF |
+| `exit_pressure(Pc, γ, ε)` | Isentropic area-Mach iteration |
+| `characteristic_velocity(γ, Tc, MW)` | Combustion c* |
+| `propellant_properties(AP%, Al%)` | AP/Al/HTPB thermochemical model |
+| `ballistics_bb(Z, X)` | Internal ballistics (thrust, Isp, total impulse) |
+| `structural_bb(Z, X, Pc)` | Case structural analysis |
+| `nozzle_bb(Z, X, Pc, At, CF)` | Nozzle performance |
+| `mission_bb(W_total, W_prop, It, Isp)` | Tsiolkovsky delta-V |
+| `srm_analysis(Z, X_prop, X_struct, X_nozzle)` | Coupled SRM analysis |
+
+## Reproducing the Results
+
+All figures and tables in this book are generated from the source `.qmd` files.
+To reproduce:
+
+```bash
+# 1. Install pixi (https://pixi.sh)
+# 2. Install Julia and package dependencies
+pixi run setup
+
+# 3. Render to HTML (default)
+pixi run render
+
+# 4. Render to PDF
+pixi run render-pdf
+
+# 5. Clear cache and re-render from scratch
+pixi run clean && pixi run render
+```
+
+Computation time for a cold render (all code executed from scratch) is
+approximately 15–30 minutes on an Apple M4, dominated by the BLISS-RS
+optimization loops in Chapters 7 and 10. Subsequent renders use Quarto's
+freeze cache and complete in under 1 minute.

@@ -1,0 +1,205 @@
+---
+title: "User Manual"
+subtitle: "BLISS-RS Julia Ebook"
+author: "Troy Altus"
+date: today
+format:
+  pdf:
+    documentclass: article
+    toc: true
+    number-sections: true
+    self-contained: true
+    geometry: margin=1in
+    fontsize: 11pt
+---
+
+# Cover
+
+| | |
+|---|---|
+| **Title** | A Response Surface Methodology for Bi-Level Integrated System Synthesis |
+| **Subtitle** | BLISS-RS: Recreated and Extended in Julia |
+| **Author** | Troy David Altus |
+| **Version** | 1.0.0 |
+| **Date** | 2025 |
+| **Repository** | github.com/altustd/bliss-rs-julia-ebook |
+| **Live ebook** | altustd.github.io/bliss-rs-julia-ebook |
+
+---
+
+# Quick Start (One Page)
+
+## Step 1 — Clone the repository
+
+```bash
+git clone git@github.com:altustd/bliss-rs-julia-ebook.git
+cd bliss-rs-julia-ebook
+```
+
+## Step 2 — Install pixi (if needed)
+
+Download from [pixi.sh](https://pixi.sh) and follow installation instructions.
+pixi manages both Julia and Quarto automatically.
+
+## Step 3 — Install Julia dependencies
+
+```bash
+pixi run setup
+```
+
+This downloads Julia packages listed in `Project.toml`.
+
+## Step 4 — Render
+
+```bash
+pixi run render          # HTML to docs/
+pixi run render-pdf      # PDF to docs/
+pixi run preview         # Live preview at http://localhost:4000
+```
+
+The rendered HTML ebook opens in your browser at `docs/index.html`.
+
+---
+
+# Purpose and Scope
+
+This ebook is a scholarly recreation and extension of Troy Altus's 2002 Master's
+thesis at George Washington University (NASA/CR-2002-211652). It documents the
+**BLISS-RS** (Bi-Level Integrated System Synthesis — Response Surface) method for
+multidisciplinary design optimization, implementing all algorithms from scratch in
+Julia.
+
+**Audience:** Engineers and researchers with backgrounds in aerospace design,
+multidisciplinary optimization, or surrogate modeling. Familiarity with linear
+algebra and basic optimization concepts is assumed.
+
+**What is new vs. the 2002 report:**
+
+- Complete Julia implementation of all BLISS-RS algorithms.
+- Interactive figures rendered from live code.
+- Chapter 9: modern extensions (Gaussian processes, Bayesian optimization, Julia
+  parallelism).
+- Chapter 10: new application of BLISS-RS to solid propellant rocket motor design.
+
+---
+
+# HTML Navigation
+
+The rendered HTML ebook provides:
+
+- **Left sidebar**: chapter and section navigation.
+- **Floating TOC** (right): jump to any section on the current page.
+- **Search**: full-text search across all chapters (search bar in the top bar).
+- **Code folding**: click any code block header to expand/collapse source code.
+- **Code copy**: copy button on each code block (hover to reveal).
+- **Dark mode toggle**: sun/moon icon in the top navigation bar.
+
+---
+
+# PDF Download
+
+A rendered PDF of the complete ebook is included in the `docs/` folder:
+`docs/bliss-rs-julia-ebook.pdf`. It can also be regenerated locally:
+
+```bash
+pixi run render-pdf
+```
+
+The PDF requires a LaTeX distribution (TeX Live or MacTeX). If LaTeX is not
+installed, only the HTML version will render successfully.
+
+---
+
+# Environment Setup
+
+All dependencies are managed through `pixi`. No manual installation of Julia
+packages is required beyond running `pixi run setup`.
+
+| Tool | Version | Source |
+|------|---------|--------|
+| Julia | ≥ 1.10 | conda-forge (via pixi) |
+| Quarto | ≥ 1.9 | conda-forge (via pixi) |
+| Plots.jl | latest | Julia General registry |
+| Optim.jl | latest | Julia General registry |
+| DataFrames.jl | latest | Julia General registry |
+| LaTeXStrings.jl | latest | Julia General registry |
+| Distributions.jl | latest | Julia General registry |
+
+---
+
+# Rendering and Live Preview
+
+```bash
+# Full render (HTML + PDF if LaTeX available)
+pixi run render
+
+# HTML only
+pixi run render
+
+# PDF only
+pixi run render-pdf
+
+# Live preview with auto-reload on file changes
+pixi run preview
+
+# Clear execution cache (re-run all code from scratch)
+pixi run clean && pixi run render
+```
+
+The first render takes 15–30 minutes (Julia code is executed from scratch).
+Subsequent renders use Quarto's `_freeze` cache and complete in under 1 minute.
+
+---
+
+# Code Structure
+
+```
+bliss-rs-julia-ebook/
+├── src/
+│   ├── bliss_rs.jl         # Core BLISS-RS algorithms
+│   ├── supersonic_jet.jl   # Supersonic business jet BBs
+│   └── srm.jl              # Solid propellant rocket motor BBs
+├── 01-introduction.qmd     # ... through 10-srm-application.qmd
+├── Project.toml            # Julia package dependencies
+├── pixi.toml               # Environment management
+└── _quarto.yml             # Book configuration
+```
+
+---
+
+# Interpreting the Outputs
+
+| Output | What it represents |
+|--------|-------------------|
+| Optimization history plots | Value of each design variable or objective per BLISS-RS iteration |
+| Coupling residual plots | Discrepancy |Y_RS − Y_BB| between RS predictions and actual BB evaluations |
+| Response surface contour plots | Surrogate model over two variables (others held fixed) |
+| Error analysis plots | Normalized prediction error as a function of sample size |
+
+---
+
+# Known Limitations
+
+1. **Simplified black boxes**: The Julia BB implementations are surrogates of the
+   original ELAPS/AWAVE/CFL3D codes. Results are qualitatively correct but should
+   not be used for actual aircraft or rocket motor design without higher-fidelity
+   analyses.
+
+2. **PDF rendering**: Requires a LaTeX distribution. On Windows, install MiKTeX;
+   on macOS, install MacTeX. Without LaTeX, use `pixi run render` (HTML only).
+
+3. **Compute time**: The BLISS-RS optimization loops in Chapters 7 and 10 take
+   5–15 minutes on first render. Caching eliminates this on subsequent renders.
+
+4. **3D plots (Appendix A)**: The `scatter3d` function from Plots.jl with the GR
+   backend may not render interactively. For 3D interactivity, run the notebook
+   directly with `using PlotlyJS; plotlyjs()`.
+
+---
+
+# Citation
+
+> Altus, T. D., "A Response Surface Methodology for Bi-Level Integrated System
+> Synthesis (BLISS)," NASA/CR-2002-211652, NASA Langley Research Center, 2002.
+>
+> This ebook (2025): altustd.github.io/bliss-rs-julia-ebook

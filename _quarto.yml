@@ -1,0 +1,62 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "A Response Surface Methodology for Bi-Level Integrated System Synthesis"
+  subtitle: "BLISS-RS: Recreated and Extended in Julia"
+  author: "Troy David Altus"
+  date: today
+  repo-url: https://github.com/altustd/bliss-rs-julia-ebook
+  repo-actions: [edit, issue]
+  chapters:
+    - index.qmd
+    - 01-introduction.qmd
+    - 02-bliss98.qmd
+    - 03-bliss-rs-formulation.qmd
+    - 04-response-surface-methodology.qmd
+    - 05-design-of-experiments.qmd
+    - 06-interval-reduction.qmd
+    - 07-supersonic-business-jet.qmd
+    - 08-black-box-fidelity.qmd
+    - 09-modern-extensions.qmd
+    - 10-srm-application.qmd
+    - references.qmd
+  appendices:
+    - appendix-a-hypersphere.qmd
+    - appendix-b-julia-reference.qmd
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    code-tools: true
+    code-line-numbers: true
+    fig-align: center
+    fig-responsive: true
+    self-contained: false
+    smooth-scroll: true
+    highlight-style: github
+  pdf:
+    documentclass: scrbook
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    colorlinks: true
+    geometry: margin=1in
+    fontsize: 11pt
+
+bibliography: references.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/aiaa.csl
+
+execute:
+  engine: julia
+  warning: false
+  message: false
+  cache: true
+
+julia:
+  exeflags: ["--project=@."]

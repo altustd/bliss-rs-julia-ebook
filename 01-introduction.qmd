@@ -1,0 +1,190 @@
+---
+title: "Introduction"
+---
+
+```{julia}
+#| include: false
+include("src/bliss_rs.jl")
+using Printf, Plots, LaTeXStrings
+gr()
+```
+
+## The Multidisciplinary Design Problem
+
+The design of a complex engineering system — an aircraft, a launch vehicle, a naval
+vessel — inherently involves a large number of subsystems that interact through shared
+design variables and coupling information. When every discipline must negotiate with
+every other discipline simultaneously, the resulting optimization problem can quickly
+become intractable.
+
+Consider a supersonic business jet. Structural engineers must size the wing box to
+carry aerodynamic loads. Aerodynamicists must know the wing geometry — sweep,
+aspect ratio, thickness — to predict those loads accurately. Propulsion engineers
+must scale the engines to overcome the drag that the aerodynamics team computes.
+Performance analysts close the loop with a range equation that depends on the outputs
+of all three disciplines. Each discipline is both a consumer and a producer of
+information that its partners require.
+
+The formal statement of the *all-in-one* system optimization problem is:
+
+$$
+\text{Find:} \quad \mathbf{V} = \{Z \mid X \mid Y^* \mid Y^A\}
+$$ {#eq-allinone-find}
+
+$$
+\text{Minimize:} \quad F(\mathbf{V})
+$$ {#eq-allinone-obj}
+
+$$
+\text{Satisfy:} \quad
+\begin{cases}
+\{g(\mathbf{V})\} \leq 0 & \text{(behavior constraints, local to each BB)} \\
+\{h(\mathbf{V})\} = 0    & \text{(BB governing equations)} \\
+\{c(\mathbf{V})\} = Y^* - Y^A = 0 & \text{(coupling consistency)} \\
+V_L \leq \mathbf{V} \leq V_U & \text{(side constraints)}
+\end{cases}
+$$ {#eq-allinone-constraints}
+
+In @eq-allinone-find, $\mathbf{V}$ is the full design space, decomposed into three
+types of design variables [@altus2002blissrs]:
+
+- **$Z$** — *system-level* variables that affect two or more black boxes (e.g., wing
+  aspect ratio, sweep angle, surface area).
+- **$X$** — *local* variables private to a single black box (e.g., skin panel
+  thicknesses inside the structures discipline).
+- **$Y^*$ / $Y^A$** — *coupling variables* that flow as outputs from one BB and
+  inputs to another (e.g., lift produced by the aerodynamics BB and consumed by
+  the structures BB).
+
+The coupling equality constraints $\{c\} = 0$ enforce *compatibility*: the value of
+a coupling variable that one BB passes out must equal the value that the receiving BB
+uses as input. Satisfying this set of equalities in a large, multi-disciplinary
+problem is one of the core challenges in MDO.
+
+## Why Decomposition?
+
+Solving @eq-allinone-constraints directly with a monolithic optimizer is rarely
+practical. The problem may contain thousands of local variables $X$, and the
+disciplinary analyses (black boxes) may be expensive Fortran or C codes that cannot
+be easily differentiated. More fundamentally, a monolithic optimizer requires that
+all disciplines interact simultaneously, which is organizationally and
+computationally difficult.
+
+*Decomposition* partitions the all-in-one problem into two levels [@sobieski1998bliss]:
+
+1. **Local level**: Each BB optimizes over its own local variables $X$, holding
+   system variables $Z$ and coupling inputs $Y^*$ fixed. These optimizations are
+   independent of one another and can proceed in parallel.
+
+2. **System level**: A system optimizer coordinates the shared variables $Z$,
+   proposes values for the coupling variables $Y^*$, and enforces the coupling
+   constraints $\{c\} = 0$.
+
+This two-level structure enables concurrent engineering workflows: multiple
+disciplinary teams can work simultaneously on their respective subsystems while the
+system optimizer manages compatibility.
+
+## The BLISS Family
+
+*Bi-Level Integrated System Synthesis* (BLISS) is a decomposition-based MDO
+framework introduced by Sobieszczanski-Sobieski, Agte, and Sandusky
+[@sobieski1998bliss; @sobieski2000bliss]. The defining characteristic of BLISS is
+the separation of local and system optimizations, with information flowing between
+levels through well-defined interfaces.
+
+### BLISS-98: Gradient-Based Coupling
+
+The original BLISS implementation (referred to here as BLISS-98) couples the two
+levels through *sensitivity derivatives* computed at each local optimum. Each BB
+provides the system optimizer with $\partial X^*_{opt} / \partial Z$ — the derivative
+of its locally-optimal design with respect to the system variables. The system
+optimizer uses these derivatives to predict how changing $Z$ will improve the
+overall objective, then updates $Z$ and initiates the next round of local
+optimizations.
+
+BLISS-98 was validated on the supersonic business jet design problem and demonstrated
+that decomposition could produce results competitive with monolithic optimization
+[@sobieski2000bliss2]. However, it relied heavily on system and sensitivity analyses
+at every iteration, which proved computationally costly.
+
+### BLISS-RS: Response Surface Coupling
+
+The key innovation of the present work is to replace the gradient-based coupling
+mechanism with *quadratic response surface* (RS) surrogates. Instead of computing
+sensitivity derivatives at a single local optimum, BLISS-RS:
+
+1. Generates a *cloud* of sample points across the space of system and coupling
+   variables using a Design of Experiments (DOE) strategy.
+2. Runs each BB's local optimization at every sample point.
+3. Fits a quadratic polynomial through the resulting locally-optimal outputs — this
+   polynomial is the response surface.
+4. Passes the RS models (not derivatives) to the system optimizer, which reads
+   coupling information directly from the polynomials.
+
+The response surfaces serve as global surrogates that capture the behaviour of each
+BB across a region of the design space, rather than providing a local linear
+approximation at a single point. This eliminates the sensitivity analysis step and
+makes the algorithm less prone to termination at local optima.
+
+## Structure of This Book
+
+The remaining chapters develop the complete BLISS-RS framework:
+
+| Chapter | Topic |
+|---------|-------|
+| 2 | BLISS-98 architecture and the supersonic business jet black boxes |
+| 3 | BLISS-RS formulation: local and system optimization |
+| 4 | Response surface methodology: least squares, second-order models |
+| 5 | Design of experiments: hypersphere, random, D-optimal placement |
+| 6 | Interval reduction: adaptive refinement of the design space |
+| 7 | BLISS-RS results on the supersonic business jet |
+| 8 | Black box fidelity improvements: CFD and structural enhancements |
+| 9 | Modern extensions: Gaussian processes, Bayesian optimization, Julia parallelism |
+| 10 | Application to solid propellant rocket motor design |
+
+## Design Variable Complexity
+
+To illustrate why decomposition is necessary, consider how the number of RS
+coefficients scales with the number of design variables. For a full second-order
+response surface in $n$ variables, the number of required sample points is:
+
+$$
+N_S = \frac{n^2 + 3n + 2}{2}
+$$ {#eq-ns}
+
+```{julia}
+#| label: fig-ns-scaling
+#| fig-cap: "Minimum sample points required for a second-order RS vs. number of design variables. The quadratic growth illustrates the curse of dimensionality and motivates decomposition into smaller subproblems."
+#| code-fold: true
+
+ns_vals = min_rs_points.(1:25)
+n_vals  = 1:25
+
+p = plot(n_vals, ns_vals,
+    lw=2, color=:steelblue, marker=:circle, markersize=4,
+    xlabel=L"Number of design variables $n$",
+    ylabel=L"Minimum sample points $N_S$",
+    title="RS Model Complexity vs. Dimensionality",
+    legend=false, grid=true, gridalpha=0.3,
+    xticks=0:5:25, yticks=0:100:400)
+
+# Annotate BLISS-RS BBs
+for (n_bb, label, color) in [(11,"Structures BB",:darkorange),
+                               (14,"Aero BB",:crimson),
+                               (5,"Power BB",:forestgreen)]
+    ns = min_rs_points(n_bb)
+    scatter!([n_bb], [ns], color=color, markersize=8, label="")
+    annotate!(n_bb, ns + 12, text(label, 8, color))
+end
+
+p
+```
+
+The supersonic business jet problem has black boxes with 5, 11, and 14 system-level
+inputs (@fig-ns-scaling). Handled as a monolithic problem with all variables combined,
+a single RS would require $(36^2 + 3 \cdot 36 + 2)/2 = 719$ sample points.
+Decomposed into three separate BBs, the sum of required points drops to
+$21 + 78 + 120 = 219$ — a 70 % reduction — and those evaluations can run in
+parallel.
+
+This is the central computational motivation for the BLISS-RS architecture.

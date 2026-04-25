@@ -1,0 +1,34 @@
+# Quarto internals
+.quarto/
+docs/.quarto/
+**/*.quarto_ipynb
+*.quarto_ipynb_*
+_book/
+
+# Julia
+Manifest.toml
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+.julia/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python / tools
+__pycache__/
+*.py[co]
+.env
+*.pkl
+*.joblib
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Output (keep docs/ for GitHub Pages, but ignore large intermediate files)
+*.pdf.bak
+docs/*.aux
+docs/*.log
