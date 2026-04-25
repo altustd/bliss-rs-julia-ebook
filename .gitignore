@@ -1,6 +1,7 @@
 # Quarto internals
 .quarto/
 docs/.quarto/
+.cache/
 **/*.quarto_ipynb
 *.quarto_ipynb_*
 _book/
@@ -32,3 +33,5 @@ __pycache__/
 *.pdf.bak
 docs/*.aux
 docs/*.log
+
+/.quarto/

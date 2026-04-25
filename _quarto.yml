@@ -40,17 +40,15 @@ format:
     self-contained: false
     smooth-scroll: true
     highlight-style: github
-  pdf:
-    documentclass: scrbook
-    toc: true
-    toc-depth: 3
-    number-sections: true
-    colorlinks: true
-    geometry: margin=1in
-    fontsize: 11pt
+  # pdf:  # Re-enable after installing rsvg-convert (brew install librsvg)
+  #   documentclass: scrbook
+  #   toc: true
+  #   number-sections: true
+  #   colorlinks: true
+  #   geometry: margin=1in
 
 bibliography: references.bib
-csl: https://raw.githubusercontent.com/citation-style-language/styles/master/aiaa.csl
+csl: aiaa.csl
 
 execute:
   engine: julia

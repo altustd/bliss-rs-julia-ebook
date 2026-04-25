@@ -193,7 +193,7 @@ contourf(AR_range, Λ_range, FI_grid,
          ylabel="Wing Sweep Λ_w (deg)",
          title="Flutter Index M_DR/M_RR (>1 = flutter onset)",
          colorbar_title="M_DR/M_RR",
-         color=:RdYlGn_r, levels=15)
+         color=cgrad(:RdYlGn, rev=true), levels=15)
 contour!(AR_range, Λ_range, FI_grid, levels=[1.0],
          color=:black, lw=2.5, linecolor=:black, label="Flutter boundary")
 annotate!(7.5, 28.0, text("Flutter\nzone", 10, :red2))

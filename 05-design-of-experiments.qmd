@@ -161,8 +161,8 @@ log_det_hs   = Float64[]
 for n_pts in n_pts_range
     pts_d = d_optimal_points(n_vars, n_pts; seed=42)
     pts_h = hypersphere_points(n_vars, n_pts; seed=42)
-    X_d = rs_design_matrix(pts_d);  push!(log_det_dopt, log(det(X_d'*X_d) + 1e-300))
-    X_h = rs_design_matrix(pts_h);  push!(log_det_hs,   log(det(X_h'*X_h) + 1e-300))
+    X_d = rs_design_matrix(pts_d);  push!(log_det_dopt, log(max(abs(det(X_d'*X_d)), 1e-300)))
+    X_h = rs_design_matrix(pts_h);  push!(log_det_hs,   log(max(abs(det(X_h'*X_h)), 1e-300)))
 end
 
 plot(collect(n_pts_range), log_det_dopt, lw=2, color=:darkorange,

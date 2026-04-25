@@ -1,18 +1,20 @@
-[project]
+[workspace]
 name = "bliss-rs-julia-ebook"
 version = "0.1.0"
 description = "BLISS Response Surface Methodology ebook using Julia and Quarto"
 authors = ["Troy Altus <altustd@gmail.com>"]
 channels = ["conda-forge"]
+# Julia is not packaged for osx-arm64/win-64 on conda-forge.
+# Install Julia separately: brew install julia  (macOS)
+#                            winget install julia  (Windows)
 platforms = ["osx-arm64", "win-64"]
 
 [dependencies]
-julia = ">=1.10,<2"
 quarto = ">=1.9"
 
 [tasks]
-setup   = "julia --project=. -e 'using Pkg; Pkg.instantiate(); println(\"Setup complete.\")'"
-render  = "quarto render"
+setup      = "julia --project=. -e 'using Pkg; Pkg.add([\"Plots\",\"DataFrames\",\"Distributions\",\"LaTeXStrings\",\"Optim\",\"PrettyTables\",\"PlotlyJS\"]); Pkg.precompile(); println(\"Setup complete.\")'"
+render     = "quarto render"
 render-pdf = "quarto render --to pdf"
-preview = "quarto preview"
-clean   = { cmd = "rm -rf docs/_freeze", description = "Clear Quarto cache" }
+preview    = "quarto preview"
+clean      = { cmd = "rm -rf docs/_freeze", description = "Clear Quarto cache" }
