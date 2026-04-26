@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Troy David Altus">
-<meta name="dcterms.date" content="2026-04-25">
+<meta name="dcterms.date" content="2026-04-26">
 
-<title>A Response Surface Methodology for Bi-Level Integrated System Synthesis</title>
+<title>BLISS-2026</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -186,9 +186,9 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">A Response Surface Methodology for Bi-Level Integrated System Synthesis</a> 
+      <a href="./">BLISS-2026</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/altustd/bliss-rs-julia-ebook" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/altustd/bliss2026" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
@@ -255,8 +255,8 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./09-modern-extensions.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Modern Extensions</span></span></a>
+  <a href="./09-bliss2026-framework.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">BLISS-2026: A Gaussian-Process Framework</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -267,8 +267,14 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./11-modern-mdo-landscape.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Modern MDO Landscape</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">References</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">References</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -306,22 +312,22 @@ window.Quarto = {
   <ul>
   <li><a href="#about-this-book" id="toc-about-this-book" class="nav-link active" data-scroll-target="#about-this-book">About This Book</a>
   <ul class="collapse">
-  <li><a href="#what-this-book-adds" id="toc-what-this-book-adds" class="nav-link" data-scroll-target="#what-this-book-adds"><span class="header-section-number">0.1</span> What This Book Adds</a></li>
-  <li><a href="#original-test-case" id="toc-original-test-case" class="nav-link" data-scroll-target="#original-test-case"><span class="header-section-number">0.2</span> Original Test Case</a></li>
-  <li><a href="#how-to-use-this-book" id="toc-how-to-use-this-book" class="nav-link" data-scroll-target="#how-to-use-this-book"><span class="header-section-number">0.3</span> How to Use This Book</a></li>
-  <li><a href="#notation-conventions" id="toc-notation-conventions" class="nav-link" data-scroll-target="#notation-conventions"><span class="header-section-number">0.4</span> Notation Conventions</a></li>
+  <li><a href="#what-changed-since-2002" id="toc-what-changed-since-2002" class="nav-link" data-scroll-target="#what-changed-since-2002"><span class="header-section-number">0.1</span> What Changed Since 2002</a></li>
+  <li><a href="#what-this-book-contains" id="toc-what-this-book-contains" class="nav-link" data-scroll-target="#what-this-book-contains"><span class="header-section-number">0.2</span> What This Book Contains</a></li>
+  <li><a href="#running-this-book" id="toc-running-this-book" class="nav-link" data-scroll-target="#running-this-book"><span class="header-section-number">0.3</span> Running This Book</a></li>
+  <li><a href="#notation" id="toc-notation" class="nav-link" data-scroll-target="#notation"><span class="header-section-number">0.4</span> Notation</a></li>
   <li><a href="#citation" id="toc-citation" class="nav-link" data-scroll-target="#citation"><span class="header-section-number">0.5</span> Citation</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/altustd/bliss-rs-julia-ebook/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss-rs-julia-ebook/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/altustd/bliss2026/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss2026/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<div class="quarto-title-block"><div><h1 class="title">A Response Surface Methodology for Bi-Level Integrated System Synthesis</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
-<p class="subtitle lead">BLISS-RS: Recreated and Extended in Julia</p>
+<div class="quarto-title-block"><div><h1 class="title">BLISS-2026</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+<p class="subtitle lead">Decomposition-Based Multidisciplinary Design Optimization — A Modern Julia Treatment</p>
 </div>
 
 
@@ -338,7 +344,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 25, 2026</p>
+      <p class="date">April 26, 2026</p>
     </div>
   </div>
   
@@ -352,79 +358,75 @@ window.Quarto = {
 
 <section id="about-this-book" class="level1 unnumbered">
 <h1 class="unnumbered">About This Book</h1>
-<p>This ebook is a scholarly recreation and extension of a Master’s thesis completed at George Washington University in 2002, under the joint supervision of Dr.&nbsp;Jaroslaw Sobieszczanski-Sobieski at NASA Langley Research Center. The original report was published as NASA Contractor Report NASA/CR-2002-211652 <span class="citation" data-cites="altus2002blissrs">[<a href="references.html#ref-altus2002blissrs" role="doc-biblioref">1</a>]</span>.</p>
-<p>The thesis introduced a response-surface-based variant of the <em>Bi-Level Integrated System Synthesis</em> (BLISS) multidisciplinary design optimization framework. Where earlier BLISS implementations relied on gradient-guided sensitivity derivatives to couple subsystem and system-level optimizations, BLISS-RS replaces those derivatives with quadratic response surface (RS) surrogate models. The result is an autonomous, decomposition-based MDO algorithm well-suited to parallel and distributed computing environments.</p>
-<section id="what-this-book-adds" class="level2" data-number="0.1">
-<h2 data-number="0.1" class="anchored" data-anchor-id="what-this-book-adds"><span class="header-section-number">0.1</span> What This Book Adds</h2>
-<p>This recreation does more than transcribe the original work. Each chapter includes:</p>
-<ul>
-<li><strong>Executable Julia code</strong> — all algorithms are implemented from scratch in modern Julia, a high-performance scientific computing language. Readers can run, modify, and extend every example directly.</li>
-<li><strong>Interactive visualizations</strong> — optimization histories, response surface plots, and design space explorations are rendered as publication-quality figures.</li>
-<li><strong>Modern extensions</strong> (Chapter 9) — Gaussian process surrogates (Kriging), Bayesian optimization, and Julia’s native parallelism are discussed as natural evolutions of the BLISS-RS framework.</li>
-<li><strong>SRM application</strong> (Chapter 10) — a complete new application of BLISS-RS to the conceptual design of a solid propellant rocket motor, bridging the aerospace structures / aerodynamics context of the original thesis to the propulsion domain.</li>
-</ul>
-</section>
-<section id="original-test-case" class="level2" data-number="0.2">
-<h2 data-number="0.2" class="anchored" data-anchor-id="original-test-case"><span class="header-section-number">0.2</span> Original Test Case</h2>
-<p>The benchmark problem throughout the original thesis — and retained here — is the conceptual aerodynamic design of a <strong>supersonic business jet</strong> originally posed for the 1995 AIAA Graduate Student Design Competition. Four engineering disciplines are modeled as black-box analysis modules:</p>
+<p><strong>BLISS-2026</strong> is an updated thesis that takes the <em>Bi-Level Integrated System Synthesis</em> (BLISS) framework from its 2002 origins into the modern era of surrogate-based optimization, Gaussian processes, and high-performance Julia computing.</p>
+<p>The starting point is the author’s 2002 Master’s thesis completed at George Washington University under Dr.&nbsp;Jaroslaw Sobieszczanski-Sobieski at NASA Langley Research Center, published as NASA Contractor Report NASA/CR-2002-211652 <span class="citation" data-cites="altus2002blissrs">[<a href="references.html#ref-altus2002blissrs" role="doc-biblioref">1</a>]</span>. That work introduced <em>BLISS-RS</em>: quadratic response surface surrogates as the coupling mechanism between local disciplinary optimizations and a global system optimizer.</p>
+<p>Twenty-four years later, the surrogate-modeling landscape has changed fundamentally. This book asks: if you were designing BLISS today, what would you do differently?</p>
+<section id="what-changed-since-2002" class="level2" data-number="0.1">
+<h2 data-number="0.1" class="anchored" data-anchor-id="what-changed-since-2002"><span class="header-section-number">0.1</span> What Changed Since 2002</h2>
+<p>The 2002 implementation used quadratic polynomials as surrogates because they were cheap to fit, analytically differentiable, and computationally trivial. Those properties still matter — but the toolkit has expanded significantly:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 32%">
-<col style="width: 29%">
-<col style="width: 38%">
+<col style="width: 54%">
+<col style="width: 45%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Black Box</th>
-<th>Analysis</th>
-<th>Key Outputs</th>
+<th>Then (2002)</th>
+<th>Now (2026)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Structures</td>
-<td>Equivalent Laminated Plate Structures (ELAPS)</td>
-<td>Wing weight, aeroelastic twist</td>
+<td>Quadratic polynomial surrogates</td>
+<td>Gaussian Process (Kriging) surrogates</td>
 </tr>
 <tr class="even">
-<td>Aerodynamics</td>
-<td>Wave-drag model (AWAVE) + drag polar</td>
-<td>Lift, drag, <span class="math inline">\(L/D\)</span></td>
+<td>Least-squares fit, fixed once</td>
+<td>Marginal-likelihood hyperparameter tuning</td>
 </tr>
 <tr class="odd">
-<td>Power</td>
-<td>Engine deck approximation</td>
-<td>SFC, engine weight, ESF</td>
+<td>D-Optimal DOE, fixed budget</td>
+<td>Latin Hypercube + adaptive Expected Improvement</td>
 </tr>
 <tr class="even">
-<td>Performance</td>
-<td>Breguet range equation</td>
-<td>Range</td>
+<td>Nelder-Mead over polynomial</td>
+<td>Bayesian optimization with EI acquisition</td>
+</tr>
+<tr class="odd">
+<td>No uncertainty estimates</td>
+<td>Full predictive distributions</td>
+</tr>
+<tr class="even">
+<td>Serial BB evaluation</td>
+<td>Parallel <code>Threads.@threads</code> in Julia</td>
+</tr>
+<tr class="odd">
+<td>Fixed 20% interval shrinkage</td>
+<td>Trust-region bounds management</td>
 </tr>
 </tbody>
 </table>
-<p>BLISS-RS couples these four disciplines through a hierarchy of system-level and local-level optimizations mediated by quadratic response surface surrogates.</p>
 </section>
-<section id="how-to-use-this-book" class="level2" data-number="0.3">
-<h2 data-number="0.3" class="anchored" data-anchor-id="how-to-use-this-book"><span class="header-section-number">0.3</span> How to Use This Book</h2>
-<p>Each chapter is self-contained. Julia code blocks illustrate the method being discussed and can be executed independently. The <code>src/</code> directory contains shared Julia modules — <code>bliss_rs.jl</code>, <code>supersonic_jet.jl</code>, and <code>srm.jl</code> — that are included at the start of each computational chapter.</p>
-<p>To reproduce all results locally:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># 1. Install dependencies (requires pixi)</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="ex">pixi</span> run setup</span>
-<span id="cb1-3"><a href="#cb1-3"></a></span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="co"># 2. Render to HTML</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="ex">pixi</span> run render</span>
-<span id="cb1-6"><a href="#cb1-6"></a></span>
-<span id="cb1-7"><a href="#cb1-7"></a><span class="co"># 3. Live preview</span></span>
-<span id="cb1-8"><a href="#cb1-8"></a><span class="ex">pixi</span> run preview</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="what-this-book-contains" class="level2" data-number="0.2">
+<h2 data-number="0.2" class="anchored" data-anchor-id="what-this-book-contains"><span class="header-section-number">0.2</span> What This Book Contains</h2>
+<p>The first eight chapters closely follow the original 2002 thesis — faithfully reproduced with all algorithms implemented in Julia. They establish the classical BLISS-RS framework in complete, executable detail.</p>
+<p>The modern contribution begins at Chapter 9:</p>
+<ul>
+<li><p><strong>Chapter 9 — BLISS-2026 Framework</strong>: The full Gaussian-process-based redesign. GP theory, kernel functions, marginal likelihood, Expected Improvement acquisition, and a complete working implementation that runs the supersonic business jet benchmark. Direct comparison against BLISS-RS shows where GP surrogates win and where they add cost.</p></li>
+<li><p><strong>Chapter 10 — SRM Application</strong>: BLISS-RS and BLISS-2026 both applied to solid propellant rocket motor conceptual design — connecting to the author’s propulsion engineering background at ATK Elkton, MD.</p></li>
+<li><p><strong>Chapter 11 — Modern MDO Landscape</strong>: A survey of where MDO decomposition is heading: multi-fidelity co-kriging, neural-network surrogates, uncertainty quantification, and digital-twin integration.</p></li>
+</ul>
 </section>
-<section id="notation-conventions" class="level2" data-number="0.4">
-<h2 data-number="0.4" class="anchored" data-anchor-id="notation-conventions"><span class="header-section-number">0.4</span> Notation Conventions</h2>
+<section id="running-this-book" class="level2" data-number="0.3">
+<h2 data-number="0.3" class="anchored" data-anchor-id="running-this-book"><span class="header-section-number">0.3</span> Running This Book</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># Requires Julia 1.10+ (brew install julia) and pixi (pixi.sh)</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="ex">pixi</span> run setup    <span class="co"># one-time: install Julia packages</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="ex">pixi</span> run render   <span class="co"># build HTML → docs/</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="ex">pixi</span> run preview  <span class="co"># live preview at localhost:4000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="notation" class="level2" data-number="0.4">
+<h2 data-number="0.4" class="anchored" data-anchor-id="notation"><span class="header-section-number">0.4</span> Notation</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 47%">
-<col style="width: 52%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Symbol</th>
@@ -434,55 +436,70 @@ window.Quarto = {
 <tbody>
 <tr class="odd">
 <td><span class="math inline">\(Z\)</span></td>
-<td>System-level design variables (shared across disciplines)</td>
+<td>System-level design variables</td>
 </tr>
 <tr class="even">
 <td><span class="math inline">\(X\)</span></td>
-<td>Local design variables (private to a black box)</td>
+<td>Local design variables (private to one BB)</td>
 </tr>
 <tr class="odd">
-<td><span class="math inline">\(Y^*\)</span></td>
-<td>Coupling variables (outputs of one BB used as inputs to another)</td>
+<td><span class="math inline">\(Y^*, Y^A\)</span></td>
+<td>Coupling variable targets / actual outputs</td>
 </tr>
 <tr class="even">
-<td><span class="math inline">\(Y^A\)</span></td>
-<td>Actual coupling variable outputs from BB analysis</td>
-</tr>
-<tr class="odd">
 <td><span class="math inline">\(w\)</span></td>
-<td>Weighting factors for the synthetic local objective function</td>
+<td>Weighting factors for synthetic local objective</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{k}\)</span></td>
+<td>GP kernel (covariance) function</td>
 </tr>
 <tr class="even">
+<td><span class="math inline">\(\mu(\cdot), \sigma^2(\cdot)\)</span></td>
+<td>GP posterior mean and variance</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\text{EI}(\cdot)\)</span></td>
+<td>Expected Improvement acquisition function</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\ell\)</span></td>
+<td>GP length-scale hyperparameter</td>
+</tr>
+<tr class="odd">
 <td>BB</td>
 <td>Black box (disciplinary analysis module)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>RS</td>
-<td>Response surface (quadratic surrogate)</td>
+<td>Response surface (quadratic polynomial surrogate)</td>
+</tr>
+<tr class="odd">
+<td>GP</td>
+<td>Gaussian process surrogate</td>
 </tr>
 <tr class="even">
 <td>DOE</td>
-<td>Design of experiments (point placement scheme)</td>
+<td>Design of experiments</td>
 </tr>
 <tr class="odd">
-<td><span class="math inline">\(N_X\)</span></td>
-<td>Number of design variables</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(N_S\)</span></td>
-<td>Number of sample points</td>
+<td>LHS</td>
+<td>Latin Hypercube Sampling</td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="citation" class="level2" data-number="0.5">
 <h2 data-number="0.5" class="anchored" data-anchor-id="citation"><span class="header-section-number">0.5</span> Citation</h2>
-<p>If you use material from this work, please cite the original NASA contractor report:</p>
+<p>If you use material from this work, please cite both the original report and this book:</p>
 <blockquote class="blockquote">
-<p>Altus, T. D., “A Response Surface Methodology for Bi-Level Integrated System Synthesis (BLISS),” NASA/CR-2002-211652, George Washington University / NASA Langley Research Center, Hampton, VA, May 2002.</p>
+<p>Altus, T. D., “A Response Surface Methodology for Bi-Level Integrated System Synthesis (BLISS),” NASA/CR-2002-211652, NASA Langley Research Center, May 2002.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p>Altus, T. D., <em>BLISS-2026: Decomposition-Based MDO — A Modern Julia Treatment</em>, 2026. <a href="https://altustd.github.io/bliss2026">altustd.github.io/bliss2026</a></p>
 </blockquote>
 <hr>
-<p><em>Troy David Altus</em> <em>Elkton, Maryland</em></p>
+<p><em>Troy David Altus · Elkton, Maryland · 2026</em></p>
 
 
 <!-- -->
@@ -962,104 +979,102 @@ window.Quarto = {
 <span id="cb2-4"><a href="#cb2-4"></a></span>
 <span id="cb2-5"><a href="#cb2-5"></a><span class="fu"># About This Book {.unnumbered}</span></span>
 <span id="cb2-6"><a href="#cb2-6"></a></span>
-<span id="cb2-7"><a href="#cb2-7"></a>This ebook is a scholarly recreation and extension of a Master's thesis completed</span>
-<span id="cb2-8"><a href="#cb2-8"></a>at George Washington University in 2002, under the joint supervision of Dr. Jaroslaw</span>
-<span id="cb2-9"><a href="#cb2-9"></a>Sobieszczanski-Sobieski at NASA Langley Research Center. The original report was</span>
-<span id="cb2-10"><a href="#cb2-10"></a>published as NASA Contractor Report NASA/CR-2002-211652 <span class="co">[</span><span class="ot">@altus2002blissrs</span><span class="co">]</span>.</span>
-<span id="cb2-11"><a href="#cb2-11"></a></span>
-<span id="cb2-12"><a href="#cb2-12"></a>The thesis introduced a response-surface-based variant of the *Bi-Level Integrated</span>
-<span id="cb2-13"><a href="#cb2-13"></a>System Synthesis* (BLISS) multidisciplinary design optimization framework. Where</span>
-<span id="cb2-14"><a href="#cb2-14"></a>earlier BLISS implementations relied on gradient-guided sensitivity derivatives to</span>
-<span id="cb2-15"><a href="#cb2-15"></a>couple subsystem and system-level optimizations, BLISS-RS replaces those derivatives</span>
-<span id="cb2-16"><a href="#cb2-16"></a>with quadratic response surface (RS) surrogate models. The result is an autonomous,</span>
-<span id="cb2-17"><a href="#cb2-17"></a>decomposition-based MDO algorithm well-suited to parallel and distributed computing</span>
-<span id="cb2-18"><a href="#cb2-18"></a>environments.</span>
+<span id="cb2-7"><a href="#cb2-7"></a>**BLISS-2026** is an updated thesis that takes the *Bi-Level Integrated System</span>
+<span id="cb2-8"><a href="#cb2-8"></a>Synthesis* (BLISS) framework from its 2002 origins into the modern era of</span>
+<span id="cb2-9"><a href="#cb2-9"></a>surrogate-based optimization, Gaussian processes, and high-performance Julia computing.</span>
+<span id="cb2-10"><a href="#cb2-10"></a></span>
+<span id="cb2-11"><a href="#cb2-11"></a>The starting point is the author's 2002 Master's thesis completed at George Washington</span>
+<span id="cb2-12"><a href="#cb2-12"></a>University under Dr. Jaroslaw Sobieszczanski-Sobieski at NASA Langley Research Center,</span>
+<span id="cb2-13"><a href="#cb2-13"></a>published as NASA Contractor Report NASA/CR-2002-211652 <span class="co">[</span><span class="ot">@altus2002blissrs</span><span class="co">]</span>. That work</span>
+<span id="cb2-14"><a href="#cb2-14"></a>introduced *BLISS-RS*: quadratic response surface surrogates as the coupling mechanism</span>
+<span id="cb2-15"><a href="#cb2-15"></a>between local disciplinary optimizations and a global system optimizer.</span>
+<span id="cb2-16"><a href="#cb2-16"></a></span>
+<span id="cb2-17"><a href="#cb2-17"></a>Twenty-four years later, the surrogate-modeling landscape has changed fundamentally.</span>
+<span id="cb2-18"><a href="#cb2-18"></a>This book asks: if you were designing BLISS today, what would you do differently?</span>
 <span id="cb2-19"><a href="#cb2-19"></a></span>
-<span id="cb2-20"><a href="#cb2-20"></a><span class="fu">## What This Book Adds</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a><span class="fu">## What Changed Since 2002</span></span>
 <span id="cb2-21"><a href="#cb2-21"></a></span>
-<span id="cb2-22"><a href="#cb2-22"></a>This recreation does more than transcribe the original work. Each chapter includes:</span>
-<span id="cb2-23"><a href="#cb2-23"></a></span>
-<span id="cb2-24"><a href="#cb2-24"></a><span class="ss">- </span>**Executable Julia code** — all algorithms are implemented from scratch in</span>
-<span id="cb2-25"><a href="#cb2-25"></a>  modern Julia, a high-performance scientific computing language. Readers can</span>
-<span id="cb2-26"><a href="#cb2-26"></a>  run, modify, and extend every example directly.</span>
-<span id="cb2-27"><a href="#cb2-27"></a><span class="ss">- </span>**Interactive visualizations** — optimization histories, response surface plots,</span>
-<span id="cb2-28"><a href="#cb2-28"></a>  and design space explorations are rendered as publication-quality figures.</span>
-<span id="cb2-29"><a href="#cb2-29"></a><span class="ss">- </span>**Modern extensions** (Chapter 9) — Gaussian process surrogates (Kriging),</span>
-<span id="cb2-30"><a href="#cb2-30"></a>  Bayesian optimization, and Julia's native parallelism are discussed as natural</span>
-<span id="cb2-31"><a href="#cb2-31"></a>  evolutions of the BLISS-RS framework.</span>
-<span id="cb2-32"><a href="#cb2-32"></a><span class="ss">- </span>**SRM application** (Chapter 10) — a complete new application of BLISS-RS to the</span>
-<span id="cb2-33"><a href="#cb2-33"></a>  conceptual design of a solid propellant rocket motor, bridging the aerospace</span>
-<span id="cb2-34"><a href="#cb2-34"></a>  structures / aerodynamics context of the original thesis to the propulsion domain.</span>
+<span id="cb2-22"><a href="#cb2-22"></a>The 2002 implementation used quadratic polynomials as surrogates because they were</span>
+<span id="cb2-23"><a href="#cb2-23"></a>cheap to fit, analytically differentiable, and computationally trivial. Those</span>
+<span id="cb2-24"><a href="#cb2-24"></a>properties still matter — but the toolkit has expanded significantly:</span>
+<span id="cb2-25"><a href="#cb2-25"></a></span>
+<span id="cb2-26"><a href="#cb2-26"></a><span class="pp">|</span> Then (2002) <span class="pp">|</span> Now (2026) <span class="pp">|</span></span>
+<span id="cb2-27"><a href="#cb2-27"></a><span class="pp">|-------------|-----------|</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a><span class="pp">|</span> Quadratic polynomial surrogates <span class="pp">|</span> Gaussian Process (Kriging) surrogates <span class="pp">|</span></span>
+<span id="cb2-29"><a href="#cb2-29"></a><span class="pp">|</span> Least-squares fit, fixed once <span class="pp">|</span> Marginal-likelihood hyperparameter tuning <span class="pp">|</span></span>
+<span id="cb2-30"><a href="#cb2-30"></a><span class="pp">|</span> D-Optimal DOE, fixed budget <span class="pp">|</span> Latin Hypercube + adaptive Expected Improvement <span class="pp">|</span></span>
+<span id="cb2-31"><a href="#cb2-31"></a><span class="pp">|</span> Nelder-Mead over polynomial <span class="pp">|</span> Bayesian optimization with EI acquisition <span class="pp">|</span></span>
+<span id="cb2-32"><a href="#cb2-32"></a><span class="pp">|</span> No uncertainty estimates <span class="pp">|</span> Full predictive distributions <span class="pp">|</span></span>
+<span id="cb2-33"><a href="#cb2-33"></a><span class="pp">|</span> Serial BB evaluation <span class="pp">|</span> Parallel <span class="in">`Threads.@threads`</span> in Julia <span class="pp">|</span></span>
+<span id="cb2-34"><a href="#cb2-34"></a><span class="pp">|</span> Fixed 20% interval shrinkage <span class="pp">|</span> Trust-region bounds management <span class="pp">|</span></span>
 <span id="cb2-35"><a href="#cb2-35"></a></span>
-<span id="cb2-36"><a href="#cb2-36"></a><span class="fu">## Original Test Case</span></span>
+<span id="cb2-36"><a href="#cb2-36"></a><span class="fu">## What This Book Contains</span></span>
 <span id="cb2-37"><a href="#cb2-37"></a></span>
-<span id="cb2-38"><a href="#cb2-38"></a>The benchmark problem throughout the original thesis — and retained here — is the</span>
-<span id="cb2-39"><a href="#cb2-39"></a>conceptual aerodynamic design of a **supersonic business jet** originally posed for</span>
-<span id="cb2-40"><a href="#cb2-40"></a>the 1995 AIAA Graduate Student Design Competition. Four engineering disciplines are</span>
-<span id="cb2-41"><a href="#cb2-41"></a>modeled as black-box analysis modules:</span>
-<span id="cb2-42"><a href="#cb2-42"></a></span>
-<span id="cb2-43"><a href="#cb2-43"></a><span class="pp">|</span> Black Box <span class="pp">|</span> Analysis <span class="pp">|</span> Key Outputs <span class="pp">|</span></span>
-<span id="cb2-44"><a href="#cb2-44"></a><span class="pp">|-----------|----------|-------------|</span></span>
-<span id="cb2-45"><a href="#cb2-45"></a><span class="pp">|</span> Structures <span class="pp">|</span> Equivalent Laminated Plate Structures (ELAPS) <span class="pp">|</span> Wing weight, aeroelastic twist <span class="pp">|</span></span>
-<span id="cb2-46"><a href="#cb2-46"></a><span class="pp">|</span> Aerodynamics <span class="pp">|</span> Wave-drag model (AWAVE) + drag polar <span class="pp">|</span> Lift, drag, $L/D$ <span class="pp">|</span></span>
-<span id="cb2-47"><a href="#cb2-47"></a><span class="pp">|</span> Power <span class="pp">|</span> Engine deck approximation <span class="pp">|</span> SFC, engine weight, ESF <span class="pp">|</span></span>
-<span id="cb2-48"><a href="#cb2-48"></a><span class="pp">|</span> Performance <span class="pp">|</span> Breguet range equation <span class="pp">|</span> Range <span class="pp">|</span></span>
+<span id="cb2-38"><a href="#cb2-38"></a>The first eight chapters closely follow the original 2002 thesis — faithfully</span>
+<span id="cb2-39"><a href="#cb2-39"></a>reproduced with all algorithms implemented in Julia. They establish the classical</span>
+<span id="cb2-40"><a href="#cb2-40"></a>BLISS-RS framework in complete, executable detail.</span>
+<span id="cb2-41"><a href="#cb2-41"></a></span>
+<span id="cb2-42"><a href="#cb2-42"></a>The modern contribution begins at Chapter 9:</span>
+<span id="cb2-43"><a href="#cb2-43"></a></span>
+<span id="cb2-44"><a href="#cb2-44"></a><span class="ss">- </span>**Chapter 9 — BLISS-2026 Framework**: The full Gaussian-process-based redesign.</span>
+<span id="cb2-45"><a href="#cb2-45"></a>  GP theory, kernel functions, marginal likelihood, Expected Improvement acquisition,</span>
+<span id="cb2-46"><a href="#cb2-46"></a>  and a complete working implementation that runs the supersonic business jet</span>
+<span id="cb2-47"><a href="#cb2-47"></a>  benchmark. Direct comparison against BLISS-RS shows where GP surrogates win and</span>
+<span id="cb2-48"><a href="#cb2-48"></a>  where they add cost.</span>
 <span id="cb2-49"><a href="#cb2-49"></a></span>
-<span id="cb2-50"><a href="#cb2-50"></a>BLISS-RS couples these four disciplines through a hierarchy of system-level and</span>
-<span id="cb2-51"><a href="#cb2-51"></a>local-level optimizations mediated by quadratic response surface surrogates.</span>
-<span id="cb2-52"><a href="#cb2-52"></a></span>
-<span id="cb2-53"><a href="#cb2-53"></a><span class="fu">## How to Use This Book</span></span>
-<span id="cb2-54"><a href="#cb2-54"></a></span>
-<span id="cb2-55"><a href="#cb2-55"></a>Each chapter is self-contained. Julia code blocks illustrate the method being</span>
-<span id="cb2-56"><a href="#cb2-56"></a>discussed and can be executed independently. The <span class="in">`src/`</span> directory contains shared</span>
-<span id="cb2-57"><a href="#cb2-57"></a>Julia modules — <span class="in">`bliss_rs.jl`</span>, <span class="in">`supersonic_jet.jl`</span>, and <span class="in">`srm.jl`</span> — that are</span>
-<span id="cb2-58"><a href="#cb2-58"></a>included at the start of each computational chapter.</span>
+<span id="cb2-50"><a href="#cb2-50"></a><span class="ss">- </span>**Chapter 10 — SRM Application**: BLISS-RS and BLISS-2026 both applied to solid</span>
+<span id="cb2-51"><a href="#cb2-51"></a>  propellant rocket motor conceptual design — connecting to the author's propulsion</span>
+<span id="cb2-52"><a href="#cb2-52"></a>  engineering background at ATK Elkton, MD.</span>
+<span id="cb2-53"><a href="#cb2-53"></a></span>
+<span id="cb2-54"><a href="#cb2-54"></a><span class="ss">- </span>**Chapter 11 — Modern MDO Landscape**: A survey of where MDO decomposition is</span>
+<span id="cb2-55"><a href="#cb2-55"></a>  heading: multi-fidelity co-kriging, neural-network surrogates, uncertainty</span>
+<span id="cb2-56"><a href="#cb2-56"></a>  quantification, and digital-twin integration.</span>
+<span id="cb2-57"><a href="#cb2-57"></a></span>
+<span id="cb2-58"><a href="#cb2-58"></a><span class="fu">## Running This Book</span></span>
 <span id="cb2-59"><a href="#cb2-59"></a></span>
-<span id="cb2-60"><a href="#cb2-60"></a>To reproduce all results locally:</span>
-<span id="cb2-61"><a href="#cb2-61"></a></span>
-<span id="cb2-62"><a href="#cb2-62"></a><span class="in">```bash</span></span>
-<span id="cb2-63"><a href="#cb2-63"></a><span class="co"># 1. Install dependencies (requires pixi)</span></span>
-<span id="cb2-64"><a href="#cb2-64"></a><span class="ex">pixi</span> run setup</span>
-<span id="cb2-65"><a href="#cb2-65"></a></span>
-<span id="cb2-66"><a href="#cb2-66"></a><span class="co"># 2. Render to HTML</span></span>
-<span id="cb2-67"><a href="#cb2-67"></a><span class="ex">pixi</span> run render</span>
+<span id="cb2-60"><a href="#cb2-60"></a><span class="in">```bash</span></span>
+<span id="cb2-61"><a href="#cb2-61"></a><span class="co"># Requires Julia 1.10+ (brew install julia) and pixi (pixi.sh)</span></span>
+<span id="cb2-62"><a href="#cb2-62"></a><span class="ex">pixi</span> run setup    <span class="co"># one-time: install Julia packages</span></span>
+<span id="cb2-63"><a href="#cb2-63"></a><span class="ex">pixi</span> run render   <span class="co"># build HTML → docs/</span></span>
+<span id="cb2-64"><a href="#cb2-64"></a><span class="ex">pixi</span> run preview  <span class="co"># live preview at localhost:4000</span></span>
+<span id="cb2-65"><a href="#cb2-65"></a><span class="in">```</span></span>
+<span id="cb2-66"><a href="#cb2-66"></a></span>
+<span id="cb2-67"><a href="#cb2-67"></a><span class="fu">## Notation</span></span>
 <span id="cb2-68"><a href="#cb2-68"></a></span>
-<span id="cb2-69"><a href="#cb2-69"></a><span class="co"># 3. Live preview</span></span>
-<span id="cb2-70"><a href="#cb2-70"></a><span class="ex">pixi</span> run preview</span>
-<span id="cb2-71"><a href="#cb2-71"></a><span class="in">```</span></span>
-<span id="cb2-72"><a href="#cb2-72"></a></span>
-<span id="cb2-73"><a href="#cb2-73"></a><span class="fu">## Notation Conventions</span></span>
-<span id="cb2-74"><a href="#cb2-74"></a></span>
-<span id="cb2-75"><a href="#cb2-75"></a><span class="pp">|</span> Symbol <span class="pp">|</span> Meaning <span class="pp">|</span></span>
-<span id="cb2-76"><a href="#cb2-76"></a><span class="pp">|--------|---------|</span></span>
-<span id="cb2-77"><a href="#cb2-77"></a><span class="pp">|</span> $Z$ <span class="pp">|</span> System-level design variables (shared across disciplines) <span class="pp">|</span></span>
-<span id="cb2-78"><a href="#cb2-78"></a><span class="pp">|</span> $X$ <span class="pp">|</span> Local design variables (private to a black box) <span class="pp">|</span></span>
-<span id="cb2-79"><a href="#cb2-79"></a><span class="pp">|</span> $Y^*$ <span class="pp">|</span> Coupling variables (outputs of one BB used as inputs to another) <span class="pp">|</span></span>
-<span id="cb2-80"><a href="#cb2-80"></a><span class="pp">|</span> $Y^A$ <span class="pp">|</span> Actual coupling variable outputs from BB analysis <span class="pp">|</span></span>
-<span id="cb2-81"><a href="#cb2-81"></a><span class="pp">|</span> $w$ <span class="pp">|</span> Weighting factors for the synthetic local objective function <span class="pp">|</span></span>
-<span id="cb2-82"><a href="#cb2-82"></a><span class="pp">|</span> BB <span class="pp">|</span> Black box (disciplinary analysis module) <span class="pp">|</span></span>
-<span id="cb2-83"><a href="#cb2-83"></a><span class="pp">|</span> RS <span class="pp">|</span> Response surface (quadratic surrogate) <span class="pp">|</span></span>
-<span id="cb2-84"><a href="#cb2-84"></a><span class="pp">|</span> DOE <span class="pp">|</span> Design of experiments (point placement scheme) <span class="pp">|</span></span>
-<span id="cb2-85"><a href="#cb2-85"></a><span class="pp">|</span> $N_X$ <span class="pp">|</span> Number of design variables <span class="pp">|</span></span>
-<span id="cb2-86"><a href="#cb2-86"></a><span class="pp">|</span> $N_S$ <span class="pp">|</span> Number of sample points <span class="pp">|</span></span>
-<span id="cb2-87"><a href="#cb2-87"></a></span>
-<span id="cb2-88"><a href="#cb2-88"></a><span class="fu">## Citation</span></span>
-<span id="cb2-89"><a href="#cb2-89"></a></span>
-<span id="cb2-90"><a href="#cb2-90"></a>If you use material from this work, please cite the original NASA contractor report:</span>
+<span id="cb2-69"><a href="#cb2-69"></a><span class="pp">|</span> Symbol <span class="pp">|</span> Meaning <span class="pp">|</span></span>
+<span id="cb2-70"><a href="#cb2-70"></a><span class="pp">|--------|---------|</span></span>
+<span id="cb2-71"><a href="#cb2-71"></a><span class="pp">|</span> $Z$ <span class="pp">|</span> System-level design variables <span class="pp">|</span></span>
+<span id="cb2-72"><a href="#cb2-72"></a><span class="pp">|</span> $X$ <span class="pp">|</span> Local design variables (private to one BB) <span class="pp">|</span></span>
+<span id="cb2-73"><a href="#cb2-73"></a><span class="pp">|</span> $Y^*, Y^A$ <span class="pp">|</span> Coupling variable targets / actual outputs <span class="pp">|</span></span>
+<span id="cb2-74"><a href="#cb2-74"></a><span class="pp">|</span> $w$ <span class="pp">|</span> Weighting factors for synthetic local objective <span class="pp">|</span></span>
+<span id="cb2-75"><a href="#cb2-75"></a><span class="pp">|</span> $\mathbf{k}$ <span class="pp">|</span> GP kernel (covariance) function <span class="pp">|</span></span>
+<span id="cb2-76"><a href="#cb2-76"></a><span class="pp">|</span> $\mu(\cdot), \sigma^2(\cdot)$ <span class="pp">|</span> GP posterior mean and variance <span class="pp">|</span></span>
+<span id="cb2-77"><a href="#cb2-77"></a><span class="pp">|</span> $\text{EI}(\cdot)$ <span class="pp">|</span> Expected Improvement acquisition function <span class="pp">|</span></span>
+<span id="cb2-78"><a href="#cb2-78"></a><span class="pp">|</span> $\ell$ <span class="pp">|</span> GP length-scale hyperparameter <span class="pp">|</span></span>
+<span id="cb2-79"><a href="#cb2-79"></a><span class="pp">|</span> BB <span class="pp">|</span> Black box (disciplinary analysis module) <span class="pp">|</span></span>
+<span id="cb2-80"><a href="#cb2-80"></a><span class="pp">|</span> RS <span class="pp">|</span> Response surface (quadratic polynomial surrogate) <span class="pp">|</span></span>
+<span id="cb2-81"><a href="#cb2-81"></a><span class="pp">|</span> GP <span class="pp">|</span> Gaussian process surrogate <span class="pp">|</span></span>
+<span id="cb2-82"><a href="#cb2-82"></a><span class="pp">|</span> DOE <span class="pp">|</span> Design of experiments <span class="pp">|</span></span>
+<span id="cb2-83"><a href="#cb2-83"></a><span class="pp">|</span> LHS <span class="pp">|</span> Latin Hypercube Sampling <span class="pp">|</span></span>
+<span id="cb2-84"><a href="#cb2-84"></a></span>
+<span id="cb2-85"><a href="#cb2-85"></a><span class="fu">## Citation</span></span>
+<span id="cb2-86"><a href="#cb2-86"></a></span>
+<span id="cb2-87"><a href="#cb2-87"></a>If you use material from this work, please cite both the original report and this book:</span>
+<span id="cb2-88"><a href="#cb2-88"></a></span>
+<span id="cb2-89"><a href="#cb2-89"></a><span class="at">&gt; Altus, T. D., "A Response Surface Methodology for Bi-Level Integrated System</span></span>
+<span id="cb2-90"><a href="#cb2-90"></a><span class="at">&gt; Synthesis (BLISS)," NASA/CR-2002-211652, NASA Langley Research Center, May 2002.</span></span>
 <span id="cb2-91"><a href="#cb2-91"></a></span>
-<span id="cb2-92"><a href="#cb2-92"></a><span class="at">&gt; Altus, T. D., "A Response Surface Methodology for Bi-Level Integrated System</span></span>
-<span id="cb2-93"><a href="#cb2-93"></a><span class="at">&gt; Synthesis (BLISS)," NASA/CR-2002-211652, George Washington University /</span></span>
-<span id="cb2-94"><a href="#cb2-94"></a><span class="at">&gt; NASA Langley Research Center, Hampton, VA, May 2002.</span></span>
-<span id="cb2-95"><a href="#cb2-95"></a></span>
-<span id="cb2-96"><a href="#cb2-96"></a>---</span>
-<span id="cb2-97"><a href="#cb2-97"></a></span>
-<span id="cb2-98"><a href="#cb2-98"></a>*Troy David Altus*</span>
-<span id="cb2-99"><a href="#cb2-99"></a>*Elkton, Maryland*</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb2-92"><a href="#cb2-92"></a><span class="at">&gt; Altus, T. D., *BLISS-2026: Decomposition-Based MDO — A Modern Julia Treatment*,</span></span>
+<span id="cb2-93"><a href="#cb2-93"></a><span class="at">&gt; 2026. </span><span class="co">[</span><span class="ot">altustd.github.io/bliss2026</span><span class="co">](https://altustd.github.io/bliss2026)</span></span>
+<span id="cb2-94"><a href="#cb2-94"></a></span>
+<span id="cb2-95"><a href="#cb2-95"></a>---</span>
+<span id="cb2-96"><a href="#cb2-96"></a></span>
+<span id="cb2-97"><a href="#cb2-97"></a>*Troy David Altus · Elkton, Maryland · 2026*</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/altustd/bliss-rs-julia-ebook/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss-rs-julia-ebook/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-html/zenscroll-min.js"></script>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/altustd/bliss2026/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss2026/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

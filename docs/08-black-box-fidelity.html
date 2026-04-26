@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>9&nbsp; Black Box Fidelity Improvements – A Response Surface Methodology for Bi-Level Integrated System Synthesis</title>
+<title>9&nbsp; Black Box Fidelity Improvements – BLISS-2026</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -88,7 +88,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./09-modern-extensions.html" rel="next">
+<link href="./09-bliss2026-framework.html" rel="next">
 <link href="./07-supersonic-business-jet.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -191,9 +191,9 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">A Response Surface Methodology for Bi-Level Integrated System Synthesis</a> 
+      <a href="./">BLISS-2026</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/altustd/bliss-rs-julia-ebook" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/altustd/bliss2026" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
@@ -260,8 +260,8 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./09-modern-extensions.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Modern Extensions</span></span></a>
+  <a href="./09-bliss2026-framework.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">BLISS-2026: A Gaussian-Process Framework</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -272,8 +272,14 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./11-modern-mdo-landscape.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Modern MDO Landscape</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">References</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">References</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -319,7 +325,7 @@ window.Quarto = {
   <li><a href="#impact-on-system-data-flow" id="toc-impact-on-system-data-flow" class="nav-link" data-scroll-target="#impact-on-system-data-flow"><span class="header-section-number">9.4</span> Impact on System Data Flow</a></li>
   <li><a href="#implications-for-bliss-rs" id="toc-implications-for-bliss-rs" class="nav-link" data-scroll-target="#implications-for-bliss-rs"><span class="header-section-number">9.5</span> Implications for BLISS-RS</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/altustd/bliss-rs-julia-ebook/edit/main/08-black-box-fidelity.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss-rs-julia-ebook/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/altustd/bliss2026/edit/main/08-black-box-fidelity.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss2026/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -1047,8 +1053,8 @@ T_{\text{total}} \approx N_{\text{iter}} \times T_{\text{BB,max}} \times N_S
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./09-modern-extensions.html" class="pagination-link" aria-label="Modern Extensions">
-        <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Modern Extensions</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./09-bliss2026-framework.html" class="pagination-link" aria-label="BLISS-2026: A Gaussian-Process Framework">
+        <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">BLISS-2026: A Gaussian-Process Framework</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
@@ -1326,5 +1332,5 @@ T_{\text{total}} \approx N_{\text{iter}} \times T_{\text{BB,max}} \times N_S
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/altustd/bliss-rs-julia-ebook/edit/main/08-black-box-fidelity.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss-rs-julia-ebook/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-html/zenscroll-min.js"></script>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/altustd/bliss2026/edit/main/08-black-box-fidelity.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss2026/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

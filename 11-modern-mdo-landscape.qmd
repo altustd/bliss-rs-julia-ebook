@@ -1,0 +1,443 @@
+---
+title: "Modern MDO Landscape"
+---
+
+```{julia}
+#| include: false
+include("src/bliss_rs.jl")
+include("src/bliss_gp.jl")
+using Printf, Plots, LaTeXStrings, Statistics, LinearAlgebra, Random, Distributions
+gr()
+```
+
+## MDO Decomposition: A Taxonomy
+
+BLISS is one of several decomposition architectures that have been developed over
+the past four decades to manage the complexity of multidisciplinary system design.
+@fig-mdo-taxonomy maps the family.
+
+```{mermaid}
+%%| label: fig-mdo-taxonomy
+%%| fig-cap: "MDO architecture taxonomy. Architectures differ on where system-level consistency constraints are enforced (MDF: within the inner loop; IDF/SAND: explicitly as outer constraints) and how information flows between disciplines (sequential vs. concurrent)."
+%%| fig-width: 7
+
+flowchart LR
+    MDO["MDO\nArchitectures"]
+
+    subgraph mono ["  Monolithic  "]
+        MDF["MDF\nMultidisciplinary\nFeasible"]
+        IDF["IDF\nIndividual\nDiscipline Feasible"]
+        SAND["SAND\nSimultaneous\nAnalysis & Design"]
+    end
+
+    subgraph decomp ["  Decomposition-Based  "]
+        CO["CO\nCollaborative\nOptimisation"]
+        CSSO["CSSO\nConcurrent\nSubspace Opt."]
+        BLISSARCH["BLISS\nBi-Level Integrated\nSystem Synthesis"]
+        ATC["ATC\nAnalytical\nTarget Cascading"]
+    end
+
+    MDO --> mono & decomp
+
+    classDef arch  fill:#dbeafe,stroke:#3b82f6,stroke-width:1.5px,color:#1e3a5f
+    classDef bliss fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
+    classDef title fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px,color:#0f172a
+
+    class MDF,IDF,SAND,CO,CSSO,ATC arch
+    class BLISSARCH bliss
+    class MDO title
+```
+
+### MDF, IDF, and SAND
+
+**MDF (Multidisciplinary Feasible)** enforces disciplinary consistency at every
+system analysis call. Couplings are satisfied implicitly by a fixed-point (Gauss-Seidel)
+or Newton iteration. The system optimizer sees only converged analyses but pays the
+cost of full convergence each function evaluation.
+
+**IDF (Individual Discipline Feasible)** introduces explicit coupling variables as
+optimization unknowns. Disciplines run independently without iteration, and coupling
+consistency is enforced by the outer optimizer as equality constraints. This enables
+parallelism at the expense of a larger (but well-structured) optimization problem.
+
+**SAND (Simultaneous Analysis and Design)** treats all state and design variables as
+optimization variables simultaneously. The optimizer solves the governing equations
+and the design problem jointly. Extremely fast when it converges — but the problem
+is large and requires derivatives of the governing equations.
+
+### Where BLISS Sits
+
+BLISS is a two-level decomposition that inherits IDF's independent disciplinary
+structure but adds the distinction between system-level ($Z$) and local ($X$)
+variables. The key innovation is that the system optimizer never calls the
+disciplines directly — it operates entirely on surrogate models. This makes BLISS
+uniquely suited to black-box disciplines: codes that cannot be differentiated or
+whose source is unavailable.
+
+## Multi-Fidelity Methods
+
+The most impactful practical extension to BLISS-2026 is **multi-fidelity** modeling:
+using a hierarchy of analysis tools of differing fidelity and cost to accelerate
+convergence.
+
+### Kennedy-O'Hagan Co-Kriging
+
+Kennedy and O'Hagan (2000) [@sobieski1998bliss] proposed a principled Bayesian
+framework for combining models at multiple fidelity levels. For two levels (cheap
+$f_L$ and expensive $f_H$):
+
+$$
+f_H(\mathbf{x}) = \rho \cdot f_L(\mathbf{x}) + \delta(\mathbf{x})
+$$ {#eq-cokriging}
+
+where $\rho$ is a regression scaling coefficient and $\delta(\mathbf{x})$ is an
+independent GP capturing the discrepancy between the two fidelity levels. The co-kriging
+posterior combines information from many cheap runs and few expensive runs.
+
+In a BLISS-2026 context:
+
+| Level | Cost | Use |
+|-------|------|-----|
+| $f_L$ | Analytical surrogate (ms/call) | LHS initial DOE, EI candidates |
+| $f_M$ | Medium CFD (minutes/call) | Confirm promising regions |
+| $f_H$ | Full RANS + FEM (hours/call) | Final design validation only |
+
+```{julia}
+#| label: fig-multifidelity
+#| fig-cap: "Multi-fidelity co-kriging illustration. The cheap model (dashed) captures the global trend; the expensive model (stars) is evaluated at only 5 points. Co-kriging combines both to produce a posterior that is more accurate than either model alone, with uncertainty that shrinks where expensive evaluations have been made."
+#| code-fold: true
+
+rng3 = MersenneTwister(55)
+x_all = range(0, 1, length=300)
+
+# True high-fidelity function
+f_H(x) = sin(4π*x) * exp(-x) + 0.5*x^2
+
+# Cheap low-fidelity (captures trend, misses detail)
+f_L(x) = 0.85 * sin(4π*x) * exp(-x) + 0.3*x^2 + 0.1*sin(8π*x)
+
+# Low-fidelity training (many cheap evals)
+x_L   = collect(range(0, 1, length=25))
+y_L   = f_L.(x_L)
+
+# High-fidelity training (few expensive evals)
+x_H   = [0.1, 0.3, 0.55, 0.75, 0.92]
+y_H   = f_H.(x_H)
+
+# Step 1: GP on low-fidelity
+X_Lm  = reshape(x_L, :, 1)
+gp_L, ym_L, ys_L = fit_gp_auto(X_Lm, y_L)
+X_test3 = reshape(collect(x_all), :, 1)
+μ_L, σ²_L = predict_gp_scaled(gp_L, ym_L, ys_L, X_test3)
+
+# Step 2: GP on discrepancy δ(x) = f_H(x) - ρ*f_L(x)
+ρ = 0.9
+δ_H = y_H .- ρ .* f_L.(x_H)
+X_Hm  = reshape(x_H, :, 1)
+gp_δ, ym_δ, ys_δ = fit_gp_auto(X_Hm, δ_H)
+μ_δ, σ²_δ = predict_gp_scaled(gp_δ, ym_δ, ys_δ, X_test3)
+
+# Co-kriging prediction
+μ_CK  = ρ .* μ_L .+ μ_δ
+σ_CK  = sqrt.(max.(ρ^2 .* σ²_L .+ σ²_δ, 0.0))
+
+p = plot(x_all, f_H.(x_all), lw=2, color=:black, label="True f_H(x)")
+plot!(x_all, f_L.(x_all), lw=1.5, color=:gray, linestyle=:dash, label="Low-fidelity f_L(x)")
+plot!(x_all, μ_CK, lw=2, color=:steelblue, label="Co-kriging mean")
+plot!(x_all, μ_CK .- 2σ_CK, fillrange=μ_CK .+ 2σ_CK,
+      fillalpha=0.18, color=:steelblue, lw=0, label="Co-kriging ±2σ")
+scatter!(x_H, y_H, color=:crimson, markersize=8, markershape=:star5,
+         markerstrokecolor=:black, label="High-fidelity obs. (5 pts)")
+scatter!(x_L, y_L, color=:gray60, markersize=3, alpha=0.6, label="Low-fidelity obs.")
+plot!(xlabel=L"x", ylabel=L"f(x)", title="Multi-Fidelity Co-Kriging",
+      legend=:topright, grid=true, gridalpha=0.3)
+```
+
+The co-kriging mean in @fig-multifidelity is significantly more accurate than either
+single-fidelity GP alone — it exploits the global shape information from 25 cheap
+runs while correcting for systematic errors using just 5 expensive evaluations.
+
+## Neural Network Surrogates
+
+For black-box responses with strong nonlinearity, local optima, or discontinuities —
+common in structural crashworthiness or combustion instability — neither quadratic
+polynomials nor stationary GP kernels are adequate. **Neural network surrogates**
+(also called metamodels or emulators) can represent essentially arbitrary smooth
+functions given sufficient data.
+
+A feedforward network with $L$ layers:
+
+$$
+\hat{f}(\mathbf{x}) = W_L \sigma(\cdots W_2 \sigma(W_1 \mathbf{x} + b_1) + b_2 \cdots) + b_L
+$$ {#eq-nn}
+
+### Julia Implementation (from scratch, no Flux dependency)
+
+```{julia}
+#| label: lst-nn-demo
+#| code-fold: false
+
+# Minimal 2-layer feedforward network in pure Julia
+# Architecture: n_in → 16 → 16 → 1
+
+struct TwoLayerNet
+    W1::Matrix{Float64}; b1::Vector{Float64}
+    W2::Matrix{Float64}; b2::Vector{Float64}
+    W3::Matrix{Float64}; b3::Vector{Float64}
+end
+
+relu(x) = max.(x, 0.0)
+
+function forward(net::TwoLayerNet, X::Matrix{Float64})
+    h1 = relu.(net.W1 * X' .+ net.b1)
+    h2 = relu.(net.W2 * h1 .+ net.b2)
+    ŷ  = net.W3 * h2 .+ net.b3
+    return vec(ŷ)
+end
+
+function init_net(n_in::Int; h=16, seed=42)
+    rng = MersenneTwister(seed)
+    s1, s2 = sqrt(2/n_in), sqrt(2/h)
+    TwoLayerNet(
+        randn(rng, h, n_in) * s1, zeros(h),
+        randn(rng, h, h)    * s2, zeros(h),
+        randn(rng, 1, h)    * s2, zeros(1),
+    )
+end
+
+# MSE loss + gradient-free training (coordinate perturbation)
+function train_nn(net::TwoLayerNet, X_train, y_train;
+                  n_epochs=500, lr=0.05, seed=42)
+    rng = MersenneTwister(seed)
+    # Flatten parameters
+    function net_to_vec(n)
+        vcat(vec(n.W1), n.b1, vec(n.W2), n.b2, vec(n.W3), n.b3)
+    end
+    function vec_to_net(v, n)
+        h, ni = size(n.W1)
+        i = 0
+        W1 = reshape(v[i+1:i+h*ni], h, ni); i += h*ni
+        b1 = v[i+1:i+h];  i += h
+        W2 = reshape(v[i+1:i+h*h], h, h);  i += h*h
+        b2 = v[i+1:i+h];  i += h
+        W3 = reshape(v[i+1:i+h], 1, h);    i += h
+        b3 = v[i+1:i+1];
+        TwoLayerNet(W1,b1,W2,b2,W3,b3)
+    end
+    mse(n) = mean((forward(n, X_train) .- y_train).^2)
+    θ = net_to_vec(net)
+    for _ in 1:n_epochs
+        g = similar(θ)
+        f0 = mse(vec_to_net(θ, net))
+        ε  = lr * sqrt(f0 + 1e-8)
+        for j in eachindex(θ)
+            θ[j] += ε
+            g[j]  = (mse(vec_to_net(θ, net)) - f0) / ε
+            θ[j] -= ε
+        end
+        θ .-= lr * g
+    end
+    return vec_to_net(θ, net)
+end
+
+# Demo on Rosenbrock
+rng4   = MersenneTwister(77)
+n_demo = 100
+X_demo = rand(rng4, n_demo, 2) .* 4 .- 2   # [-2,2]²
+y_demo2= [100*(X_demo[i,2]-X_demo[i,1]^2)^2 + (X_demo[i,1]-1)^2
+          for i in 1:n_demo]
+
+net0    = init_net(2)
+net_fit = train_nn(net0, X_demo, y_demo2; n_epochs=300, lr=0.005)
+
+# Test accuracy
+X_test4 = rand(rng4, 50, 2) .* 4 .- 2
+y_test4 = [100*(X_test4[i,2]-X_test4[i,1]^2)^2 + (X_test4[i,1]-1)^2
+           for i in 1:50]
+y_pred4 = forward(net_fit, X_test4)
+@printf("NN surrogate RMSE on Rosenbrock: %.1f\n",
+        sqrt(mean((y_test4 .- y_pred4).^2)))
+```
+
+### When to Use Neural Networks vs. GPs
+
+| Criterion | Use GP | Use NN |
+|-----------|--------|--------|
+| Training data budget | < 500 points | > 500 points |
+| Dimension $n$ | ≤ 30 | Any |
+| Uncertainty needed | Yes | Approximate (MC dropout) |
+| Response smoothness | Smooth, unimodal | Rough, multimodal, discontinuous |
+| Derivative needed | Analytic | Autodiff (ForwardDiff.jl) |
+| Training cost | Seconds | Minutes–hours |
+
+For the BLISS-2026 surrogate role — 20–120 BB evaluations per outer iteration,
+dimensions 5–15, engineering responses that are generally smooth — GPs are the
+right default. Neural networks become relevant for the SRM combustion instability
+problem (Chapter 10) where the response has sharp pressure spikes near resonance.
+
+## Uncertainty Quantification Propagation
+
+BLISS-2026's GP surrogates do not just improve prediction accuracy — they enable
+systematic **uncertainty propagation** through the MDO system. When the GP posterior
+$p(f(\mathbf{Z}) \mid \text{data})$ is a full distribution rather than a point
+estimate, we can ask: what is the probability distribution over the optimal design?
+
+### Monte Carlo UQ Through the GP Posterior
+
+```{julia}
+#| label: fig-uq-propagation
+#| fig-cap: "Uncertainty propagation through BLISS-2026. Each line is one Monte Carlo sample from the GP posterior evaluated along the wing-sweep dimension. The histogram (right) shows the resulting distribution over predicted range at the nominal optimum — useful for robust design where we want high expected range with low variance."
+#| code-fold: true
+
+# Rebuild the wing-sweep slice GP from scratch (chapter-local data)
+include("src/supersonic_jet.jl")
+Z_base2   = [0.075, 4.0, 45.0, 400.0, 120.0, 4.5, 0.2, 45_000.0, 1.8]
+lo_sw_11, hi_sw_11 = 35.0, 72.0
+sweep_range_11 = range(lo_sw_11, hi_sw_11, length=200)
+
+rng_11 = MersenneTwister(42)
+x_tr_11 = sort(lo_sw_11 .+ rand(rng_11, 10) .* (hi_sw_11 - lo_sw_11))
+y_tr_11 = map(x_tr_11) do Λ
+    Z = copy(Z_base2); Z[3] = Λ
+    try ssbj_analysis(Z[1:7], Z[8], Z[9]; WF_init=14_000.0, WT_empty=28_000.0).Range
+    catch; 0.0 end
+end
+x_c_11 = (x_tr_11 .- lo_sw_11) ./ (hi_sw_11 - lo_sw_11)
+
+# GP trained on wing-sweep slice
+X_mat3 = reshape(x_c_11, 10, 1)
+gp_sweep, ym3, ys3 = fit_gp_auto(X_mat3, y_tr_11)
+n_fine = 200
+X_fine = reshape(collect(range(0, 1, n_fine)), n_fine, 1)
+sweep_plot = collect(sweep_range_11)   # 200-element vector
+
+# Draw GP posterior samples
+μ_sw, σ²_sw = predict_gp_scaled(gp_sweep, ym3, ys3, X_fine)
+σ_sw = sqrt.(max.(σ²_sw, 0.0))
+
+rng5 = MersenneTwister(123)
+n_mc = 80
+
+p1 = plot(sweep_plot, μ_sw, lw=2, color=:steelblue, label="GP mean",
+          xlabel="Wing sweep Λ_w (deg)", ylabel="Range (NM)",
+          title="GP Posterior Samples", legend=:topleft)
+for _ in 1:n_mc
+    f_sample = μ_sw .+ σ_sw .* randn(rng5, n_fine)
+    plot!(sweep_plot, f_sample, color=:steelblue, alpha=0.07, lw=0.7, label="")
+end
+scatter!(x_tr_11, y_tr_11, color=:black, markersize=5, label="Observations")
+
+# Distribution at nominal optimal sweep ≈ 55°
+x_opt_sw = (55.0 - lo_sw_11) / (hi_sw_11 - lo_sw_11)
+μ_opt, σ²_opt = predict_gp_scaled(gp_sweep, ym3, ys3, reshape([x_opt_sw], 1, 1))
+d_opt = Normal(μ_opt[1], sqrt(σ²_opt[1]))
+r_range = range(μ_opt[1] - 4*sqrt(σ²_opt[1]), μ_opt[1] + 4*sqrt(σ²_opt[1]), length=200)
+
+p2 = plot(pdf.(d_opt, r_range), r_range, fill=(0, 0.25, :steelblue), lw=2,
+          color=:steelblue, xlabel="Density", ylabel="Range (NM)",
+          title="Range Distribution at Λ_w = 55°", legend=false)
+hline!([μ_opt[1]], color=:crimson, lw=2, linestyle=:dash)
+annotate!(maximum(pdf.(d_opt, r_range))*0.5, μ_opt[1]-60,
+          text(@sprintf("σ = %.0f NM", sqrt(σ²_opt[1])), 9, :crimson))
+
+plot(p1, p2, layout=(1,2), size=(780, 340))
+```
+
+### Robust Optimisation
+
+The standard BLISS-2026 objective maximises expected range:
+$\max_Z \mu(\mathbf{Z})$. A *robust* variant instead maximises:
+
+$$
+\max_{\mathbf{Z}} \left[\mu(\mathbf{Z}) - \lambda\,\sigma(\mathbf{Z})\right]
+$$ {#eq-robust-obj}
+
+where $\lambda > 0$ is a risk-aversion parameter. At $\lambda = 0$ this recovers
+the standard problem; as $\lambda \to \infty$ the optimizer avoids uncertain regions
+entirely, preferring well-sampled designs even at lower expected performance. In
+practice $\lambda = 1$ to $2$ gives a good balance.
+
+## Digital Twins and BLISS
+
+A **digital twin** is a continuously-updated, high-fidelity computational model of
+a physical asset, synchronized with real-world sensor data. For an SRM test program,
+a digital twin might consist of:
+
+- A combustion CFD model updated after each static fire with measured $P_c(t)$, $F(t)$
+- A structural finite element model updated with strain gauge data
+- A coupled aeroelastic model tracking thermal erosion of the nozzle throat
+
+BLISS-2026 maps naturally onto the digital-twin architecture:
+
+```{mermaid}
+%%| label: fig-digital-twin
+%%| fig-cap: "BLISS-2026 in a digital-twin context. Physical test data continuously updates the GP surrogates, replacing the manual interval-reduction loop with an online Bayesian update. Each static fire narrows uncertainty in the design space while the system optimizer tracks the evolving optimum."
+%%| fig-width: 6
+
+flowchart LR
+    HW["Physical\nSRM Test Stand"]
+    Sensor["Data Acquisition\nP_c(t), F(t), strain"]
+    GP_update["GP Posterior\nUpdate"]
+    BLISS["BLISS-2026\nSystem Optimizer"]
+    Design["Updated\nDesign Z*"]
+    Next["Next Motor\nConfiguration"]
+
+    HW --> Sensor --> GP_update --> BLISS --> Design --> Next --> HW
+
+    classDef physical fill:#fff1f2,stroke:#e11d48,stroke-width:2px,color:#4c0519
+    classDef data     fill:#fefce8,stroke:#ca8a04,stroke-width:1.5px,color:#422006
+    classDef gp       fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+    classDef opt      fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#2e1065
+
+    class HW,Next physical
+    class Sensor,Design data
+    class GP_update gp
+    class BLISS opt
+```
+
+In this closed loop:
+- After each physical test, the measured performance data updates the GP surrogate
+  as new training observations (sequential Bayesian updating).
+- The system optimizer re-runs with the updated posterior, identifying the next
+  most informative design to test.
+- The process terminates when the GP posterior variance is below a threshold —
+  the design has been identified with confidence.
+
+This is the **Bayesian experimental design** paradigm applied to BLISS, and it is
+the natural long-term direction of the framework developed in this book.
+
+## Reinforcement Learning for MDO
+
+An emerging research direction treats MDO as a **sequential decision problem** and
+applies reinforcement learning (RL). The optimizer is an RL agent that learns a
+policy $\pi(a \mid s)$ mapping the current design state $s$ (observed BB outputs,
+interval bounds, GP uncertainty map) to a design action $a$ (next $Z$ to evaluate).
+
+Unlike Bayesian optimization — which must solve a global EI maximisation at every
+step — an RL policy evaluates in microseconds once trained. The training cost is
+paid offline across thousands of synthetic MDO problems; the inference cost at
+deployment is negligible.
+
+Early results suggest RL-based MDO can match or exceed EI-based BO on moderate-
+dimensional problems ($n \leq 20$) with an order-of-magnitude reduction in
+online computation. This is an active research frontier as of 2026.
+
+## Summary: Where MDO Is Heading
+
+| Trend | Impact on BLISS-2026 |
+|-------|---------------------|
+| **GP + EI** (this book) | Better surrogates, adaptive sampling, UQ |
+| **Multi-fidelity co-kriging** | 10–100× cheaper per iteration |
+| **Neural network surrogates** | Handle rough, high-dim responses |
+| **Digital twins** | Online GP updates from sensor data |
+| **Robust optimization** | Designs robust to model uncertainty |
+| **RL-based MDO** | Policy networks replace EI solver |
+| **Physics-informed NNs** | Embed governing equations in surrogate |
+| **Automatic differentiation** | Exact gradients through any Julia BB |
+
+The thread connecting all of these is the Bayesian perspective: rather than returning
+a single point estimate, the surrogate returns a *probability distribution* over
+possible function values. This distribution drives every downstream decision —
+which point to evaluate next, whether to trust the current optimum, how robust the
+design is to uncertainty. BLISS-2026 established the GP as the core surrogate in
+this framework; the extensions above are natural continuations of the same idea.

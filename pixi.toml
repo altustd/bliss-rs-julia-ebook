@@ -1,7 +1,7 @@
 [workspace]
-name = "bliss-rs-julia-ebook"
-version = "0.1.0"
-description = "BLISS Response Surface Methodology ebook using Julia and Quarto"
+name = "bliss2026"
+version = "2.0.0"
+description = "BLISS-2026: Decomposition-Based MDO with GP surrogates and Bayesian optimization in Julia"
 authors = ["Troy Altus <altustd@gmail.com>"]
 channels = ["conda-forge"]
 # Julia is not packaged for osx-arm64/win-64 on conda-forge.

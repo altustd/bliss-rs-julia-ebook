@@ -3,11 +3,11 @@ project:
   output-dir: docs
 
 book:
-  title: "A Response Surface Methodology for Bi-Level Integrated System Synthesis"
-  subtitle: "BLISS-RS: Recreated and Extended in Julia"
+  title: "BLISS-2026"
+  subtitle: "Decomposition-Based Multidisciplinary Design Optimization — A Modern Julia Treatment"
   author: "Troy David Altus"
   date: today
-  repo-url: https://github.com/altustd/bliss-rs-julia-ebook
+  repo-url: https://github.com/altustd/bliss2026
   repo-actions: [edit, issue]
   chapters:
     - index.qmd
@@ -19,8 +19,9 @@ book:
     - 06-interval-reduction.qmd
     - 07-supersonic-business-jet.qmd
     - 08-black-box-fidelity.qmd
-    - 09-modern-extensions.qmd
+    - 09-bliss2026-framework.qmd
     - 10-srm-application.qmd
+    - 11-modern-mdo-landscape.qmd
     - references.qmd
   appendices:
     - appendix-a-hypersphere.qmd
@@ -40,7 +41,7 @@ format:
     self-contained: false
     smooth-scroll: true
     highlight-style: github
-  # pdf:  # Re-enable after installing rsvg-convert (brew install librsvg)
+  # pdf:  # Re-enable after: brew install librsvg
   #   documentclass: scrbook
   #   toc: true
   #   number-sections: true
