@@ -30,6 +30,7 @@ book:
 format:
   html:
     theme: cosmo
+    include-in-header: chapter-offset.html
     toc: true
     toc-depth: 3
     number-sections: true

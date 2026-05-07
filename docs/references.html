@@ -127,6 +127,40 @@ div.csl-indent {
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Hide the landing page sidebar entry (index.html) — it's a title/preface page, not a numbered chapter
+  document.querySelectorAll(
+    '.sidebar-item a[href$="index.html"], .sidebar-item a[href="./index.html"]'
+  ).forEach(function (a) {
+    var item = a.closest('.sidebar-item');
+    if (item) item.style.display = 'none';
+  });
+
+  // Decrement chapter number in sidebar/breadcrumb spans by 1
+  // (compensates for index.qmd being counted as Ch 1 by Quarto)
+  document.querySelectorAll('.chapter-number').forEach(function (span) {
+    var n = parseInt(span.textContent, 10);
+    if (!isNaN(n) && n >= 1) {
+      span.textContent = String(n - 1);
+    }
+  });
+
+  // Decrement the chapter prefix in section numbers (e.g. "3.1" -> "2.1")
+  // so right-hand TOC matches the heading chapter number
+  document.querySelectorAll('.header-section-number').forEach(function (span) {
+    var text = span.textContent.trim();
+    var parts = text.split('.');
+    if (parts.length >= 2) {
+      var ch = parseInt(parts[0], 10);
+      if (!isNaN(ch) && ch >= 1) {
+        parts[0] = String(ch - 1);
+        span.textContent = parts.join('.');
+      }
+    }
+  });
+});
+</script>
 
 
 </head>
@@ -360,10 +394,52 @@ Center / George Washington University, Hampton, VA, 2002.</div>
 <div class="csl-left-margin">[11] </div><div class="csl-right-inline">NASA Langley Research Center,
 <span>“<span>CFL3D</span> Version 6.0 User Manual,”</span> 2000.</div>
 </div>
+<div id="ref-jones1998efficient" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[12] </div><div class="csl-right-inline">Jones, D. R., Schonlau, M., and Welch, W. J.,
+<span>“Efficient Global Optimization of Expensive Black-Box
+Functions,”</span> <em>Journal of Global Optimization</em>, Vol. 13,
+1998, pp. 455–492.</div>
+</div>
 <div id="ref-sacks1989design" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[12] </div><div class="csl-right-inline">Sacks, J., Welch, W. J., Mitchell, T. J., and
+<div class="csl-left-margin">[13] </div><div class="csl-right-inline">Sacks, J., Welch, W. J., Mitchell, T. J., and
 Wynn, H. P., <span>“Design and Analysis of Computer Experiments,”</span>
 <em>Statistical Science</em>, Vol. 4, No. 4, 1989, pp. 409–423.</div>
+</div>
+<div id="ref-forrester2008engineering" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[14] </div><div class="csl-right-inline">Forrester, A., Sóbester, A., and Keane, A.,
+<span>“Engineering Design via Surrogate Modelling: A Practical
+Guide,”</span> Wiley, 2008.</div>
+</div>
+<div id="ref-sutton2018reinforcement" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[15] </div><div class="csl-right-inline">Sutton, R. S., and Barto, A. G.,
+<span>“Reinforcement Learning: An Introduction,”</span> MIT Press,
+2018.</div>
+</div>
+<div id="ref-alexandrov2001approximation" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[16] </div><div class="csl-right-inline">Alexandrov, N. M., and Lewis, R. M.,
+<span>“Analytical and Computational Aspects of Collaborative
+Optimization for Multidisciplinary Design,”</span> <em>AIAA
+Journal</em>, Vol. 42, No. 2, 2004, pp. 302–310.</div>
+</div>
+<div id="ref-kennedy2000predicting" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[17] </div><div class="csl-right-inline">Kennedy, M. C., and O’Hagan, A.,
+<span>“Predicting the Output from a Complex Computer Code When Fast
+Approximations Are Available,”</span> <em>Biometrika</em>, Vol. 87, No.
+1, 2000, pp. 1–13.</div>
+</div>
+<div id="ref-raissi2019physics" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[18] </div><div class="csl-right-inline">Raissi, M., Perdikaris, P., and Karniadakis, G.
+E., <span>“Physics-Informed Neural Networks: A Deep Learning Framework
+for Solving Forward and Inverse Problems Involving Nonlinear Partial
+Differential Equations,”</span> <em>Journal of Computational
+Physics</em>, Vol. 378, 2019, pp. 686–707.</div>
+</div>
+<div id="ref-gray2019openmdao" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[19] </div><div class="csl-right-inline">Gray, J. S., Hwang, J. T., Martins, J. R. R.
+A., Moore, K. T., and Naylor, B. A., <span>“<span>OpenMDAO</span>: An
+Open-Source Framework for Multidisciplinary Design, Analysis, and
+Optimization,”</span> <em>Structural and Multidisciplinary
+Optimization</em>, Vol. 59, No. 4, 2019, pp. 1075–1104.</div>
 </div>
 </div>
 

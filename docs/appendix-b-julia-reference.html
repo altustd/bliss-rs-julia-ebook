@@ -107,6 +107,40 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Hide the landing page sidebar entry (index.html) — it's a title/preface page, not a numbered chapter
+  document.querySelectorAll(
+    '.sidebar-item a[href$="index.html"], .sidebar-item a[href="./index.html"]'
+  ).forEach(function (a) {
+    var item = a.closest('.sidebar-item');
+    if (item) item.style.display = 'none';
+  });
+
+  // Decrement chapter number in sidebar/breadcrumb spans by 1
+  // (compensates for index.qmd being counted as Ch 1 by Quarto)
+  document.querySelectorAll('.chapter-number').forEach(function (span) {
+    var n = parseInt(span.textContent, 10);
+    if (!isNaN(n) && n >= 1) {
+      span.textContent = String(n - 1);
+    }
+  });
+
+  // Decrement the chapter prefix in section numbers (e.g. "3.1" -> "2.1")
+  // so right-hand TOC matches the heading chapter number
+  document.querySelectorAll('.header-section-number').forEach(function (span) {
+    var text = span.textContent.trim();
+    var parts = text.split('.');
+    if (parts.length >= 2) {
+      var ch = parseInt(parts[0], 10);
+      if (!isNaN(ch) && ch >= 1) {
+        parts[0] = String(ch - 1);
+        span.textContent = parts.join('.');
+      }
+    }
+  });
+});
+</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
