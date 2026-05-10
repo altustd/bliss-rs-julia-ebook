@@ -4,3 +4,4 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 pixi run render "$@"
+touch docs/.nojekyll   # GitHub Pages: prevent Jekyll from mangling Quarto output
