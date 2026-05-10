@@ -1,6 +1,8 @@
 project:
   type: book
   output-dir: docs
+  resources:
+    - visualizations/
 
 book:
   title: "BLISS-2026"

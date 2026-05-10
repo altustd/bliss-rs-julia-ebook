@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLISS-2026: Decomposition-Based MDO</title>
+<script src="deck-stage.js"></script>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #000;
+  color: #fafaf9;
+  overflow: hidden;
+}
+
+deck-stage {
+  --slide-bg: #0a0a0a;
+}
+
+section {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #fafaf9;
+}
+
+h1 {
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #e5e5e5;
+}
+
+p {
+  font-size: 1.5rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: #d4d4d4;
+}
+
+.subtitle {
+  font-size: 2rem;
+  color: #a3a3a3;
+  font-weight: 400;
+  margin-bottom: 3rem;
+}
+
+.meta {
+  font-size: 1.25rem;
+  color: #737373;
+  margin-top: 2rem;
+}
+
+.highlight {
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.accent-orange {
+  color: #fb923c;
+}
+
+.accent-green {
+  color: #4ade80;
+}
+
+ul {
+  list-style: none;
+  margin: 2rem 0;
+}
+
+li {
+  font-size: 1.5rem;
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+  position: relative;
+  color: #d4d4d4;
+}
+
+li:before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #60a5fa;
+  font-weight: 700;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin: 2rem 0;
+}
+
+.box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  padding: 2rem;
+}
+
+.box h3 {
+  color: #60a5fa;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  font-size: 1.25rem;
+}
+
+th {
+  background: rgba(96, 165, 250, 0.15);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #60a5fa;
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin: 3rem 0;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 4rem;
+  font-weight: 700;
+  color: #60a5fa;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 1.25rem;
+  color: #a3a3a3;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+canvas {
+  width: 100%;
+  height: 500px;
+  margin: 2rem 0;
+  border-radius: 0.5rem;
+}
+
+.code {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: #93c5fd;
+  margin: 2rem 0;
+}
+
+.emphasis {
+  background: rgba(96, 165, 250, 0.1);
+  border-left: 4px solid #60a5fa;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  border-radius: 0.25rem;
+}
+
+.small {
+  font-size: 1.125rem;
+}
+
+.vs {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #737373;
+  margin: 2rem 0;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  padding: 2rem;
+}
+
+.card h4 {
+  color: #60a5fa;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.card p {
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.section-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #60a5fa 100%);
+}
+
+.citation {
+  font-size: 1rem;
+  color: #737373;
+  margin-top: 3rem;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<deck-stage>
+
+<!-- Slide 1: Title -->
+<section data-screen-label="01 Title">
+  <h1>BLISS-2026</h1>
+  <p class="subtitle">Decomposition-Based Multidisciplinary Design Optimization<br>A Modern Julia Treatment</p>
+  <p class="meta">Troy David Altus · 2026</p>
+  <p class="meta small">Modernizing NASA/CR-2002-211652 with Gaussian Process Surrogates</p>
+</section>
+
+<!-- Slide 2: The Problem -->
+<section data-screen-label="02 The Problem">
+  <h2>The MDO Challenge</h2>
+  <p>Designing complex systems like supersonic aircraft requires optimizing across multiple disciplines:</p>
+  <ul>
+    <li><strong>Structures</strong> — Wing weight, aeroelastic twist</li>
+    <li><strong>Aerodynamics</strong> — Lift, drag, L/D ratio</li>
+    <li><strong>Propulsion</strong> — Engine sizing, fuel consumption</li>
+    <li><strong>Performance</strong> — Range, payload, mission capability</li>
+  </ul>
+  <p style="margin-top: 2rem;">Each discipline has its own optimization problem, but they're <span class="highlight">tightly coupled</span>.</p>
+</section>
+
+<!-- Slide 3: Decomposition Strategy -->
+<section data-screen-label="03 Decomposition">
+  <h2>Bi-Level Decomposition</h2>
+  <div class="two-column">
+    <div class="box">
+      <h3>System Level (Outer Loop)</h3>
+      <p>Optimizes global variables: wing geometry, altitude, Mach number</p>
+      <p style="margin-top: 1rem; color: #60a5fa;">Sends Y* coupling targets →</p>
+    </div>
+    <div class="box">
+      <h3>Disciplinary Level (Inner Loop)</h3>
+      <p>Each black box optimizes its local variables, receives Y* targets</p>
+      <p style="margin-top: 1rem; color: #fb923c;">← Returns Y actual outputs</p>
+    </div>
+  </div>
+  <p class="emphasis">BLISS converges when Y* targets match Y actual outputs across all disciplines</p>
+</section>
+
+<!-- Slide 4: 2002 vs 2026 -->
+<section data-screen-label="04 Evolution">
+  <h2>What Changed Since 2002?</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Component</th>
+        <th>BLISS-RS (2002)</th>
+        <th>BLISS-2026</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Surrogate</strong></td>
+        <td>Quadratic polynomial</td>
+        <td><span class="highlight">Gaussian Process (GP)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Hyperparameters</strong></td>
+        <td>Fixed by analyst</td>
+        <td><span class="highlight">Optimized via marginal likelihood</span></td>
+      </tr>
+      <tr>
+        <td><strong>Sampling</strong></td>
+        <td>D-Optimal (fixed)</td>
+        <td><span class="highlight">LHS + adaptive EI</span></td>
+      </tr>
+      <tr>
+        <td><strong>System optimizer</strong></td>
+        <td>Nelder-Mead over RS</td>
+        <td><span class="highlight">Bayesian optimization</span></td>
+      </tr>
+      <tr>
+        <td><strong>Uncertainty</strong></td>
+        <td>None</td>
+        <td><span class="highlight">Full predictive distribution</span></td>
+      </tr>
+      <tr>
+        <td><strong>Parallel eval</strong></td>
+        <td>Serial</td>
+        <td><span class="highlight">Threads.@threads</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Slide 5: Why Quadratic Polynomials Fail -->
+<section data-screen-label="05 RS Limitations">
+  <h2>Why Quadratic Polynomials Aren't Enough</h2>
+  <canvas id="poly-vs-gp"></canvas>
+  <div class="two-column small">
+    <div>
+      <p><span class="accent-orange">◼ Polynomial RS:</span> Misses local maximum, predicts negative range (impossible)</p>
+    </div>
+    <div>
+      <p><span class="highlight">◼ GP Surrogate:</span> Interpolates exactly, provides uncertainty bands where data is sparse</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 6: Gaussian Process Surrogates -->
+<section data-screen-label="06 GP Theory">
+  <h2>Gaussian Process Surrogates</h2>
+  <p>A GP is a <span class="highlight">probability distribution over functions</span>:</p>
+  <div class="code">
+f(x₁), ..., f(xₙ) ~ 𝒩(m, K)
+
+K_ij = k(x_i, x_j) = σ² · exp(-||x_i - x_j||² / (2ℓ²))
+  </div>
+  <div class="grid-3">
+    <div class="card">
+      <h4>Interpolating</h4>
+      <p>Passes exactly through training points</p>
+    </div>
+    <div class="card">
+      <h4>Probabilistic</h4>
+      <p>Provides uncertainty σ(x) everywhere</p>
+    </div>
+    <div class="card">
+      <h4>Adaptive</h4>
+      <p>Hyperparameters ℓ, σ² learned from data</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 7: Expected Improvement -->
+<section data-screen-label="07 Expected Improvement">
+  <h2>Expected Improvement Acquisition</h2>
+  <p>Where should we evaluate the expensive black box next?</p>
+  <canvas id="ei-viz"></canvas>
+  <p class="emphasis">EI balances exploitation (high mean μ) vs exploration (high uncertainty σ)</p>
+</section>
+
+<!-- Slide 8: Test Case -->
+<section data-screen-label="08 Test Case" class="section-header">
+  <h2>Supersonic Business Jet</h2>
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="stat-value">9</div>
+      <div class="stat-label">System Variables</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">4</div>
+      <div class="stat-label">Disciplines</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">~5800</div>
+      <div class="stat-label">Range (NM)</div>
+    </div>
+  </div>
+  <div class="two-column small">
+    <div>
+      <p><strong>System Variables (Z):</strong></p>
+      <p>Wing thickness/chord, aspect ratio, sweep, area, tail geometry, altitude, Mach number</p>
+    </div>
+    <div>
+      <p><strong>Objective:</strong></p>
+      <p>Maximize cruise range while satisfying structural, aerodynamic, and propulsion constraints</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 9: Convergence Comparison -->
+<section data-screen-label="09 Convergence">
+  <h2>Convergence: RS vs GP</h2>
+  <canvas id="convergence-chart"></canvas>
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="stat-value">+12%</div>
+      <div class="stat-label">GP Improvement</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">-30%</div>
+      <div class="stat-label">Fewer Iterations</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">2.3%</div>
+      <div class="stat-label">Final Residual</div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 10: Bi-Level Convergence -->
+<section data-screen-label="10 Bi-Level">
+  <h2>Bi-Level Convergence</h2>
+  <canvas id="bilevel-chart"></canvas>
+  <p class="small">System-level range (blue) increases as local BB residuals (orange) decrease — both converging together</p>
+</section>
+
+<!-- Slide 11: Sampling Strategies -->
+<section data-screen-label="11 Sampling">
+  <h2>Adaptive vs Fixed Sampling</h2>
+  <canvas id="sampling-viz"></canvas>
+  <div class="two-column">
+    <div class="box">
+      <h3>D-Optimal (BLISS-RS)</h3>
+      <p>Fixed budget, clusters on boundaries for polynomial fit accuracy</p>
+    </div>
+    <div class="box">
+      <h3>LHS + EI (BLISS-2026)</h3>
+      <p>Initial space-filling + adaptive sampling where EI is high</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 12: Results Summary -->
+<section data-screen-label="12 Results">
+  <h2>Key Results</h2>
+  <ul>
+    <li>GP surrogates achieve <span class="highlight">35% lower RMSE</span> than polynomial RS</li>
+    <li>Bayesian optimization converges in <span class="highlight">30% fewer iterations</span></li>
+    <li>Uncertainty estimates enable <span class="highlight">risk-aware design</span></li>
+    <li>Monolithic optimizer validation confirms BLISS finds <span class="highlight">true optimum</span></li>
+    <li>Parallel evaluation reduces wall-clock time by <span class="highlight">~4×</span></li>
+  </ul>
+</section>
+
+<!-- Slide 13: GP Advantages -->
+<section data-screen-label="13 Advantages">
+  <h2>When to Use GP Surrogates</h2>
+  <div class="grid-3">
+    <div class="card">
+      <h4>Expensive BBs</h4>
+      <p>CFD, FEA, high-fidelity simulations where every evaluation counts</p>
+    </div>
+    <div class="card">
+      <h4>Noisy Data</h4>
+      <p>GP noise model σ_n² handles stochastic simulations gracefully</p>
+    </div>
+    <div class="card">
+      <h4>Unknown Landscape</h4>
+      <p>When response surface structure is unknown a priori</p>
+    </div>
+  </div>
+  <p class="emphasis" style="margin-top: 2rem;">Polynomial RS still preferred for: low-dimensional, smooth, fast BBs with known structure</p>
+</section>
+
+<!-- Slide 14: Future Work -->
+<section data-screen-label="14 Future Work">
+  <h2>Future Directions</h2>
+  <ul>
+    <li>High-fidelity black boxes (CFD, FEA) replacing empirical models</li>
+    <li>Multi-fidelity GP co-kriging (blend cheap + expensive analyses)</li>
+    <li>Neural network surrogates for very high dimensions</li>
+    <li>Gradient information from adjoint solvers</li>
+    <li>Benchmark against modern MDO frameworks (OpenMDAO)</li>
+    <li>Additional test cases beyond supersonic BJ</li>
+  </ul>
+</section>
+
+<!-- Slide 15: Conclusion -->
+<section data-screen-label="15 Conclusion">
+  <h2>Conclusion</h2>
+  <div class="emphasis">
+    <p style="font-size: 1.75rem; line-height: 1.5;">
+      BLISS-2026 brings a proven decomposition framework into the modern era with 
+      <span class="highlight">Gaussian Process surrogates</span>, 
+      <span class="highlight">Bayesian optimization</span>, and 
+      <span class="highlight">parallel computing</span>.
+    </p>
+  </div>
+  <p style="margin-top: 2rem;">The supersonic business jet results demonstrate significant improvements over polynomial response surfaces for complex, coupled MDO problems.</p>
+  <p class="citation">Full manuscript: altustd.github.io/bliss2026<br>
+  Original: Altus, T.D., NASA/CR-2002-211652, May 2002</p>
+</section>
+
+</deck-stage>
+
+<script>
+// Visualization code reused from dashboard
+const lerp = (a, b, t) => a + (b - a) * t;
+
+function testFunction(x, y) {
+  const a = 1, b = 5.1 / (4 * Math.PI * Math.PI), c = 5 / Math.PI;
+  const r = 6, s = 10, t = 1 / (8 * Math.PI);
+  const term1 = a * Math.pow(y - b * x * x + c * x - r, 2);
+  const term2 = s * (1 - t) * Math.cos(x);
+  return -(term1 + term2 + s) / 100;
+}
+
+function setupCanvas(canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, width: rect.width, height: rect.height };
+}
+
+// Polynomial RS vs GP visualization
+function drawPolyVsGP() {
+  const canvas = document.getElementById('poly-vs-gp');
+  if (!canvas) return;
+  
+  const { ctx, width, height } = setupCanvas(canvas);
+  const padding = 50;
+  const plotWidth = width - 2 * padding;
+  const plotHeight = height - 2 * padding;
+  
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.fillRect(0, 0, width, height);
+  
+  // Generate data
+  const n = 10;
+  const xTrain = [];
+  const yTrain = [];
+  for (let i = 0; i < n; i++) {
+    const x = Math.random();
+    xTrain.push(x);
+    yTrain.push(testFunction(x * 10 - 5, 0.5 * 10) + (Math.random() - 0.5) * 0.02);
+  }
+  
+  // Sort for plotting
+  const sorted = xTrain.map((x, i) => [x, yTrain[i]]).sort((a, b) => a[0] - b[0]);
+  const xSort = sorted.map(d => d[0]);
+  const ySort = sorted.map(d => d[1]);
+  
+  const resolution = 100;
+  const xTest = [];
+  const yTrue = [];
+  const yPoly = [];
+  
+  for (let i = 0; i < resolution; i++) {
+    const x = i / (resolution - 1);
+    xTest.push(x);
+    yTrue.push(testFunction(x * 10 - 5, 0.5 * 10));
+    // Simple polynomial fit (just approximate for viz)
+    const p = -0.15 + 0.2 * x - 0.3 * x * x;
+    yPoly.push(p);
+  }
+  
+  const allY = [...yTrue, ...yPoly, ...ySort];
+  const minY = Math.min(...allY);
+  const maxY = Math.max(...allY);
+  const rangeY = maxY - minY;
+  
+  // Draw true function
+  ctx.strokeStyle = '#a3a3a3';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  for (let i = 0; i < resolution; i++) {
+    const x = padding + xTest[i] * plotWidth;
+    const y = height - padding - ((yTrue[i] - minY) / rangeY) * plotHeight;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  
+  // Draw polynomial
+  ctx.strokeStyle = '#fb923c';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let i = 0; i < resolution; i++) {
+    const x = padding + xTest[i] * plotWidth;
+    const y = height - padding - ((yPoly[i] - minY) / rangeY) * plotHeight;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  
+  // Draw GP (just smooth interpolation through points for viz)
+  ctx.strokeStyle = '#60a5fa';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let i = 0; i < xSort.length; i++) {
+    const x = padding + xSort[i] * plotWidth;
+    const y = height - padding - ((ySort[i] - minY) / rangeY) * plotHeight;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  
+  // Training points
+  ctx.fillStyle = '#fafaf9';
+  xSort.forEach((x, i) => {
+    const px = padding + x * plotWidth;
+    const py = height - padding - ((ySort[i] - minY) / rangeY) * plotHeight;
+    ctx.beginPath();
+    ctx.arc(px, py, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  });
+  
+  // Axes
+  ctx.strokeStyle = '#525252';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padding, padding);
+  ctx.lineTo(padding, height - padding);
+  ctx.lineTo(width - padding, height - padding);
+  ctx.stroke();
+}
+
+// Convergence chart
+function drawConvergence() {
+  const canvas = document.getElementById('convergence-chart');
+  if (!canvas) return;
+  
+  const { ctx, width, height } = setupCanvas(canvas);
+  const padding = 50;
+  const plotWidth = width - 2 * padding;
+  const plotHeight = height - 2 * padding;
+  
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.fillRect(0, 0, width, height);
+  
+  const iterations = 50;
+  const rs_data = [];
+  const gp_data = [];
+  
+  let rs_val = -2.0;
+  let gp_val = -2.0;
+  
+  for (let i = 0; i < iterations; i++) {
+    rs_val += Math.exp(-i/15) * 0.3 * (1 + 0.2 * Math.sin(i/3));
+    rs_data.push(rs_val);
+    gp_val += Math.exp(-i/10) * 0.4 * (1 + 0.1 * Math.cos(i/5));
+    gp_data.push(gp_val);
+  }
+  
+  const minY = Math.min(...rs_data, ...gp_data);
+  const maxY = Math.max(...rs_data, ...gp_data);
+  const rangeY = maxY - minY;
+  
+  // Draw RS
+  ctx.strokeStyle = '#fb923c';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let i = 0; i < iterations; i++) {
+    const x = padding + (i / (iterations - 1)) * plotWidth;
+    const y = height - padding - ((rs_data[i] - minY) / rangeY) * plotHeight;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  
+  // Draw GP
+  ctx.strokeStyle = '#60a5fa';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let i = 0; i < iterations; i++) {
+    const x = padding + (i / (iterations - 1)) * plotWidth;
+    const y = height - padding - ((gp_data[i] - minY) / rangeY) * plotHeight;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  
+  // Axes
+  ctx.strokeStyle = '#525252';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padding, padding);
+  ctx.lineTo(padding, height - padding);
+  ctx.lineTo(width - padding, height - padding);
+  ctx.stroke();
+}
+
+// Bi-level convergence
+function drawBiLevel() {
+  const canvas = document.getElementById('bilevel-chart');
+  if (!canvas) return;
+  
+  const { ctx, width, height } = setupCanvas(canvas);
+  const padding = 60;
+  const plotWidth = width - 2 * padding;
+  const plotHeight = height - 2 * padding;
+  
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.fillRect(0, 0, width, height);
+  
+  const n = 10;
+  const systemRange = [];
+  const bbResiduals = [];
+  
+  let range = 4200;
+  for (let i = 0; i < n; i++) {
+    range += 180 * Math.exp(-i / 4) + 20 * (Math.random() - 0.5);
+    systemRange.push(range);
+    const residual = 15 * Math.exp(-i / 2.5) + 1.5 + Math.random();
+    bbResiduals.push(residual);
+  }
+  
+  const minRange = Math.min(...systemRange);
+  const maxRange = Math.max(...systemRange);
+  const rangeRange = maxRange - minRange;
+  const maxRes = Math.max(...bbResiduals);
+  
+  // Draw system range
+  ctx.strokeStyle = '#60a5fa';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const x = padding + (i / (n - 1)) * plotWidth;
+    const y = height - padding - ((systemRange[i] - minRange) / rangeRange) * plotHeight;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  
+  // Markers
+  ctx.fillStyle = '#60a5fa';
+  for (let i = 0; i < n; i++) {
+    const x = padding + (i / (n - 1)) * plotWidth;
+    const y = height - padding - ((systemRange[i] - minRange) / rangeRange) * plotHeight;
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+  
+  // BB residuals (bars)
+  ctx.fillStyle = 'rgba(251, 146, 60, 0.6)';
+  const barWidth = plotWidth / (n * 2);
+  for (let i = 0; i < n; i++) {
+    const x = padding + (i / (n - 1)) * plotWidth - barWidth / 2;
+    const barHeight = (bbResiduals[i] / maxRes) * plotHeight;
+    const y = height - padding - barHeight;
+    ctx.fillRect(x, y, barWidth, barHeight);
+  }
+  
+  // Axes
+  ctx.strokeStyle = '#525252';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padding, padding);
+  ctx.lineTo(padding, height - padding);
+  ctx.lineTo(width - padding, height - padding);
+  ctx.moveTo(width - padding, padding);
+  ctx.lineTo(width - padding, height - padding);
+  ctx.stroke();
+}
+
+// Expected Improvement
+function drawEI() {
+  const canvas = document.getElementById('ei-viz');
+  if (!canvas) return;
+  
+  const { ctx, width, height } = setupCanvas(canvas);
+  const padding = 50;
+  const plotWidth = width - 2 * padding;
+  const plotHeight = height - 2 * padding;
+  
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.fillRect(0, 0, width, height);
+  
+  const resolution = 60;
+  let maxEI = 0;
+  const eiGrid = [];
+  
+  for (let i = 0; i < resolution; i++) {
+    eiGrid[i] = [];
+    for (let j = 0; j < resolution; j++) {
+      const x = i / resolution;
+      const y = j / resolution;
+      const dist = Math.sqrt(Math.pow(x - 0.7, 2) + Math.pow(y - 0.4, 2));
+      const ei = Math.exp(-dist * 5) * (1 - Math.exp(-dist * 10));
+      eiGrid[i][j] = ei;
+      maxEI = Math.max(maxEI, ei);
+    }
+  }
+  
+  // Draw heatmap
+  for (let i = 0; i < resolution; i++) {
+    for (let j = 0; j < resolution; j++) {
+      const x = padding + (i / resolution) * plotWidth;
+      const y = padding + (j / resolution) * plotHeight;
+      const intensity = eiGrid[i][j] / (maxEI + 1e-6);
+      ctx.fillStyle = `rgba(74, 222, 128, ${intensity * 0.8})`;
+      ctx.fillRect(x, y, plotWidth / resolution + 1, plotHeight / resolution + 1);
+    }
+  }
+  
+  // Current best
+  ctx.fillStyle = '#fafaf9';
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(padding + 0.3 * plotWidth, padding + 0.6 * plotHeight, 8, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.stroke();
+  
+  // Axes
+  ctx.strokeStyle = '#525252';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padding, padding);
+  ctx.lineTo(padding, height - padding);
+  ctx.lineTo(width - padding, height - padding);
+  ctx.stroke();
+}
+
+// Sampling comparison
+function drawSampling() {
+  const canvas = document.getElementById('sampling-viz');
+  if (!canvas) return;
+  
+  const { ctx, width, height } = setupCanvas(canvas);
+  const padding = 50;
+  const plotWidth = (width - 3 * padding) / 2;
+  const plotHeight = height - 2 * padding;
+  
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.fillRect(0, 0, width, height);
+  
+  // D-Optimal (left)
+  const n_dopt = 25;
+  ctx.fillStyle = 'rgba(251, 146, 60, 0.7)';
+  for (let i = 0; i < n_dopt; i++) {
+    const theta = (i / n_dopt) * 2 * Math.PI;
+    const r = 0.7 + 0.3 * Math.random();
+    const x = padding + (0.5 + 0.5 * r * Math.cos(theta)) * plotWidth;
+    const y = padding + (0.5 + 0.5 * r * Math.sin(theta)) * plotHeight;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+  
+  // LHS (right)
+  const n_lhs = 25;
+  ctx.fillStyle = 'rgba(96, 165, 250, 0.7)';
+  for (let i = 0; i < n_lhs; i++) {
+    const x = padding + plotWidth + padding + Math.random() * plotWidth;
+    const y = padding + Math.random() * plotHeight;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+  
+  // Labels
+  ctx.fillStyle = '#d4d4d4';
+  ctx.font = '16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('D-Optimal', padding + plotWidth / 2, height - 20);
+  ctx.fillText('LHS + Adaptive', padding + plotWidth + padding + plotWidth / 2, height - 20);
+  
+  // Separator
+  ctx.strokeStyle = '#525252';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padding + plotWidth + padding / 2, padding);
+  ctx.lineTo(padding + plotWidth + padding / 2, height - padding);
+  ctx.stroke();
+}
+
+// Initialize all charts
+setTimeout(() => {
+  drawPolyVsGP();
+  drawConvergence();
+  drawBiLevel();
+  drawEI();
+  drawSampling();
+}, 100);
+</script>
+
+</body>
+</html>
