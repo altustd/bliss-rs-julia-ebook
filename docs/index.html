@@ -301,20 +301,14 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./10-srm-application.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Application to Solid Propellant Rocket Motor Design</span></span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="./11-modern-mdo-landscape.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Modern MDO Landscape</span></span></a>
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Modern MDO Landscape</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">References</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">References</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -453,8 +447,7 @@ window.Quarto = {
 <p>The modern contribution begins at Chapter 9:</p>
 <ul>
 <li><p><strong>Chapter 9 — BLISS-2026 Framework</strong>: The full Gaussian-process-based redesign. GP theory, kernel functions, marginal likelihood, Expected Improvement acquisition, and a complete working implementation that runs the supersonic business jet benchmark. Direct comparison against BLISS-RS shows where GP surrogates win and where they add cost.</p></li>
-<li><p><strong>Chapter 10 — SRM Application</strong>: BLISS-RS and BLISS-2026 both applied to solid propellant rocket motor conceptual design — connecting to the author’s propulsion engineering background at ATK Elkton, MD.</p></li>
-<li><p><strong>Chapter 11 — Modern MDO Landscape</strong>: A survey of where MDO decomposition is heading: multi-fidelity co-kriging, neural-network surrogates, uncertainty quantification, and digital-twin integration.</p></li>
+<li><p><strong>Chapter 10 — Modern MDO Landscape</strong>: A survey of where MDO decomposition is heading: multi-fidelity co-kriging, neural-network surrogates, uncertainty quantification, and digital-twin integration.</p></li>
 </ul>
 </section>
 <section id="running-this-book" class="level2" data-number="0.3">
@@ -1062,54 +1055,50 @@ window.Quarto = {
 <span id="cb2-47"><a href="#cb2-47"></a>  benchmark. Direct comparison against BLISS-RS shows where GP surrogates win and</span>
 <span id="cb2-48"><a href="#cb2-48"></a>  where they add cost.</span>
 <span id="cb2-49"><a href="#cb2-49"></a></span>
-<span id="cb2-50"><a href="#cb2-50"></a><span class="ss">- </span>**Chapter 10 — SRM Application**: BLISS-RS and BLISS-2026 both applied to solid</span>
-<span id="cb2-51"><a href="#cb2-51"></a>  propellant rocket motor conceptual design — connecting to the author's propulsion</span>
-<span id="cb2-52"><a href="#cb2-52"></a>  engineering background at ATK Elkton, MD.</span>
+<span id="cb2-50"><a href="#cb2-50"></a><span class="ss">- </span>**Chapter 10 — Modern MDO Landscape**: A survey of where MDO decomposition is</span>
+<span id="cb2-51"><a href="#cb2-51"></a>  heading: multi-fidelity co-kriging, neural-network surrogates, uncertainty</span>
+<span id="cb2-52"><a href="#cb2-52"></a>  quantification, and digital-twin integration.</span>
 <span id="cb2-53"><a href="#cb2-53"></a></span>
-<span id="cb2-54"><a href="#cb2-54"></a><span class="ss">- </span>**Chapter 11 — Modern MDO Landscape**: A survey of where MDO decomposition is</span>
-<span id="cb2-55"><a href="#cb2-55"></a>  heading: multi-fidelity co-kriging, neural-network surrogates, uncertainty</span>
-<span id="cb2-56"><a href="#cb2-56"></a>  quantification, and digital-twin integration.</span>
-<span id="cb2-57"><a href="#cb2-57"></a></span>
-<span id="cb2-58"><a href="#cb2-58"></a><span class="fu">## Running This Book</span></span>
-<span id="cb2-59"><a href="#cb2-59"></a></span>
-<span id="cb2-60"><a href="#cb2-60"></a><span class="in">```bash</span></span>
-<span id="cb2-61"><a href="#cb2-61"></a><span class="co"># Requires Julia 1.10+ (brew install julia) and pixi (pixi.sh)</span></span>
-<span id="cb2-62"><a href="#cb2-62"></a><span class="ex">pixi</span> run setup    <span class="co"># one-time: install Julia packages</span></span>
-<span id="cb2-63"><a href="#cb2-63"></a><span class="ex">pixi</span> run render   <span class="co"># build HTML → docs/</span></span>
-<span id="cb2-64"><a href="#cb2-64"></a><span class="ex">pixi</span> run preview  <span class="co"># live preview at localhost:4000</span></span>
-<span id="cb2-65"><a href="#cb2-65"></a><span class="in">```</span></span>
-<span id="cb2-66"><a href="#cb2-66"></a></span>
-<span id="cb2-67"><a href="#cb2-67"></a><span class="fu">## Notation</span></span>
-<span id="cb2-68"><a href="#cb2-68"></a></span>
-<span id="cb2-69"><a href="#cb2-69"></a><span class="pp">|</span> Symbol <span class="pp">|</span> Meaning <span class="pp">|</span></span>
-<span id="cb2-70"><a href="#cb2-70"></a><span class="pp">|--------|---------|</span></span>
-<span id="cb2-71"><a href="#cb2-71"></a><span class="pp">|</span> $Z$ <span class="pp">|</span> System-level design variables <span class="pp">|</span></span>
-<span id="cb2-72"><a href="#cb2-72"></a><span class="pp">|</span> $X$ <span class="pp">|</span> Local design variables (private to one BB) <span class="pp">|</span></span>
-<span id="cb2-73"><a href="#cb2-73"></a><span class="pp">|</span> $Y^*, Y^A$ <span class="pp">|</span> Coupling variable targets / actual outputs <span class="pp">|</span></span>
-<span id="cb2-74"><a href="#cb2-74"></a><span class="pp">|</span> $w$ <span class="pp">|</span> Weighting factors for synthetic local objective <span class="pp">|</span></span>
-<span id="cb2-75"><a href="#cb2-75"></a><span class="pp">|</span> $\mathbf{k}$ <span class="pp">|</span> GP kernel (covariance) function <span class="pp">|</span></span>
-<span id="cb2-76"><a href="#cb2-76"></a><span class="pp">|</span> $\mu(\cdot), \sigma^2(\cdot)$ <span class="pp">|</span> GP posterior mean and variance <span class="pp">|</span></span>
-<span id="cb2-77"><a href="#cb2-77"></a><span class="pp">|</span> $\text{EI}(\cdot)$ <span class="pp">|</span> Expected Improvement acquisition function <span class="pp">|</span></span>
-<span id="cb2-78"><a href="#cb2-78"></a><span class="pp">|</span> $\ell$ <span class="pp">|</span> GP length-scale hyperparameter <span class="pp">|</span></span>
-<span id="cb2-79"><a href="#cb2-79"></a><span class="pp">|</span> BB <span class="pp">|</span> Black box (disciplinary analysis module) <span class="pp">|</span></span>
-<span id="cb2-80"><a href="#cb2-80"></a><span class="pp">|</span> RS <span class="pp">|</span> Response surface (quadratic polynomial surrogate) <span class="pp">|</span></span>
-<span id="cb2-81"><a href="#cb2-81"></a><span class="pp">|</span> GP <span class="pp">|</span> Gaussian process surrogate <span class="pp">|</span></span>
-<span id="cb2-82"><a href="#cb2-82"></a><span class="pp">|</span> DOE <span class="pp">|</span> Design of experiments <span class="pp">|</span></span>
-<span id="cb2-83"><a href="#cb2-83"></a><span class="pp">|</span> LHS <span class="pp">|</span> Latin Hypercube Sampling <span class="pp">|</span></span>
+<span id="cb2-54"><a href="#cb2-54"></a><span class="fu">## Running This Book</span></span>
+<span id="cb2-55"><a href="#cb2-55"></a></span>
+<span id="cb2-56"><a href="#cb2-56"></a><span class="in">```bash</span></span>
+<span id="cb2-57"><a href="#cb2-57"></a><span class="co"># Requires Julia 1.10+ (brew install julia) and pixi (pixi.sh)</span></span>
+<span id="cb2-58"><a href="#cb2-58"></a><span class="ex">pixi</span> run setup    <span class="co"># one-time: install Julia packages</span></span>
+<span id="cb2-59"><a href="#cb2-59"></a><span class="ex">pixi</span> run render   <span class="co"># build HTML → docs/</span></span>
+<span id="cb2-60"><a href="#cb2-60"></a><span class="ex">pixi</span> run preview  <span class="co"># live preview at localhost:4000</span></span>
+<span id="cb2-61"><a href="#cb2-61"></a><span class="in">```</span></span>
+<span id="cb2-62"><a href="#cb2-62"></a></span>
+<span id="cb2-63"><a href="#cb2-63"></a><span class="fu">## Notation</span></span>
+<span id="cb2-64"><a href="#cb2-64"></a></span>
+<span id="cb2-65"><a href="#cb2-65"></a><span class="pp">|</span> Symbol <span class="pp">|</span> Meaning <span class="pp">|</span></span>
+<span id="cb2-66"><a href="#cb2-66"></a><span class="pp">|--------|---------|</span></span>
+<span id="cb2-67"><a href="#cb2-67"></a><span class="pp">|</span> $Z$ <span class="pp">|</span> System-level design variables <span class="pp">|</span></span>
+<span id="cb2-68"><a href="#cb2-68"></a><span class="pp">|</span> $X$ <span class="pp">|</span> Local design variables (private to one BB) <span class="pp">|</span></span>
+<span id="cb2-69"><a href="#cb2-69"></a><span class="pp">|</span> $Y^*, Y^A$ <span class="pp">|</span> Coupling variable targets / actual outputs <span class="pp">|</span></span>
+<span id="cb2-70"><a href="#cb2-70"></a><span class="pp">|</span> $w$ <span class="pp">|</span> Weighting factors for synthetic local objective <span class="pp">|</span></span>
+<span id="cb2-71"><a href="#cb2-71"></a><span class="pp">|</span> $\mathbf{k}$ <span class="pp">|</span> GP kernel (covariance) function <span class="pp">|</span></span>
+<span id="cb2-72"><a href="#cb2-72"></a><span class="pp">|</span> $\mu(\cdot), \sigma^2(\cdot)$ <span class="pp">|</span> GP posterior mean and variance <span class="pp">|</span></span>
+<span id="cb2-73"><a href="#cb2-73"></a><span class="pp">|</span> $\text{EI}(\cdot)$ <span class="pp">|</span> Expected Improvement acquisition function <span class="pp">|</span></span>
+<span id="cb2-74"><a href="#cb2-74"></a><span class="pp">|</span> $\ell$ <span class="pp">|</span> GP length-scale hyperparameter <span class="pp">|</span></span>
+<span id="cb2-75"><a href="#cb2-75"></a><span class="pp">|</span> BB <span class="pp">|</span> Black box (disciplinary analysis module) <span class="pp">|</span></span>
+<span id="cb2-76"><a href="#cb2-76"></a><span class="pp">|</span> RS <span class="pp">|</span> Response surface (quadratic polynomial surrogate) <span class="pp">|</span></span>
+<span id="cb2-77"><a href="#cb2-77"></a><span class="pp">|</span> GP <span class="pp">|</span> Gaussian process surrogate <span class="pp">|</span></span>
+<span id="cb2-78"><a href="#cb2-78"></a><span class="pp">|</span> DOE <span class="pp">|</span> Design of experiments <span class="pp">|</span></span>
+<span id="cb2-79"><a href="#cb2-79"></a><span class="pp">|</span> LHS <span class="pp">|</span> Latin Hypercube Sampling <span class="pp">|</span></span>
+<span id="cb2-80"><a href="#cb2-80"></a></span>
+<span id="cb2-81"><a href="#cb2-81"></a><span class="fu">## Citation</span></span>
+<span id="cb2-82"><a href="#cb2-82"></a></span>
+<span id="cb2-83"><a href="#cb2-83"></a>If you use material from this work, please cite both the original report and this book:</span>
 <span id="cb2-84"><a href="#cb2-84"></a></span>
-<span id="cb2-85"><a href="#cb2-85"></a><span class="fu">## Citation</span></span>
-<span id="cb2-86"><a href="#cb2-86"></a></span>
-<span id="cb2-87"><a href="#cb2-87"></a>If you use material from this work, please cite both the original report and this book:</span>
-<span id="cb2-88"><a href="#cb2-88"></a></span>
-<span id="cb2-89"><a href="#cb2-89"></a><span class="at">&gt; Altus, T. D., "A Response Surface Methodology for Bi-Level Integrated System</span></span>
-<span id="cb2-90"><a href="#cb2-90"></a><span class="at">&gt; Synthesis (BLISS)," NASA/CR-2002-211652, NASA Langley Research Center, May 2002.</span></span>
-<span id="cb2-91"><a href="#cb2-91"></a></span>
-<span id="cb2-92"><a href="#cb2-92"></a><span class="at">&gt; Altus, T. D., *BLISS-2026: Decomposition-Based MDO — A Modern Julia Treatment*,</span></span>
-<span id="cb2-93"><a href="#cb2-93"></a><span class="at">&gt; 2026. </span><span class="co">[</span><span class="ot">altustd.github.io/bliss2026</span><span class="co">](https://altustd.github.io/bliss2026)</span></span>
-<span id="cb2-94"><a href="#cb2-94"></a></span>
-<span id="cb2-95"><a href="#cb2-95"></a>---</span>
-<span id="cb2-96"><a href="#cb2-96"></a></span>
-<span id="cb2-97"><a href="#cb2-97"></a>*Troy David Altus · Elkton, Maryland · 2026*</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb2-85"><a href="#cb2-85"></a><span class="at">&gt; Altus, T. D., "A Response Surface Methodology for Bi-Level Integrated System</span></span>
+<span id="cb2-86"><a href="#cb2-86"></a><span class="at">&gt; Synthesis (BLISS)," NASA/CR-2002-211652, NASA Langley Research Center, May 2002.</span></span>
+<span id="cb2-87"><a href="#cb2-87"></a></span>
+<span id="cb2-88"><a href="#cb2-88"></a><span class="at">&gt; Altus, T. D., *BLISS-2026: Decomposition-Based MDO — A Modern Julia Treatment*,</span></span>
+<span id="cb2-89"><a href="#cb2-89"></a><span class="at">&gt; 2026. </span><span class="co">[</span><span class="ot">altustd.github.io/bliss2026</span><span class="co">](https://altustd.github.io/bliss2026)</span></span>
+<span id="cb2-90"><a href="#cb2-90"></a></span>
+<span id="cb2-91"><a href="#cb2-91"></a>---</span>
+<span id="cb2-92"><a href="#cb2-92"></a></span>
+<span id="cb2-93"><a href="#cb2-93"></a>*Troy David Altus · Elkton, Maryland · 2026*</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

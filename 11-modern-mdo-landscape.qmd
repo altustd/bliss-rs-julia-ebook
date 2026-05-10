@@ -824,27 +824,15 @@ sBOOM requires only a post-processing call on the same geometry. Adding a sonic 
 BB therefore costs one additional output channel from the aerodynamics analysis, not
 a new disciplinary code.
 
-### SRM Application: Closing the Loop with Test Data
+### Other Engineering Systems
 
-Chapter 10 applies BLISS-RS to solid propellant rocket motor conceptual design. The
-disciplinary analyses are engineering approximations — Saint-Robert's burn rate law,
-thin-walled cylinder stress, conical nozzle thrust coefficient, Tsiolkovsky mission
-performance. They are calibrated to plausible AP/Al/HTPB propellant parameters, but
-they have not been compared to measured static fire data.
-
-The natural next step is backfitting: running the BLISS-RS SRM optimization against
-a documented static fire test, using the measured $P_c(t)$ and $F(t)$ traces to
-recalibrate the analysis models, and then re-running the optimization with the
-calibrated models to quantify how much the optimal design shifts. This is
-methodologically equivalent to the IV&V process performed on the ballistic
-prediction tools at ATK Elkton — the same discipline, applied to a different code.
-
-Temperature sensitivity is the second SRM extension worth pursuing. Chapter 10
-shows the $P_c(t)$ profiles at hot, nominal, and cold storage temperatures but does
-not run the BLISS-RS optimizer across all three conditions simultaneously. A
-multi-condition BLISS-RS formulation — one RS per condition, shared $Z$-variables,
-separate $X$ local to each condition — would find a design robust to the full
-military temperature range without iterating manually.
+The BLISS-RS architecture is discipline-agnostic. Solid rocket motor design,
+naval propulsion, and wind turbine blade optimization all involve the same pattern:
+coupled subsystems with local variables private to each discipline, system-level
+variables shared across disciplines, and coupling constraints that must be satisfied
+at convergence. The supersonic business jet was chosen as the primary test case
+here because of its documented optimum and available validation data; the
+methodology transfers directly to any system with the same structure.
 
 ### Convergence Theory
 
@@ -875,10 +863,6 @@ holds (agreement within ~2%), the updated work would be competitive for:
   BLISS-variant work; Sobieski published there extensively
 - **NASA Technical Memorandum** — lower bar, no peer review, appropriate if the
   primary goal is documenting the IV&V for internal reference
-
-The SRM application in Chapter 10, if validated against static fire data, would
-constitute a separate and novel contribution suitable for **Journal of Propulsion and
-Power** — no one has applied a BLISS-class decomposition to solid motor design before.
 
 ## Further Reading
 

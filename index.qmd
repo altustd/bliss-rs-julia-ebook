@@ -47,11 +47,7 @@ The modern contribution begins at Chapter 9:
   benchmark. Direct comparison against BLISS-RS shows where GP surrogates win and
   where they add cost.
 
-- **Chapter 10 — SRM Application**: BLISS-RS and BLISS-2026 both applied to solid
-  propellant rocket motor conceptual design — connecting to the author's propulsion
-  engineering background at ATK Elkton, MD.
-
-- **Chapter 11 — Modern MDO Landscape**: A survey of where MDO decomposition is
+- **Chapter 10 — Modern MDO Landscape**: A survey of where MDO decomposition is
   heading: multi-fidelity co-kriging, neural-network surrogates, uncertainty
   quantification, and digital-twin integration.
 
