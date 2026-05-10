@@ -9,6 +9,10 @@ book:
   date: "May 2026"
   repo-url: https://github.com/altustd/bliss2026
   repo-actions: [edit, issue]
+  navbar:
+    left:
+      - text: "← troyaltus.com"
+        href: "https://troyaltus.com"
   chapters:
     - index.qmd
     - foreword.qmd
