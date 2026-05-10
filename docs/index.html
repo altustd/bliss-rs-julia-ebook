@@ -131,34 +131,27 @@ div.csl-indent {
 <style>html{ scroll-behavior: smooth; }</style>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // Hide the landing page sidebar entry (index.html) — it's a title/preface page, not a numbered chapter
-  document.querySelectorAll(
-    '.sidebar-item a[href$="index.html"], .sidebar-item a[href="./index.html"]'
-  ).forEach(function (a) {
-    var item = a.closest('.sidebar-item');
-    if (item) item.style.display = 'none';
+  // Hide pre-chapter pages from sidebar (Preface and Foreword are not numbered chapters)
+  ['index.html', './index.html', 'foreword.html', './foreword.html'].forEach(function (href) {
+    document.querySelectorAll('.sidebar-item a[href$="' + href + '"]').forEach(function (a) {
+      var item = a.closest('.sidebar-item');
+      if (item) item.style.display = 'none';
+    });
   });
 
-  // Decrement chapter number in sidebar/breadcrumb spans by 1
-  // (compensates for index.qmd being counted as Ch 1 by Quarto)
+  // Quarto counts index.qmd as Ch 1 and foreword.qmd as Ch 2 regardless of {.unnumbered}.
+  // 01-introduction.qmd therefore renders as Ch 3. Decrement by 2 so Introduction = Ch 1.
   document.querySelectorAll('.chapter-number').forEach(function (span) {
     var n = parseInt(span.textContent, 10);
-    if (!isNaN(n) && n >= 1) {
-      span.textContent = String(n - 1);
-    }
+    if (!isNaN(n) && n >= 1) span.textContent = String(n - 2);
   });
 
-  // Decrement the chapter prefix in section numbers (e.g. "3.1" -> "2.1")
-  // so right-hand TOC matches the heading chapter number
   document.querySelectorAll('.header-section-number').forEach(function (span) {
-    var text = span.textContent.trim();
-    var parts = text.split('.');
-    if (parts.length >= 2) {
-      var ch = parseInt(parts[0], 10);
-      if (!isNaN(ch) && ch >= 1) {
-        parts[0] = String(ch - 1);
-        span.textContent = parts.join('.');
-      }
+    var parts = span.textContent.trim().split('.');
+    var ch = parseInt(parts[0], 10);
+    if (!isNaN(ch) && ch >= 1) {
+      parts[0] = String(ch - 2);
+      span.textContent = parts.join('.');
     }
   });
 });
