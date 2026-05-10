@@ -1,0 +1,119 @@
+---
+title: "Foreword to the Revised Edition"
+---
+
+# Foreword {.unnumbered}
+
+There is something faintly ridiculous about writing a foreword to one's own work.
+Forewords are traditionally the province of distinguished colleagues who lend a
+book their credibility by association. But this is a revised edition of a thesis
+I wrote twenty-four years ago, and no one alive knows it better — or has more
+reason to be suspicious of it — than its original author. So the foreword falls
+to me, and I will try to be honest.
+
+In the spring of 2002, I sat at a workstation in NASA Langley Research Center's
+Building 1268 in Hampton, Virginia, writing MATLAB code to stitch four disciplinary
+analysis programs together into something that could optimise the shape of a
+supersonic business jet. The codes were a Fortran-77 structural solver called
+ELAPS, a wave-drag program called AWAVE, an empirical engine deck, and the
+Breguet range equation. None of them talked to each other naturally. Getting them
+to talk — and then building a response surface surrogate over each one, and then
+optimising the whole system — took the better part of an academic year.
+
+I remember the computation time. A single pass through the aerodynamics black box,
+which ran a linear wave-drag analysis and fitted a 120-point quadratic response
+surface in 14 variables, required something like twenty minutes on the shared
+cluster. Ten BLISS iterations — the number I eventually used, selected as much for
+the approaching thesis deadline as for any principled convergence criterion — took
+the better part of a weekend.
+
+I revisited that work in the spring of 2026. The entire BLISS-RS algorithm, all
+four black boxes reimplemented in Julia, the response surfaces refitted with
+Latin Hypercube Sampling and leave-one-out cross-validation, the interval reduction
+logic, the system optimizer — ran to convergence in under four seconds on a laptop
+sitting on my kitchen table.
+
+The laptop in question is an Apple M4 MacBook Pro. The year is 2026.
+
+That number — four seconds versus two days — contains most of what motivated this
+revision. When I wrote the original thesis, computation was the limiting resource.
+Decisions that look questionable in retrospect — fixing the iteration count at 10,
+using D-optimal designs augmented with random fallback points when local
+optimizations failed, terminating convergence by visual inspection rather than
+formal criterion — were made in a context where every additional function
+evaluation cost real time. The methodology was shaped by hardware constraints that
+no longer exist.
+
+The second motivation was the emergence of tools I simply did not have in 2002.
+The Julia language, which compiles to native machine code while reading like
+mathematics, made reimplementing the BLISS algorithms a matter of hours rather
+than weeks. Gaussian Process surrogates — known in principle in 2002 but
+computationally expensive and poorly supported by available libraries — are now
+trivial to construct and tune. And I will be candid about something unusual in
+academic writing: a significant portion of this revision was written in active
+collaboration with an AI coding assistant, which helped me work through
+implementation details, identify methodological weaknesses in the original work,
+and catch errors I would have missed in a solo review.
+That last point deserves a moment's reflection. In 2002, "AI assistance" in
+engineering work meant a spell-checker and, if you were lucky, a symbolic algebra
+package. What is now possible in an afternoon — a comprehensive independent
+review of twenty-four-year-old methodology, identification of specific mathematical
+errors (a missing square in Appendix A, a singular error metric, an undocumented
+optimizer), and a set of concrete proposed fixes — would have required months of
+peer review and a collaborator with deep expertise in every relevant subfield.
+The tooling has changed the economics of scholarship, and I think it is worth
+saying so plainly.
+
+The third motivation, and perhaps the most honest one, was curiosity.
+
+The BLISS framework was always a conceptual bet: that decomposing a large
+multidisciplinary optimization problem into autonomous subsystems, linking them
+through surrogate models, and iterating to system-level convergence would be both
+computationally tractable and capable of finding designs that a single monolithic
+optimizer would also find. In the original work, I could demonstrate tractability —
+the algorithm ran and produced improving designs — but I never established optimality.
+I never compared the BLISS-RS solution to a monolithic baseline. The thesis was
+honest about this, tucking the admission into the conclusions section, but it meant
+that the central question was never definitively answered: *Is BLISS-RS a viable
+design optimization scheme, or merely a viable surrogate-fitting exercise?*
+
+I want to know. This book is the attempt to find out.
+
+---
+
+I owe debts that a revised edition gives me the chance to acknowledge properly.
+
+The original thesis was completed under the guidance of **Dr. Jaroslaw
+Sobieszczanski-Sobieski** at NASA Langley Research Center, whose invention of the
+BLISS framework gave me a thesis topic and whose intellectual generosity gave me
+room to take it in my own direction. The BLISS-98 architecture described in
+Chapter 2 is entirely his work; the response surface reformulation was mine. I hope
+this revision does justice to the elegance of the original idea.
+
+I have not yet located Dr. Sobieski to inform him of this work. If you are reading
+this and know how to reach him, I would be grateful. If he is no longer with us,
+then this foreword serves as my acknowledgment — however belated — of a debt I
+should have found more ways to express when the opportunity was easier.
+
+**Prof. Robert Sandusky** of George Washington University co-supervised the thesis
+and introduced me to response surface methodology. Lt. Matthew Phillips, U.S. Air
+Force, was working concurrent BLISS research and was generous with his time and
+insights. Dr. Robert Biedron at NASA Langley helped with the CFD implementation
+that became Chapter 8. The improved aerodynamics black box documented there was
+never tested in the original work; it is still waiting.
+
+---
+
+A note on the title. The original report was called *A Response Surface Methodology
+for Bi-Level Integrated System Synthesis (BLISS)*, which is accurate but not
+exactly the kind of title that keeps a reader up at night. The working title
+*BLISS-2026* reflects both the year of this revision and the fact that the
+framework has been updated — not abandoned, not replaced, but revisited with better
+tools and, I hope, more rigorous eyes.
+
+Whether BLISS deserves the name in its fullest sense — whether it is, in the end,
+a genuinely good idea — is what the rest of this book tries to determine.
+
+*Troy David Altus*
+*Elkton, Maryland*
+*May 2026*

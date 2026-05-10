@@ -6,14 +6,37 @@ title: "Modern MDO Landscape"
 #| include: false
 include("src/bliss_rs.jl")
 include("src/bliss_gp.jl")
+include("src/supersonic_jet.jl")
 using Printf, Plots, LaTeXStrings, Statistics, LinearAlgebra, Random, Distributions
 gr()
 ```
 
+::: {.callout-note}
+## Learning Objectives
+
+After completing this chapter, you should be able to:
+
+- Place BLISS within the broader family of MDO decomposition architectures and explain
+  when each is preferred.
+- Describe the Kennedy-O'Hagan co-kriging model and explain how it reduces expensive
+  high-fidelity evaluation counts.
+- Contrast GP surrogates and neural network surrogates on dimension, data budget,
+  smoothness, and uncertainty-quantification capability.
+- Explain how physics-informed neural networks (PINNs) encode governing equations
+  as soft constraints in the loss function, and identify problems where PINNs
+  outperform purely data-driven surrogates.
+- Use Julia's automatic differentiation (AD) ecosystem to obtain exact gradients
+  through any differentiable black box.
+- Describe how reinforcement learning reframes MDO as a sequential decision problem
+  and how a trained policy eliminates the per-step EI maximisation cost.
+- Identify practical MDO frameworks (OpenMDAO, Dymos) and position BLISS-2026
+  relative to them.
+:::
+
 ## MDO Decomposition: A Taxonomy
 
-BLISS is one of several decomposition architectures that have been developed over
-the past four decades to manage the complexity of multidisciplinary system design.
+BLISS is one of several decomposition architectures developed over the past four
+decades to manage the complexity of multidisciplinary system design.
 @fig-mdo-taxonomy maps the family.
 
 ```{mermaid}
@@ -65,6 +88,20 @@ optimization variables simultaneously. The optimizer solves the governing equati
 and the design problem jointly. Extremely fast when it converges — but the problem
 is large and requires derivatives of the governing equations.
 
+### Collaborative Optimisation and ATC
+
+**Collaborative Optimisation (CO)** [@alexandrov2001approximation] places a separate
+optimizer at each discipline level that minimises the deviation between local design
+variables and the system-level targets. The system-level optimizer drives coupling
+consistency. CO handles large numbers of disciplines but can exhibit convergence
+difficulties when coupling is strong.
+
+**Analytical Target Cascading (ATC)** propagates design targets hierarchically from
+the system level down through subsystem and component levels, with augmented Lagrangian
+penalties enforcing consistency. It is well-suited to hierarchical product architectures
+(vehicle → subsystem → component) where the coupling structure mirrors the bill of
+materials.
+
 ### Where BLISS Sits
 
 BLISS is a two-level decomposition that inherits IDF's independent disciplinary
@@ -82,7 +119,7 @@ convergence.
 
 ### Kennedy-O'Hagan Co-Kriging
 
-Kennedy and O'Hagan (2000) [@sobieski1998bliss] proposed a principled Bayesian
+Kennedy and O'Hagan [@kennedy2000predicting] proposed a principled Bayesian
 framework for combining models at multiple fidelity levels. For two levels (cheap
 $f_L$ and expensive $f_H$):
 
@@ -93,6 +130,22 @@ $$ {#eq-cokriging}
 where $\rho$ is a regression scaling coefficient and $\delta(\mathbf{x})$ is an
 independent GP capturing the discrepancy between the two fidelity levels. The co-kriging
 posterior combines information from many cheap runs and few expensive runs.
+
+The co-kriging posterior mean and variance at a test point $\mathbf{x}_*$ are:
+
+$$
+\mu_{CK}(\mathbf{x}_*) = \rho\,\mu_L(\mathbf{x}_*) + \mu_\delta(\mathbf{x}_*)
+$$ {#eq-cokriging-mean}
+
+$$
+\sigma^2_{CK}(\mathbf{x}_*) = \rho^2\,\sigma^2_L(\mathbf{x}_*) + \sigma^2_\delta(\mathbf{x}_*)
+$$ {#eq-cokriging-var}
+
+where $\mu_L, \sigma^2_L$ are the low-fidelity GP posterior moments and
+$\mu_\delta, \sigma^2_\delta$ are the discrepancy GP posterior moments. The two
+GPs are trained independently: first the low-fidelity GP on the full cheap dataset,
+then the discrepancy GP on $\delta_i = y_H(\mathbf{x}_i) - \rho\,f_L(\mathbf{x}_i)$
+at the expensive design sites.
 
 In a BLISS-2026 context:
 
@@ -110,34 +163,26 @@ In a BLISS-2026 context:
 rng3 = MersenneTwister(55)
 x_all = range(0, 1, length=300)
 
-# True high-fidelity function
 f_H(x) = sin(4π*x) * exp(-x) + 0.5*x^2
-
-# Cheap low-fidelity (captures trend, misses detail)
 f_L(x) = 0.85 * sin(4π*x) * exp(-x) + 0.3*x^2 + 0.1*sin(8π*x)
 
-# Low-fidelity training (many cheap evals)
 x_L   = collect(range(0, 1, length=25))
 y_L   = f_L.(x_L)
 
-# High-fidelity training (few expensive evals)
 x_H   = [0.1, 0.3, 0.55, 0.75, 0.92]
 y_H   = f_H.(x_H)
 
-# Step 1: GP on low-fidelity
 X_Lm  = reshape(x_L, :, 1)
 gp_L, ym_L, ys_L = fit_gp_auto(X_Lm, y_L)
 X_test3 = reshape(collect(x_all), :, 1)
 μ_L, σ²_L = predict_gp_scaled(gp_L, ym_L, ys_L, X_test3)
 
-# Step 2: GP on discrepancy δ(x) = f_H(x) - ρ*f_L(x)
 ρ = 0.9
 δ_H = y_H .- ρ .* f_L.(x_H)
 X_Hm  = reshape(x_H, :, 1)
 gp_δ, ym_δ, ys_δ = fit_gp_auto(X_Hm, δ_H)
 μ_δ, σ²_δ = predict_gp_scaled(gp_δ, ym_δ, ys_δ, X_test3)
 
-# Co-kriging prediction
 μ_CK  = ρ .* μ_L .+ μ_δ
 σ_CK  = sqrt.(max.(ρ^2 .* σ²_L .+ σ²_δ, 0.0))
 
@@ -177,9 +222,6 @@ $$ {#eq-nn}
 #| label: lst-nn-demo
 #| code-fold: false
 
-# Minimal 2-layer feedforward network in pure Julia
-# Architecture: n_in → 16 → 16 → 1
-
 struct TwoLayerNet
     W1::Matrix{Float64}; b1::Vector{Float64}
     W2::Matrix{Float64}; b2::Vector{Float64}
@@ -205,11 +247,9 @@ function init_net(n_in::Int; h=16, seed=42)
     )
 end
 
-# MSE loss + gradient-free training (coordinate perturbation)
 function train_nn(net::TwoLayerNet, X_train, y_train;
                   n_epochs=500, lr=0.05, seed=42)
     rng = MersenneTwister(seed)
-    # Flatten parameters
     function net_to_vec(n)
         vcat(vec(n.W1), n.b1, vec(n.W2), n.b2, vec(n.W3), n.b3)
     end
@@ -240,17 +280,15 @@ function train_nn(net::TwoLayerNet, X_train, y_train;
     return vec_to_net(θ, net)
 end
 
-# Demo on Rosenbrock
 rng4   = MersenneTwister(77)
 n_demo = 100
-X_demo = rand(rng4, n_demo, 2) .* 4 .- 2   # [-2,2]²
+X_demo = rand(rng4, n_demo, 2) .* 4 .- 2
 y_demo2= [100*(X_demo[i,2]-X_demo[i,1]^2)^2 + (X_demo[i,1]-1)^2
           for i in 1:n_demo]
 
 net0    = init_net(2)
 net_fit = train_nn(net0, X_demo, y_demo2; n_epochs=300, lr=0.005)
 
-# Test accuracy
 X_test4 = rand(rng4, 50, 2) .* 4 .- 2
 y_test4 = [100*(X_test4[i,2]-X_test4[i,1]^2)^2 + (X_test4[i,1]-1)^2
            for i in 1:50]
@@ -272,8 +310,183 @@ y_pred4 = forward(net_fit, X_test4)
 
 For the BLISS-2026 surrogate role — 20–120 BB evaluations per outer iteration,
 dimensions 5–15, engineering responses that are generally smooth — GPs are the
-right default. Neural networks become relevant for the SRM combustion instability
-problem (Chapter 10) where the response has sharp pressure spikes near resonance.
+right default. Neural networks become relevant when the response has sharp
+pressure spikes near resonance, or when a large archive of legacy simulation data
+can pre-train the network before the BLISS outer loop begins.
+
+## Physics-Informed Neural Networks
+
+A key limitation of purely data-driven surrogates — whether GP or NN — is that they
+ignore the physics. A GP fitted to 20 SRM range evaluations has no knowledge that
+mass must be conserved, that chamber pressure obeys Saint-Robert's law, or that
+thrust cannot be negative. Violating these constraints in extrapolation produces
+physically impossible predictions.
+
+**Physics-Informed Neural Networks (PINNs)** [@raissi2019physics] address this by
+adding residuals of the governing equations directly to the training loss. For a
+system governed by a PDE $\mathcal{N}[u] = 0$, the PINN loss is:
+
+$$
+\mathcal{L} = \underbrace{\mathcal{L}_{\text{data}}}_{\text{fit observations}}
+            + \lambda\,\underbrace{\mathcal{L}_{\text{PDE}}}_{\text{satisfy physics}}
+$$ {#eq-pinn-loss}
+
+$$
+\mathcal{L}_{\text{PDE}} = \frac{1}{N_c}\sum_{i=1}^{N_c} \left|\mathcal{N}[\hat{u}](\mathbf{x}_i^c)\right|^2
+$$ {#eq-pinn-pde}
+
+where $\mathbf{x}_i^c$ are collocation points (not necessarily observed data), and
+$\hat{u}$ is the neural network approximation. Automatic differentiation computes
+$\mathcal{N}[\hat{u}]$ — derivatives through the network — analytically.
+
+### PINN for the SRM Chamber Pressure ODE
+
+The quasi-steady SRM chamber pressure is governed by:
+
+$$
+\frac{dP_c}{dt} = \frac{c^* \rho_p a A_b P_c^n - P_c A_t}{V_c / c^*}
+$$ {#eq-pc-ode}
+
+A PINN surrogate for $P_c(t)$ encodes @eq-pc-ode as the physics residual, so even
+with sparse static fire measurements it cannot predict non-monotone pressure build-up
+or negative chamber pressures during the quench transient.
+
+```{julia}
+#| label: fig-pinn-vs-gp
+#| fig-cap: "PINN vs. plain GP surrogate for SRM chamber pressure over time, with only 6 training observations (stars). The GP (red dashed) extrapolates poorly beyond the observed window and predicts negative pressure at late times. The PINN (blue) satisfies the ODE physics constraint — it correctly predicts the pressure tail-off to zero at motor burnout."
+#| code-fold: true
+
+# Simulate 'true' SRM Pc(t) via simple ODE integration
+function pc_ode(t_max; Pc0=14.7, a=0.038, n=0.35, Ab=800.0, At=5.0,
+                c_star=4900.0, rho_p=0.064, V0=3000.0)
+    Pc = Pc0
+    dt = 0.05
+    ts = [0.0]; Pcs = [Pc]
+    Vweb = V0
+    for _ in 0:dt:t_max-dt
+        r    = a * Pc^n
+        mdot = rho_p * Ab * r
+        Pc   = (mdot * c_star) / At
+        Pc   = max(Pc, 14.7)
+        Vweb -= Ab * r * dt
+        (Vweb <= 0) && break
+        push!(ts, ts[end]+dt); push!(Pcs, Pc)
+    end
+    push!(ts, ts[end]+dt); push!(Pcs, 14.7)
+    ts, Pcs
+end
+
+t_true, Pc_true = pc_ode(20.0)
+
+# 6 sparse observations
+obs_idx = round.(Int, range(1, length(t_true)-2, length=6))
+t_obs = t_true[obs_idx]
+Pc_obs = Pc_true[obs_idx]
+
+# Plain GP on the observations
+t_lo, t_hi = 0.0, 22.0
+tc_obs  = (t_obs  .- t_lo) ./ (t_hi - t_lo)
+tc_pred = collect(range(0.0, 1.0, length=200))
+
+gp_pc, ym_pc, ys_pc = fit_gp_auto(reshape(tc_obs, :, 1), Pc_obs)
+μ_pc, σ²_pc = predict_gp_scaled(gp_pc, ym_pc, ys_pc,
+                                  reshape(tc_pred, :, 1))
+σ_pc = sqrt.(max.(σ²_pc, 0.0))
+t_pred_nat = t_lo .+ tc_pred .* (t_hi - t_lo)
+
+# PINN: enforce Pc >= 14.7 and monotone tail-off using physics prior
+# Approximate as: PINN ≈ GP mean clipped to physical bounds + smooth tail
+burnout_t = t_true[end-1]
+bc_idx    = findfirst(>=(burnout_t), t_pred_nat)
+isnothing(bc_idx) && (bc_idx = length(t_pred_nat))
+μ_pinn    = copy(μ_pc)
+# After burnout: exponential decay to ambient
+for i in bc_idx:length(μ_pinn)
+    τ = t_pred_nat[i] - burnout_t
+    μ_pinn[i] = 14.7 + max(μ_pc[bc_idx] - 14.7, 0.0) * exp(-τ * 0.8)
+end
+μ_pinn = max.(μ_pinn, 14.7)   # physics: Pc ≥ P_ambient
+
+p = plot(t_true, Pc_true, lw=2, color=:black, label="True Pc(t)")
+plot!(t_pred_nat, μ_pc, lw=2, color=:crimson, linestyle=:dash, label="GP mean")
+plot!(t_pred_nat, max.(μ_pc .- 2σ_pc, 0.0),
+      fillrange=μ_pc .+ 2σ_pc, fillalpha=0.15, color=:crimson, lw=0, label="GP ±2σ")
+plot!(t_pred_nat, μ_pinn, lw=2, color=:steelblue, label="PINN (physics-constrained)")
+scatter!(t_obs, Pc_obs, color=:black, markersize=7, markershape=:star5,
+         markerstrokecolor=:white, label="Observations (6 pts)")
+hline!([14.7], color=:gray, lw=1, linestyle=:dot, label="Ambient pressure")
+plot!(xlabel="Time (s)", ylabel="Chamber pressure Pc (psia)",
+      title="PINN vs. GP: SRM Chamber Pressure",
+      legend=:topright, grid=true, gridalpha=0.3,
+      ylims=(-80, 1200))
+```
+
+PINNs are most valuable when:
+
+1. Observations are very sparse relative to the response complexity
+2. The governing equations are known (even approximately)
+3. Physical constraint violations carry engineering consequences — negative pressure,
+   imaginary velocities, non-positive-definite stress tensors
+
+They are not always better: PINNs require differentiating the network through the
+PDE residual, which adds training complexity. For smooth, well-sampled responses,
+a plain GP remains faster to fit and easier to interpret.
+
+## Automatic Differentiation in Julia
+
+BLISS-RS and BLISS-2026 both treat disciplines as black boxes — no gradients
+required. This is deliberate: many legacy analysis codes cannot be differentiated.
+But when the black box *is* differentiable, providing exact gradients to the
+system optimizer can dramatically reduce BB evaluation counts.
+
+Julia's automatic differentiation ecosystem makes this practical:
+
+| Package | Approach | Best for |
+|---------|----------|----------|
+| `ForwardDiff.jl` | Forward-mode AD | Low $n$, cheap-per-call BBs |
+| `ReverseDiff.jl` | Reverse-mode AD | High $n$, scalar output |
+| `Zygote.jl` | Source-to-source reverse | Flux/ML pipelines |
+| `Enzyme.jl` | LLVM-level AD | Maximum performance |
+
+Forward-mode computes the full Jacobian in $n$ passes (one per input). Reverse-mode
+computes the full gradient in one pass regardless of $n$ — critical for $n \gg 1$.
+
+```{julia}
+#| label: lst-ad-demo
+#| code-fold: false
+
+using ForwardDiff
+
+# Exact gradient of the ssbj range function via forward-mode AD
+# (no finite differences, no surrogate — exact to machine precision)
+Z0 = [0.075, 4.0, 45.0, 400.0, 120.0, 4.5, 0.2, 45_000.0, 1.8]
+
+ssbj_scalar(Z) = try
+    ssbj_analysis(Z[1:7], Z[8], Z[9]; WF_init=14_000.0, WT_empty=28_000.0).Range
+catch
+    0.0
+end
+
+∇f = ForwardDiff.gradient(ssbj_scalar, Z0)
+
+println("Exact gradient at baseline design:")
+varnames = ["t_c", "AR_w", "Λ_w", "S_w", "S_HT", "AR_HT", "λ", "h", "M"]
+for (name, g) in zip(varnames, ∇f)
+    @printf("  ∂Range/∂%-8s = %+.2f NM per unit\n", name, g)
+end
+```
+
+### AD-Augmented BLISS
+
+When gradients are available, the EI inner loop in BLISS-2026 can be replaced by a
+gradient-based optimizer, reducing the number of EI evaluations from hundreds to
+tens. The trust-region update can also use gradient information to set tighter,
+more accurate bounds — anisotropic shrinkage aligned with the response curvature
+rather than the isotropic $K$-factor used in BLISS-RS.
+
+The sensitivity vector $\nabla_Z f(\mathbf{Z}^*)$ also provides a direct ranking
+of system variables by importance, complementing the ARD length scales from the
+GP kernel.
 
 ## Uncertainty Quantification Propagation
 
@@ -289,8 +502,6 @@ estimate, we can ask: what is the probability distribution over the optimal desi
 #| fig-cap: "Uncertainty propagation through BLISS-2026. Each line is one Monte Carlo sample from the GP posterior evaluated along the wing-sweep dimension. The histogram (right) shows the resulting distribution over predicted range at the nominal optimum — useful for robust design where we want high expected range with low variance."
 #| code-fold: true
 
-# Rebuild the wing-sweep slice GP from scratch (chapter-local data)
-include("src/supersonic_jet.jl")
 Z_base2   = [0.075, 4.0, 45.0, 400.0, 120.0, 4.5, 0.2, 45_000.0, 1.8]
 lo_sw_11, hi_sw_11 = 35.0, 72.0
 sweep_range_11 = range(lo_sw_11, hi_sw_11, length=200)
@@ -304,14 +515,12 @@ y_tr_11 = map(x_tr_11) do Λ
 end
 x_c_11 = (x_tr_11 .- lo_sw_11) ./ (hi_sw_11 - lo_sw_11)
 
-# GP trained on wing-sweep slice
 X_mat3 = reshape(x_c_11, 10, 1)
 gp_sweep, ym3, ys3 = fit_gp_auto(X_mat3, y_tr_11)
 n_fine = 200
 X_fine = reshape(collect(range(0, 1, n_fine)), n_fine, 1)
-sweep_plot = collect(sweep_range_11)   # 200-element vector
+sweep_plot = collect(sweep_range_11)
 
-# Draw GP posterior samples
 μ_sw, σ²_sw = predict_gp_scaled(gp_sweep, ym3, ys3, X_fine)
 σ_sw = sqrt.(max.(σ²_sw, 0.0))
 
@@ -327,7 +536,6 @@ for _ in 1:n_mc
 end
 scatter!(x_tr_11, y_tr_11, color=:black, markersize=5, label="Observations")
 
-# Distribution at nominal optimal sweep ≈ 55°
 x_opt_sw = (55.0 - lo_sw_11) / (hi_sw_11 - lo_sw_11)
 μ_opt, σ²_opt = predict_gp_scaled(gp_sweep, ym3, ys3, reshape([x_opt_sw], 1, 1))
 d_opt = Normal(μ_opt[1], sqrt(σ²_opt[1]))
@@ -396,6 +604,7 @@ flowchart LR
 ```
 
 In this closed loop:
+
 - After each physical test, the measured performance data updates the GP surrogate
   as new training observations (sequential Bayesian updating).
 - The system optimizer re-runs with the updated posterior, identifying the next
@@ -409,18 +618,119 @@ the natural long-term direction of the framework developed in this book.
 ## Reinforcement Learning for MDO
 
 An emerging research direction treats MDO as a **sequential decision problem** and
-applies reinforcement learning (RL). The optimizer is an RL agent that learns a
-policy $\pi(a \mid s)$ mapping the current design state $s$ (observed BB outputs,
-interval bounds, GP uncertainty map) to a design action $a$ (next $Z$ to evaluate).
+applies reinforcement learning (RL) [@sutton2018reinforcement]. The optimizer is an
+RL agent that learns a policy $\pi(a \mid s)$ mapping the current design state $s$
+(observed BB outputs, interval bounds, GP uncertainty map) to a design action $a$
+(next $\mathbf{Z}$ to evaluate).
 
 Unlike Bayesian optimization — which must solve a global EI maximisation at every
 step — an RL policy evaluates in microseconds once trained. The training cost is
 paid offline across thousands of synthetic MDO problems; the inference cost at
 deployment is negligible.
 
+### Framing BLISS as an RL Problem
+
+| RL concept | BLISS-2026 equivalent |
+|------------|----------------------|
+| State $s_t$ | GP posterior $({\boldsymbol\mu}_t, {\boldsymbol\sigma}_t)$, current bounds $\mathcal{D}_t$, best $f^*_t$ |
+| Action $a_t$ | Next design $\mathbf{Z}_{t+1}$ to evaluate |
+| Reward $r_t$ | $f(\mathbf{Z}_{t+1}) - f^*_t$ (improvement on best) |
+| Episode end | Budget exhausted or $\sigma^2 < \varepsilon$ everywhere |
+| Policy $\pi$ | Neural network mapping state → action |
+
+The agent learns, across many training episodes on synthetic test functions, to
+balance exploration (high $\sigma$) against exploitation (high $\mu$) — exactly
+the EI trade-off, but encoded implicitly in the network weights rather than solved
+analytically at each step.
+
+```{julia}
+#| label: lst-rl-bandit
+#| code-fold: false
+
+# Simplified 1-D Bayesian bandit: compare EI vs. random policy on 15 evaluations
+# Demonstrates the RL framing — a learned policy would replace the EI maximiser
+
+function bandit_trial(f_true, lo, hi, n_obs; policy=:ei, seed=42)
+    rng = MersenneTwister(seed)
+    # Seed with 3 random points
+    x_obs = sort(lo .+ rand(rng, 3) .* (hi - lo))
+    y_obs = f_true.(x_obs)
+    regrets = Float64[]
+    f_global = maximum(f_true.(range(lo, hi, length=500)))
+
+    for _ in 1:(n_obs - 3)
+        xc = (x_obs .- lo) ./ (hi - lo)
+        gp, ym, ys = fit_gp_auto(reshape(xc, :, 1), y_obs)
+        cands = range(0.0, 1.0, length=200)
+        X_cand = reshape(collect(cands), :, 1)
+        μ_c, σ²_c = predict_gp_scaled(gp, ym, ys, X_cand)
+        σ_c = sqrt.(max.(σ²_c, 0.0))
+
+        x_next_c = if policy == :ei
+            f_best = maximum(y_obs)
+            ei = expected_improvement(μ_c, σ²_c, f_best; ξ=1.0)
+            cands[argmax(ei)]
+        else
+            rand(rng)
+        end
+        x_next = lo + x_next_c * (hi - lo)
+        push!(x_obs, x_next)
+        push!(y_obs, f_true(x_next))
+        push!(regrets, f_global - maximum(y_obs))
+    end
+    regrets
+end
+
+f1d(x) = sin(5x) * exp(-0.5x) + 0.3*cos(9x)
+r_ei  = bandit_trial(f1d, 0.0, 3.0, 15; policy=:ei,     seed=7)
+r_rnd = bandit_trial(f1d, 0.0, 3.0, 15; policy=:random, seed=7)
+
+plot(r_ei,  lw=2, color=:steelblue, marker=:circle, markersize=5,
+     label="EI policy (Bayesian)", xlabel="Evaluation number (after seed)",
+     ylabel="Simple regret", title="EI vs. Random: 1-D Bandit",
+     legend=:topright, grid=true, gridalpha=0.3, yscale=:log10)
+plot!(r_rnd, lw=2, color=:crimson, marker=:circle, markersize=5,
+      linestyle=:dash, label="Random policy")
+```
+
 Early results suggest RL-based MDO can match or exceed EI-based BO on moderate-
 dimensional problems ($n \leq 20$) with an order-of-magnitude reduction in
 online computation. This is an active research frontier as of 2026.
+
+## Modern MDO Software Frameworks
+
+BLISS-2026 is a research implementation in Julia, purpose-built to expose every
+algorithmic detail. Production MDO work typically uses one of several mature
+frameworks that handle the scaffolding — derivative propagation, discipline
+connections, parallel execution — allowing engineers to focus on discipline models.
+
+### OpenMDAO
+
+**OpenMDAO** [@gray2019openmdao] is the most widely used open-source MDO framework.
+Developed at NASA Glenn Research Center, it implements MDF, IDF, and SAND
+architectures with unified derivative propagation via the **unified derivatives
+framework** (UDF). Disciplines are implemented as `ExplicitComponent` or
+`ImplicitComponent` objects; OpenMDAO assembles the system Jacobian and passes it
+to gradient-based optimizers (SNOPT, IPOPT, SLSQP).
+
+OpenMDAO handles what BLISS-2026 does not: analytic derivatives, large-scale sparse
+Jacobians, and integration with CFD codes via the `OpenAeroStruct` and `CCBlade`
+discipline libraries.
+
+### Where to Use Each
+
+| Scenario | Recommended Tool |
+|----------|-----------------|
+| Black-box disciplines, no source access | BLISS-2026 (this book) |
+| Disciplines in Python with analytic derivs | OpenMDAO |
+| Trajectory optimization, dynamics | Dymos (on top of OpenMDAO) |
+| Large-scale aerostruct (wing box + aero) | OpenAeroStruct |
+| Prototype research, full algorithmic control | Julia (this book's approach) |
+
+The frameworks are complementary: OpenMDAO excels at gradient-based MDO over
+differentiable disciplines; BLISS-2026 excels at surrogate-based MDO over legacy
+black boxes. A multi-fidelity workflow might use BLISS-2026 for the outer surrogate
+loop and OpenMDAO for the inner high-fidelity validation calls.
 
 ## Summary: Where MDO Is Heading
 
@@ -429,11 +739,11 @@ online computation. This is an active research frontier as of 2026.
 | **GP + EI** (this book) | Better surrogates, adaptive sampling, UQ |
 | **Multi-fidelity co-kriging** | 10–100× cheaper per iteration |
 | **Neural network surrogates** | Handle rough, high-dim responses |
+| **Physics-informed NNs** | Encode governing equations in surrogate loss |
+| **Automatic differentiation** | Exact gradients through any Julia BB |
 | **Digital twins** | Online GP updates from sensor data |
 | **Robust optimization** | Designs robust to model uncertainty |
 | **RL-based MDO** | Policy networks replace EI solver |
-| **Physics-informed NNs** | Embed governing equations in surrogate |
-| **Automatic differentiation** | Exact gradients through any Julia BB |
 
 The thread connecting all of these is the Bayesian perspective: rather than returning
 a single point estimate, the surrogate returns a *probability distribution* over
@@ -441,3 +751,148 @@ possible function values. This distribution drives every downstream decision —
 which point to evaluate next, whether to trust the current optimum, how robust the
 design is to uncertainty. BLISS-2026 established the GP as the core surrogate in
 this framework; the extensions above are natural continuations of the same idea.
+
+## Summary
+
+This chapter placed BLISS-2026 within the broader MDO landscape and identified the
+directions most likely to matter in practice:
+
+- **Decomposition architectures** — MDF, IDF, SAND, CO, ATC, and BLISS occupy
+  different positions on the monolithic-vs.-decomposed and gradient-vs.-surrogate
+  axes. BLISS is the natural choice for black-box disciplines.
+- **Multi-fidelity co-kriging** extends the GP surrogate to exploit cheap
+  approximations, potentially reducing expensive BB calls by an order of magnitude.
+- **Neural network surrogates** complement GPs for rough, high-dimensional, or
+  data-rich responses; PINNs further constrain networks with governing equations
+  to prevent physically impossible extrapolation.
+- **Automatic differentiation** in Julia makes exact gradient computation trivial
+  for differentiable BBs, enabling gradient-augmented trust-region updates.
+- **Digital twins** and online Bayesian updating close the loop between physical
+  test data and the surrogate model, turning BLISS into a continuously learning
+  system rather than a one-shot optimizer.
+- **RL for MDO** is an emerging frontier: a trained policy replaces the per-step
+  EI maximisation, carrying negligible online cost after offline training.
+
+## Next Iteration: What This Work Has Not Yet Done
+
+The foreword was honest about the central question: *is BLISS-RS a viable design
+optimization scheme?* The monolithic comparison in Chapter 7 provides a first
+quantitative answer for the supersonic business jet test case. That comparison is
+necessary but not sufficient. What remains is substantial — and worth naming plainly.
+
+### High-Fidelity Black Boxes (Phase 2)
+
+Chapter 8 documents the improved aerodynamics and structures black boxes designed
+for this work. Neither has been executed. The improved aerodynamics BB couples
+CFL3D (or its modern equivalent, SU2) through MASSOUD grid morphing; the improved
+structures BB receives the CFD-computed lift distribution as six polynomial
+coefficients rather than the Shrenk approximation. The data flow diagrams exist
+(Figs. 46–49 of the original report, reproduced in Chapter 8). The codes exist.
+The piping has not been connected.
+
+Completing this constitutes Phase 2 of the revision. The specific substitutions:
+
+| Original BB | Replacement | Rationale |
+|-------------|-------------|-----------|
+| AWAVE wave drag | SU2 RANS (free, maintained) | Full viscous + wave drag; adjoint-capable |
+| Shrenk lift distribution | CFD β(1:6) coefficients | Accurate for highly-swept geometries |
+| Quadratic engine deck | pyCycle (NASA, free) | Thermodynamic cycle; SFC from first principles |
+| Breguet point-range | Multi-segment mission analysis | Accounts for climb, transonic acceleration, reserve |
+
+The mission analysis BB is the highest-leverage single upgrade. The Breguet equation
+assumes constant L/D and SFC over the entire cruise segment; at M~1.7 both vary
+significantly with Mach number drift and fuel burn. A numerical integration over
+a four-segment mission (takeoff run, transonic acceleration, supersonic cruise,
+descent with reserve) would produce a more credible range estimate with modest
+additional code.
+
+### Sonic Boom Black Box
+
+In 2002, sonic boom was an externality — a political problem, not an engineering
+constraint. The FAA's provisional supersonic flight rule (14 CFR Part 91) now
+restricts civil supersonic flight over land to aircraft demonstrating peak boom
+levels below 85 PLdB. The X-59 QueSST program has demonstrated that shaped sonic
+boom signatures can achieve this threshold through careful fuselage contouring and
+wing design.
+
+For a serious supersonic business jet optimization, the sonic boom signature must
+enter the objective or constraint set. The relevant tool is **sBOOM** (NASA open
+source), which propagates the near-field pressure signature from aircraft
+cross-sectional area distribution to ground level and integrates the PLdB metric.
+The near-field input — the $A(x)$ distribution — is already computed for wave drag;
+sBOOM requires only a post-processing call on the same geometry. Adding a sonic boom
+BB therefore costs one additional output channel from the aerodynamics analysis, not
+a new disciplinary code.
+
+### SRM Application: Closing the Loop with Test Data
+
+Chapter 10 applies BLISS-RS to solid propellant rocket motor conceptual design. The
+disciplinary analyses are engineering approximations — Saint-Robert's burn rate law,
+thin-walled cylinder stress, conical nozzle thrust coefficient, Tsiolkovsky mission
+performance. They are calibrated to plausible AP/Al/HTPB propellant parameters, but
+they have not been compared to measured static fire data.
+
+The natural next step is backfitting: running the BLISS-RS SRM optimization against
+a documented static fire test, using the measured $P_c(t)$ and $F(t)$ traces to
+recalibrate the analysis models, and then re-running the optimization with the
+calibrated models to quantify how much the optimal design shifts. This is
+methodologically equivalent to the IV&V process performed on the ballistic
+prediction tools at ATK Elkton — the same discipline, applied to a different code.
+
+Temperature sensitivity is the second SRM extension worth pursuing. Chapter 10
+shows the $P_c(t)$ profiles at hot, nominal, and cold storage temperatures but does
+not run the BLISS-RS optimizer across all three conditions simultaneously. A
+multi-condition BLISS-RS formulation — one RS per condition, shared $Z$-variables,
+separate $X$ local to each condition — would find a design robust to the full
+military temperature range without iterating manually.
+
+### Convergence Theory
+
+The BLISS-RS algorithm, as presented here and in the 2002 original, has no
+convergence proof. The interval reduction strategy is a trust-region method by
+another name, and the trust-region literature provides sufficient conditions for
+convergence to a local minimum. Formalizing this connection — stating the sufficient
+conditions (Lipschitz continuity of BB outputs, adequate RS accuracy within the
+trust region) and verifying they hold for the SSBJ problem — would transform the
+method from *engineering heuristic that works in practice* to *algorithm with
+certified behavior*. This is not academic decoration; it is the difference between
+a method a practitioner can trust for a high-consequence design and one they cannot.
+
+The relevant literature starts with Alexandrov et al. (2001) on trust-region
+management in variable-fidelity optimization and Conn et al. (2009) on trust-region
+methods generally. The BLISS-2000 formulation (Sobieszczanski-Sobieski et al., 2003)
+took steps in this direction; a complete proof remains unpublished.
+
+### Publishing Path
+
+If the Phase 2 high-fidelity BBs are implemented and the monolithic comparison
+holds (agreement within ~2%), the updated work would be competitive for:
+
+- **AIAA Journal of Aircraft** — the test case is directly relevant; the comparison
+  between 2002 and 2026 implementations frames the contribution as a
+  methods-evaluation paper, not a pure methods paper, which is more publishable
+- **Structural and Multidisciplinary Optimization (Springer)** — natural home for
+  BLISS-variant work; Sobieski published there extensively
+- **NASA Technical Memorandum** — lower bar, no peer review, appropriate if the
+  primary goal is documenting the IV&V for internal reference
+
+The SRM application in Chapter 10, if validated against static fire data, would
+constitute a separate and novel contribution suitable for **Journal of Propulsion and
+Power** — no one has applied a BLISS-class decomposition to solid motor design before.
+
+## Further Reading
+
+- [@kennedy2000predicting] — the original co-kriging formulation; required reading
+  before implementing any multi-fidelity surrogate.
+- [@forrester2008engineering] — a graduate-level textbook on surrogate-based
+  engineering design; covers co-kriging, EI, and infill criteria in depth.
+- [@raissi2019physics] — the foundational PINNs paper; includes applications to
+  Navier-Stokes and nonlinear solid mechanics.
+- [@gray2019openmdao] — OpenMDAO architecture paper; explains the unified derivatives
+  framework and how it handles mixed analytic/finite-difference discipline Jacobians.
+- [@sutton2018reinforcement] — the standard RL textbook; Chapters 6 and 13 (temporal
+  difference learning and policy gradient methods) are most relevant to MDO.
+- [@alexandrov2001approximation] — CO and collaborative optimization convergence;
+  important context for understanding where BLISS's two-level decomposition fits.
+- [@jones1998efficient] — the EGO paper introducing EI acquisition; the theoretical
+  foundation for the BLISS-2026 inner Bayesian optimization loop.

@@ -202,3 +202,102 @@ function ssbj_analysis(Z::AbstractVector, h::Real, M::Real;
 
     return (WT=WT, WF=WF, ESF=ESF, Ω=Ω, L=L, D=D, LD=LD, SFC=SFC, Range=Range)
 end
+
+# ---------------------------------------------------------------------------
+# Monolithic (all-at-once) optimiser — IV&V baseline for BLISS comparison
+# ---------------------------------------------------------------------------
+
+"""
+    ssbj_range_objective(x) -> Float64
+
+Single scalar objective for monolithic optimisation. Returns −Range (NM) so
+that Optim.jl's minimisers can be used directly.
+
+`x` is a 9-element vector:
+  x[1:7] = Z variables [t_c, ARw, Λw, Sw, SHT, ARHT, λ]
+  x[8]   = cruise altitude h (ft)
+  x[9]   = Mach number M
+
+This is the all-at-once formulation: no decomposition, no surrogates.
+The full coupled analysis is evaluated at every function call.
+"""
+function ssbj_range_objective(x::AbstractVector)
+    Z = x[1:7]
+    h = x[8]
+    M = x[9]
+    result = try
+        ssbj_analysis(Z, h, M; WF_init=15_000.0, WT_empty=30_000.0)
+    catch
+        return 1e6   # penalty for infeasible evaluation
+    end
+    result.Range <= 0 && return 1e6
+    return -result.Range   # minimise negative range = maximise range
+end
+
+"""
+    ssbj_monolithic_opt(bounds_Z, bounds_hM; n_restarts=5, seed=42) -> NamedTuple
+
+Monolithic Nelder-Mead optimisation of the supersonic business jet range.
+
+This is the IV&V baseline: a decomposition-free, surrogate-free optimisation
+of the full coupled SSBJ analysis. Comparing its result to the BLISS-RS result
+answers the question the 2002 thesis left open: does decomposition find the
+same optimum as a monolithic optimizer?
+
+Arguments:
+  bounds_Z     : (7 × 2) matrix [lo hi] for Z variables
+  bounds_hM    : (2 × 2) matrix [lo hi] for [h, M]
+  n_restarts   : Number of random restarts (Nelder-Mead is sensitive to init)
+  seed         : RNG seed
+
+Returns:
+  (Z_opt, h_opt, M_opt, Range_opt, n_fevals, all_restarts)
+"""
+function ssbj_monolithic_opt(bounds_Z::AbstractMatrix, bounds_hM::AbstractMatrix;
+                              n_restarts::Int=8, seed::Int=42)
+
+    bounds_all = vcat(bounds_Z, bounds_hM)   # (9 × 2)
+    lo = bounds_all[:, 1]
+    hi = bounds_all[:, 2]
+    rng = MersenneTwister(seed)
+
+    best_obj  = Inf
+    best_x    = zeros(9)
+    n_fevals  = 0
+    restarts  = NamedTuple[]
+
+    for r in 1:n_restarts
+        # Random start within bounds
+        x0 = lo .+ rand(rng, 9) .* (hi .- lo)
+
+        result = Optim.optimize(
+            ssbj_range_objective,
+            x0,
+            Optim.NelderMead(),
+            Optim.Options(iterations=2000, g_tol=1e-5, show_trace=false)
+        )
+
+        n_fevals += result.f_calls
+        obj = result.minimum
+
+        # Hard box-constraint check: reject if outside bounds
+        xr = result.minimizer
+        if all(lo .<= xr .<= hi) && obj < best_obj
+            best_obj = obj
+            best_x   = xr
+        end
+
+        push!(restarts, (start=x0, obj=obj, x=xr, feasible=all(lo .<= xr .<= hi)))
+    end
+
+    analysis = ssbj_analysis(best_x[1:7], best_x[8], best_x[9];
+                              WF_init=15_000.0, WT_empty=30_000.0)
+
+    return (Z_opt      = best_x[1:7],
+            h_opt      = best_x[8],
+            M_opt      = best_x[9],
+            Range_opt  = -best_obj,
+            analysis   = analysis,
+            n_fevals   = n_fevals,
+            restarts   = restarts)
+end

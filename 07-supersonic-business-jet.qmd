@@ -301,4 +301,100 @@ The key algorithmic result confirmed by this study is that BLISS-RS successfully
 - Maximises range by optimising the 9-variable system design.
 - Maintains coupling consistency between the four disciplines (coupling residuals
   below 5% by iteration 8).
-- Converges in 10 iterations without requiring gradient information.
+- Converges under formal criteria rather than a fixed iteration count.
+
+## Monolithic Comparison — IV&V Baseline
+
+The central question the 2002 thesis left unanswered: *does BLISS-RS find the same
+optimum as a monolithic all-at-once optimizer?* The original work reported no such
+comparison. This section provides it.
+
+The monolithic formulation optimises the full 9-variable system — all seven geometric
+$Z$-variables plus altitude and Mach number — by calling `ssbj_analysis` directly at
+every function evaluation, with no decomposition and no surrogates. Nelder-Mead
+simplex method with multiple random restarts (implemented via `Optim.jl`) is used
+as the solver, matching the gradient-free nature of BLISS-RS.
+
+```{julia}
+#| label: tbl-monolithic
+#| tbl-cap: "Monolithic vs. BLISS-RS optimal design comparison. The monolithic optimizer calls the full coupled SSBJ analysis at every function evaluation with no surrogates. Agreement in Range and design variables validates that the BLISS-RS decomposition is finding the true system optimum rather than a surrogate artifact."
+
+using Optim
+
+# Run monolithic optimizer
+bounds_Z_mat  = [0.01 0.10;   # t/c
+                 3.5  6.5;    # ARw
+                 40.0 70.0;   # Λw
+                 200. 800.;   # Sw
+                 40.  125.;   # SHT
+                 3.5  5.5;    # ARHT
+                 0.1  0.4]    # λ
+bounds_hM_mat = [30_000. 60_000.;   # h
+                 1.4     2.2]        # M
+
+mono = ssbj_monolithic_opt(bounds_Z_mat, bounds_hM_mat;
+                            n_restarts=8, seed=42)
+
+# BLISS-RS result from this chapter
+bliss_Z_opt  = Z_history[end]
+bliss_range  = ssbj_analysis(bliss_Z_opt[1:7], bliss_Z_opt[8], bliss_Z_opt[9];
+                              WF_init=14_000.0, WT_empty=28_000.0).Range
+
+var_names = ["t/c", "ARw", "Λw (deg)", "Sw (ft²)", "SHT (ft²)", "ARHT", "λ",
+             "h (ft)", "M"]
+
+println("| Variable | Monolithic | BLISS-RS | Difference |")
+println("|----------|-----------|----------|------------|")
+for (j, name) in enumerate(var_names)
+    m_val = j ≤ 7 ? mono.Z_opt[j] : (j == 8 ? mono.h_opt : mono.M_opt)
+    b_val = bliss_Z_opt[j]
+    diff  = (b_val - m_val) / (abs(m_val) + 1e-9) * 100
+    @printf("| %s | %.4g | %.4g | %+.1f%% |\n", name, m_val, b_val, diff)
+end
+@printf("| **Range (NM)** | **%.0f** | **%.0f** | **%+.1f%%** |\n",
+        mono.Range_opt, bliss_range,
+        (bliss_range - mono.Range_opt) / mono.Range_opt * 100)
+bliss_bb_evals = (78 + 120 + 21 + 28) * length(Z_history)
+@printf("\nMonolithic function evaluations: %d\n", mono.n_fevals)
+@printf("BLISS-RS BB evaluations (est.):  %d\n", bliss_bb_evals)
+```
+
+```{julia}
+#| label: fig-mono-vs-bliss
+#| fig-cap: "Range achieved by monolithic Nelder-Mead (horizontal line) vs. BLISS-RS iteration history. If BLISS-RS converges to the same range as the monolithic optimizer, the decomposition is validated. A consistent gap would indicate that surrogate approximation error is preventing BLISS-RS from finding the true optimum."
+#| code-fold: true
+
+mono_range = mono.Range_opt
+iters_range = 1:length(obj_history)
+
+plot(iters_range, obj_history,
+     color=:steelblue, lw=2.5, marker=:circle, markersize=5,
+     label="BLISS-RS",
+     xlabel="Iteration", ylabel="Range (NM)",
+     title="BLISS-RS vs. Monolithic Optimizer",
+     grid=true, gridalpha=0.3, legend=:bottomright)
+hline!([mono_range], color=:crimson, lw=2, linestyle=:dash,
+       label=@sprintf("Monolithic (NM): %.0f NM", mono_range))
+hline!([r_baseline.Range], color=:gray, lw=1.2, linestyle=:dot,
+       label=@sprintf("Baseline: %.0f NM", r_baseline.Range))
+```
+
+### Interpreting the Comparison
+
+Three outcomes are possible:
+
+**Agreement (< 2% difference)** — BLISS-RS is finding the true system optimum.
+The decomposition penalty is negligible for this problem, validating the method.
+
+**BLISS-RS finds higher range** — The monolithic optimizer is trapped in a local
+minimum. Nelder-Mead has no guarantee of global optimality; BLISS-RS's interval
+reduction may be implicitly acting as a restart strategy and finding a better basin.
+
+**Monolithic finds higher range** — The RS surrogates are introducing approximation
+error that prevents BLISS-RS from reaching the true optimum. This would indicate the
+quadratic surrogates are too rigid — the motivation for the Gaussian Process
+formulation in Chapter 9.
+
+The result in @tbl-monolithic provides the first published quantitative answer to
+this question for the BLISS-RS method on the supersonic business jet benchmark.
+Whatever the outcome, it is a more honest accounting than the original thesis provided.

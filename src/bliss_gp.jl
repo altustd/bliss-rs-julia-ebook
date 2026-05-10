@@ -194,7 +194,8 @@ function optimise_gp_hyperparams(X::Matrix{Float64}, y::Vector{Float64};
                                            g_tol=1e-5))
 
     ℓ_opt, σ²_opt = exp.(Optim.minimizer(result))
-    return SEKernel(ℓ_opt, σ²_opt * y_std^2), mean(y), y_std
+    # σ²_opt is in normalised-y space; keep it there — fit_gp_auto fits to y_norm
+    return SEKernel(ℓ_opt, σ²_opt), mean(y), y_std
 end
 
 """
@@ -307,15 +308,18 @@ Set `JULIA_NUM_THREADS` environment variable before starting Julia
 (e.g. `JULIA_NUM_THREADS=8 julia`) to use multiple threads.
 """
 function evaluate_parallel(fn, pts_nat::Matrix{Float64})
-    n = size(pts_nat, 1)
-    results = Vector{Float64}(undef, n)
+    n        = size(pts_nat, 1)
+    results  = Vector{Float64}(undef, n)
+    n_errors = Threads.Atomic{Int}(0)
     Threads.@threads for i in 1:n
         results[i] = try
             fn(pts_nat[i, :])
-        catch
+        catch e
+            Threads.atomic_add!(n_errors, 1)
             -Inf
         end
     end
+    n_errors[] > 0 && @warn "evaluate_parallel: $(n_errors[]) / $n evaluations failed (returned -Inf)"
     return results
 end
 
@@ -329,8 +333,10 @@ end
 
 Update design variable bounds using a trust-region strategy:
 - Contract by factor K around the optimum (tighter than BLISS-RS's fixed 20%).
-- Expand by `expand_factor` if the optimum hits the same boundary twice.
-- Clamp to original physical bounds so variables don't escape.
+- Expand by `expand_factor` if the optimum hits the same boundary twice (oscillation
+  detection requires `prev_opt` in natural space from the previous outer iteration).
+- Normal contraction clamps to current physical bounds; the expansion path allows
+  bounds to grow beyond the original lo/hi to escape wall-hugging optima.
 
 Improvement over BLISS-RS: the contraction factor K is applied in the coded space
 after re-centering on x_opt, so the new interval is always symmetric around the best
@@ -412,12 +418,12 @@ function bliss_2026(bb_fn, n_vars::Int, bounds::Matrix{Float64};
 
     rng            = MersenneTwister(seed)
     current_bounds = copy(bounds)
-    prev_opt_coded = nothing
+    prev_Z_opt     = nothing   # natural-space optimum from previous outer iter
 
     Z_history      = Vector{Vector{Float64}}()
     obj_history    = Float64[]
     bounds_history = Vector{Matrix{Float64}}()
-    gp_out         = []
+    gp_out         = Any[]
 
     if verbose
         @printf("\n  %-6s  %-10s  %-10s  %-8s  %-8s\n",
@@ -476,8 +482,8 @@ function bliss_2026(bb_fn, n_vars::Int, bounds::Matrix{Float64};
                                 X_train=X_train, y_train=y_train))
 
         # ── 6. Trust-region bounds update ─────────────────────────────────────
-        prev_opt_coded = x_opt_coded
-        current_bounds = trust_region_update(Z_opt, current_bounds; K=K)
+        current_bounds = trust_region_update(Z_opt, current_bounds; K=K, prev_opt=prev_Z_opt)
+        prev_Z_opt = Z_opt
 
         # ── 7. Verbose summary ────────────────────────────────────────────────
         if verbose
@@ -522,6 +528,8 @@ end
 
 Side-by-side comparison of quadratic RS (BLISS-RS) and GP (BLISS-2026) accuracy
 on the same training set, evaluated on held-out test points.
+
+Requires `fit_rs` and `predict_rs` from `bliss_rs.jl` to be loaded before calling.
 """
 function compare_rs_vs_gp(bb_fn, n_vars::Int, bounds::Matrix{Float64};
                             n_pts::Int=40, n_test::Int=200, seed::Int=42)

@@ -498,7 +498,6 @@ mach_g  = range(1.4, 2.2, length=50)
 
 # Evaluate GP uncertainty over Λ_w × M subspace
 # (use the GP trained in the last BLISS outer iteration)
-X_grid = hcat(result_gp.gp_models[end].X_train,)   # placeholder shape
 # Build test grid in coded space
 lo_sw2, hi_sw2 = bounds_ssbj[3,1], bounds_ssbj[3,2]
 lo_M,   hi_M   = bounds_ssbj[9,1], bounds_ssbj[9,2]
@@ -521,6 +520,9 @@ heatmap(sweep_g, mach_g, σ_grid,
         color=:hot, colorbar_title="σ (NM)")
 scatter!([Z_opt_final[3]], [Z_opt_final[9]], color=:cyan, markersize=10,
          markershape=:star5, markerstrokecolor=:black, label="BLISS-2026 optimum")
+i_hi = argmax(σ_grid)
+scatter!([sweep_g[i_hi[2]]], [mach_g[i_hi[1]]], color=:lime, markersize=10,
+         markershape=:xcross, markerstrokewidth=2.5, label="High-σ candidate")
 ```
 
 ## Summary: BLISS-RS vs. BLISS-2026

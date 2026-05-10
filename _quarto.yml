@@ -6,11 +6,12 @@ book:
   title: "BLISS-2026"
   subtitle: "Decomposition-Based Multidisciplinary Design Optimization — A Modern Julia Treatment"
   author: "Troy David Altus"
-  date: today
+  date: "May 2026"
   repo-url: https://github.com/altustd/bliss2026
   repo-actions: [edit, issue]
   chapters:
     - index.qmd
+    - foreword.qmd
     - 01-introduction.qmd
     - 02-bliss98.qmd
     - 03-bliss-rs-formulation.qmd
@@ -42,12 +43,30 @@ format:
     self-contained: false
     smooth-scroll: true
     highlight-style: github
-  # pdf:  # Re-enable after: brew install librsvg
-  #   documentclass: scrbook
-  #   toc: true
-  #   number-sections: true
-  #   colorlinks: true
-  #   geometry: margin=1in
+  pdf:
+    documentclass: scrbook
+    classoption: [12pt, letterpaper, oneside]
+    geometry:
+      - top=1in
+      - bottom=1in
+      - left=1.25in
+      - right=1.25in
+    number-sections: true
+    colorlinks: true
+    linkcolor: NavyBlue
+    citecolor: NavyBlue
+    toc: true
+    toc-depth: 2
+    include-in-header:
+      text: |
+        \usepackage{fancyhdr}
+        \pagestyle{fancy}
+        \fancyhf{}
+        \fancyhead[L]{\small BLISS-2026 — Altus}
+        \fancyhead[R]{\small\thepage}
+        \renewcommand{\headrulewidth}{0.4pt}
+        \usepackage{setspace}
+        \setstretch{1.15}
 
 bibliography: references.bib
 csl: aiaa.csl

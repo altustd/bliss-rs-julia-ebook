@@ -203,3 +203,137 @@ This asymmetry in interval treatment — $Z$ bounded by physical limits, $Y^*$ a
 free to drift — is a subtle but important implementation detail that ensures the
 system optimisation can always find a feasible point with respect to coupling
 constraints, even as the design space contracts around the system-optimal $Z$.
+
+## Convergence Criteria
+
+The original Altus (2002) terminated the BLISS-RS loop after a fixed ten iterations,
+selected because the approaching thesis deadline coincided with apparent stabilisation
+of the optimization histories in Figs. 22–45. This is not a convergence criterion —
+it is a stopping rule. The distinction matters: a stopping rule halts computation;
+a convergence criterion certifies that the solution has met a quantifiable quality
+standard.
+
+The IV&V of this work identified fixed-iteration termination as the most significant
+methodological deficiency in the original thesis. As the foreword notes, the weighting
+factors $w_{1,2}$ and $w_{3,3}$ had *visibly not converged* at iteration 10 (Fig. 40
+of the original report), meaning the local BB objective functions were still evolving
+at termination. The reported optimum is therefore not a BLISS-RS optimum — it is the
+best point found after an arbitrary number of iterations.
+
+The replacement is a three-criterion stopping rule, all of which must be satisfied
+simultaneously before convergence is declared:
+
+### Criterion 1: Relative Objective Change
+
+$$
+\frac{|f_{i+1} - f_i|}{|f_i| + \varepsilon_0} < \varepsilon_{\text{obj}}
+$$ {#eq-conv-obj}
+
+where $f_i$ is the system objective (range) at iteration $i$, $\varepsilon_0 = 10^{-10}$
+prevents division by zero, and $\varepsilon_{\text{obj}} = 10^{-4}$ (0.01% change) is
+the convergence tolerance.
+
+### Criterion 2: Relative Design Variable Change
+
+$$
+\frac{\|Z_{i+1} - Z_i\|_2}{\|Z_i\|_2 + \varepsilon_0} < \varepsilon_Z
+$$ {#eq-conv-Z}
+
+This criterion catches cases where the objective is flat but the design is still
+moving — a situation that Criterion 1 alone would incorrectly declare as converged.
+
+### Criterion 3: Maximum Iteration Safeguard
+
+$$
+i \leq i_{\max}
+$$ {#eq-conv-max}
+
+The hard cap $i_{\max} = 50$ prevents runaway iteration if the system is oscillating
+or the objective is noisy.
+
+```{julia}
+#| label: fig-convergence-demo
+#| fig-cap: "Convergence history for the 1D interval reduction demo under the new three-criterion stopping rule. Top: relative objective change (Criterion 1). Bottom: relative design variable change (Criterion 2). Convergence is declared when both drop below the tolerance threshold (dashed line)."
+#| code-fold: true
+
+f_true(x) = (x - 0.65)^2 + 0.1 * sin(5 * x)
+
+function bliss_convergence_demo(; K=0.8,
+                                  ε_obj=1e-4, ε_Z=1e-4, max_iter=30)
+    lo, hi = 0.0, 1.0
+    rng = MersenneTwister(42)
+    x_prev   = 0.5
+    obj_prev = f_true(x_prev)
+    Δobj_hist = Float64[]
+    ΔZ_hist   = Float64[]
+    obj_hist  = Float64[]
+    x_hist    = Float64[]
+    conv_iter = max_iter
+
+    for it in 1:max_iter
+        n_pts = 8
+        pts_1d = lo .+ rand(rng, n_pts) .* (hi - lo)
+        y_vals = f_true.(pts_1d)
+        pts_mat = reshape(pts_1d, n_pts, 1)
+        b = fit_rs(pts_mat, y_vals)
+        x_opt = clamp(-b[2] / (2 * b[3] + 1e-12), lo, hi)
+        obj_opt = f_true(x_opt)
+
+        push!(x_hist, x_opt)
+        push!(obj_hist, obj_opt)
+
+        if it > 1
+            Δobj = abs(obj_opt - obj_prev) / (abs(obj_prev) + 1e-10)
+            ΔZ   = abs(x_opt  - x_prev)   / (abs(x_prev)  + 1e-10)
+            push!(Δobj_hist, Δobj)
+            push!(ΔZ_hist, ΔZ)
+            if Δobj < ε_obj && ΔZ < ε_Z
+                conv_iter = it
+                break
+            end
+        else
+            push!(Δobj_hist, NaN)
+            push!(ΔZ_hist, NaN)
+        end
+
+        x_prev, obj_prev = x_opt, obj_opt
+        lo, hi = interval_reduction_factors(x_opt, lo, hi; K=K)
+    end
+    return Δobj_hist, ΔZ_hist, obj_hist, x_hist, conv_iter
+end
+
+Δobj_h, ΔZ_h, obj_h, x_h, ci = bliss_convergence_demo()
+iters = 1:length(Δobj_h)
+
+p1 = plot(iters, replace(Δobj_h, NaN=>missing),
+          yscale=:log10, color=:steelblue, lw=2, marker=:circle, markersize=4,
+          ylabel=L"|\Delta f| / |f|", title="Convergence History",
+          label=L"\varepsilon_\mathrm{obj}", legend=:topright,
+          grid=true, gridalpha=0.3)
+hline!([1e-4], color=:black, linestyle=:dash, lw=1.2, label="Tolerance 1e-4")
+ci > 1 && vline!([ci-1], color=:crimson, lw=1.5, linestyle=:dot, label="Converged")
+
+p2 = plot(iters, replace(ΔZ_h, NaN=>missing),
+          yscale=:log10, color=:darkorange, lw=2, marker=:circle, markersize=4,
+          ylabel=L"||ΔZ|| / ||Z||", xlabel="Iteration",
+          label=L"\varepsilon_Z", legend=:topright,
+          grid=true, gridalpha=0.3)
+hline!([1e-4], color=:black, linestyle=:dash, lw=1.2, label="Tolerance 1e-4")
+ci > 1 && vline!([ci-1], color=:crimson, lw=1.5, linestyle=:dot, label="")
+
+plot(p1, p2, layout=(2,1), size=(650, 420))
+```
+
+```{julia}
+#| label: tbl-convergence-summary
+#| tbl-cap: "Convergence summary for the 1D demo. The loop terminates when both criteria are satisfied, typically well before the max_iter safety cap."
+
+Δobj_h, ΔZ_h, obj_h, x_h, ci = bliss_convergence_demo()
+@printf("Converged at iteration: %d\n", ci)
+@printf("Final x*  = %.6f  (true optimum: 0.650000)\n", x_h[end])
+@printf("Final f*  = %.6f  (true f*: %.6f)\n", obj_h[end], f_true(0.65))
+@printf("Error in x: %.2e\n", abs(x_h[end] - 0.65))
+```
+
+The `ConvergenceCriteria` struct and `check_convergence` function implementing these
+criteria are defined in `src/bliss_rs.jl` and used in `bliss_rs_iteration`.

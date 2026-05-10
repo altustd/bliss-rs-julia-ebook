@@ -170,84 +170,129 @@ implementation.
 
 ### Test Functions
 
-Altus (2002) conducted two tests to assess RS accuracy as a function of sample size
-$N_S$ and dimensionality $N_X$ [@altus2002blissrs, §4.2]:
+Altus (2002) assessed RS accuracy using two test functions across a range of
+dimensionalities $N_X$ and sample sizes $N_S$ [@altus2002blissrs, §4.2]:
 
-**Test 1** — Fitting a quadratic response surface to a *quadratic* function. This is
-the trivial case: a quadratic model should fit a quadratic function exactly, given
-enough points.
+**Test 1** — Fitting a quadratic RS to a *quadratic* function. A correctly
+implemented quadratic model recovers a quadratic function exactly when $N_S \geq
+N_S^{\min}$, so this is a code-verification test, not a fidelity test.
 
-**Test 2** — Fitting a quadratic response surface to the generalised **Rosenbrock
-(Banana) function**:
+**Test 2** — Fitting a quadratic RS to the generalised **Rosenbrock (Banana)
+function**, which has a narrow curved valley and is substantially non-quadratic:
 
 $$
 f(\mathbf{x}) = \sum_{i=1}^{N_X - 1}\left[100(x_{i+1} - x_i^2)^2 + (x_i - 1)^2\right]
 $$ {#eq-rosenbrock}
 
-The Rosenbrock function has a narrow, curved valley leading to the global minimum
-at $(1, 1, \ldots, 1)$. It is significantly more complex than a quadratic, so
-approximation error is expected.
+### Corrected Error Metrics
 
-The normalized error metric is:
+The original thesis reported a single point-wise normalized error:
 
 $$
-\text{Error} = \frac{|f_{\text{actual}} - f_{RS}|}{|f_{\text{actual}}|}
-$$ {#eq-error-metric}
+\text{Error}_{\text{Altus}} = \frac{|f_{\text{actual}} - f_{RS}|}{|f_{\text{actual}}|}
+$$ {#eq-error-metric-original}
+
+This metric has two deficiencies identified during IV&V:
+
+1. **Singularity** — when $f_{\text{actual}} \to 0$ (e.g. the aeroelastic twist
+   variable $\Theta$, which can change sign during optimization), the metric
+   diverges. The original MATLAB code masked this with an implicit numerical floor.
+
+2. **Point-wise only** — no summary statistic across the design space, no
+   out-of-sample validation, no confidence information.
+
+The corrected validation framework uses three complementary metrics:
+
+$$
+\text{RMSE} = \sqrt{\frac{1}{m}\sum_{i=1}^{m}(y_i - \hat{y}_i)^2}
+$$ {#eq-rmse}
+
+$$
+R^2 = 1 - \frac{\sum(y_i - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}
+$$ {#eq-r2}
+
+$$
+\text{NMAE} = \frac{1}{m}\sum_{i=1}^{m}
+  \frac{|y_i - \hat{y}_i|}{\max(|y_i|,\, \varepsilon \cdot \max_j|y_j|)}
+$$ {#eq-nmae}
+
+where $\varepsilon = 10^{-8}$ provides the stabilizing floor absent from Eq. 16.
+All three are computed both **in-sample** (fit quality) and **leave-one-out
+cross-validated** (predictive quality). LOOCV is the standard for deterministic
+computer experiments because there is no measurement noise to justify a held-out
+test set.
+
+```{julia}
+#| label: tbl-loocv-demo
+#| tbl-cap: "LOOCV validation metrics for a quadratic RS fit to the Rosenbrock function at four dimensionalities. In-sample R² is near 1 for low dimensions; LOOCV R² reveals the actual predictive accuracy, which degrades rapidly with dimension."
+
+rosenbrock(x) = sum(100*(x[i+1] - x[i]^2)^2 + (x[i]-1)^2 for i in 1:length(x)-1)
+
+println("| NX | NS | In-sample R² | LOOCV RMSE | LOOCV R² | LOOCV NMAE |")
+println("|----|----|-------------|------------|----------|------------|")
+
+for (nv, ns_extra) in [(2, 10), (3, 15), (5, 30), (8, 60)]
+    ns = min_rs_points(nv) + ns_extra
+    pts = lhs_points(nv, ns; seed=42)
+    pts_coded = 2 .* pts .- 1.0   # map [0,1] → [-1,1]
+    y = [rosenbrock(pts_coded[i,:]) for i in 1:ns]
+
+    v = rs_validate(pts, y)
+    @printf("| %2d | %3d | %.4f | %.2f | %.4f | %.4f |\n",
+            nv, ns,
+            v.insample.r2,
+            v.loocv.rmse,
+            v.loocv.r2,
+            v.loocv.normalized_mae)
+end
+```
 
 ```{julia}
 #| label: fig-error-analysis
-#| fig-cap: "Normalized RS approximation error vs. sample size for the Rosenbrock (Banana) function, for various dimensionalities. More variables require proportionally more points to achieve the same accuracy. This reproduces the trend in Altus (2002) Figs. 13–16."
+#| fig-cap: "LOOCV RMSE vs. sample size for the Rosenbrock function at four dimensionalities. Vertical dashed lines mark the minimum sample count NS_min for a quadratic fit. The shaded region below each line represents the over-determined regime where fit quality is reliable."
 #| code-fold: true
 
 rosenbrock(x) = sum(100*(x[i+1] - x[i]^2)^2 + (x[i]-1)^2 for i in 1:length(x)-1)
 
-function rs_error_study(n_vars, n_test=500; seed=42)
-    rng = MersenneTwister(seed)
+function rs_loocv_study(n_vars; seed=42)
     ns_min = min_rs_points(n_vars)
-    results = Float64[]
-
-    for n_sample in ns_min:5:(ns_min + 80)
-        # Training points in [-1, 1]^n
-        pts_train = 2 .* rand(rng, n_sample, n_vars) .- 1.0
-        y_train   = [rosenbrock(pts_train[i, :]) for i in 1:n_sample]
-
-        # Fit RS
-        b = fit_rs(pts_train, y_train)
-
-        # Test points
-        pts_test = 2 .* rand(rng, n_test, n_vars) .- 1.0
-        y_test   = [rosenbrock(pts_test[i, :]) for i in 1:n_test]
-        y_pred   = predict_rs(pts_test, b)
-
-        err = mean(abs.((y_test .- y_pred) ./ (abs.(y_test) .+ 1e-8)))
-        push!(results, err)
+    ns_range = ns_min:4:(ns_min + 60)
+    rmse_vec = Float64[]
+    r2_vec   = Float64[]
+    for ns in ns_range
+        pts = lhs_points(n_vars, ns; seed=seed)
+        pts_coded = 2 .* pts .- 1.0
+        y = [rosenbrock(pts_coded[i,:]) for i in 1:ns]
+        loo = loocv_error(pts, y)
+        push!(rmse_vec, loo.rmse)
+        push!(r2_vec,   max(loo.r2, -1.0))
     end
-    ns_range = ns_min:5:(ns_min + 80)
-    return collect(ns_range), results
+    return collect(ns_range), rmse_vec, r2_vec
 end
 
 colors = [:steelblue, :crimson, :darkorange, :forestgreen]
-p = plot(title="RS Error vs. Sample Size (Rosenbrock Function)",
+p = plot(title="LOOCV RMSE vs. Sample Size (Rosenbrock)",
          xlabel=L"Sample size $N_S$",
-         ylabel="Mean normalised error",
+         ylabel="LOOCV RMSE",
          yscale=:log10, legend=:topright, grid=true, gridalpha=0.3)
 
 for (nv, col) in zip([2, 3, 5, 8], colors)
-    ns_vec, err_vec = rs_error_study(nv)
+    ns_vec, rmse_vec, _ = rs_loocv_study(nv)
     ns_min = min_rs_points(nv)
-    plot!(ns_vec, max.(err_vec, 1e-6), lw=2, color=col,
+    plot!(ns_vec, max.(rmse_vec, 1e-4), lw=2, color=col,
           label="NX = $nv  (NS_min = $ns_min)")
     vline!([ns_min], color=col, lw=1, linestyle=:dot, label="")
 end
-
 p
 ```
 
-@fig-error-analysis confirms the key insight from the original thesis: for
-low-dimensional problems ($N_X = 2, 3$), a quadratic RS achieves acceptable accuracy
-($<10\%$ error) with a moderate number of samples. For higher-dimensional problems
-($N_X = 8$), significantly more samples are needed, reinforcing the importance of
-decomposing the problem so that each BB handles a limited number of variables.
+@fig-error-analysis reproduces and extends the accuracy study from Altus (2002)
+Figs. 13–16 using LOOCV RMSE in place of the point-wise metric. The key finding
+is unchanged: for low-dimensional BBs ($N_X \leq 5$), a quadratic RS achieves
+acceptable accuracy with moderate over-determination ($N_S \approx 1.5 N_S^{\min}$).
+For high-dimensional BBs ($N_X = 8$, as in the aerodynamics BB), predictive accuracy
+remains poor until $N_S \gg N_S^{\min}$, motivating either additional sample points
+or a more expressive surrogate (Gaussian Process, Chapter 9).
 
 ### Response Surface Visualization
 
