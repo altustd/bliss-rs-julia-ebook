@@ -27,6 +27,7 @@ book:
     - 07-supersonic-business-jet.qmd
     - 08-black-box-fidelity.qmd
     - 09-bliss2026-framework.qmd
+    - 10-srm-application.qmd
     - 11-modern-mdo-landscape.qmd
     - references.qmd
   appendices:
