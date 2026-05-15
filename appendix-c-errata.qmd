@@ -1,0 +1,33 @@
+---
+title: "Appendix C: Errata — NASA/CR-2002-211652"
+---
+
+This appendix documents confirmed errors in the original 2002 reference:
+
+> Altus, T.D. (2002). *A Response Surface Methodology for Bi-Level Integrated
+> System Synthesis (BLISS)*. NASA/CR-2002-211652. May 2002.
+
+Errors are classified as **mathematical** (affect results or implementation) or
+**typographical** (presentation only, no effect on correctness).
+
+---
+
+## Errata Table
+
+| ID | Location in 2002 Paper | Type | Description | Effect on Implementation | Status in This Work |
+|---|---|---|---|---|---|
+| E1 | App. A, Eq. A2 | **Mathematical** | Distance formula prints $\sqrt{\sum(X_{A_i} - X_{B_i})}$ — missing square on difference term. Correct: $\sqrt{\sum(X_{A_i} - X_{B_i})^2}$ | Would produce incorrect inter-point distances and broken antibunching if implemented as printed | Julia uses correct squared Euclidean distance. See @sec-antibunching. |
+| E2 | Fig. 41, axis label | Typographical | Units label reads "nm" (nanometres). Intended: "NM" (nautical miles). Range values throughout paper are in nautical miles. | None | This work uses "NM" consistently. See @sec-breguet. |
+| E3 | Fig. 19, caption | Typographical | "Hypershpere" — missing letter 'e'. | None | Corrected throughout. |
+| E4 | Fig. 6, caption | Typographical | "Cross-sectionl" — missing letter 'a'. | None | Corrected throughout. |
+| E5 | p. 20, body text | Typographical | "Aany" — double 'a', should be "Any". | None | Corrected throughout. |
+
+---
+
+## Notes
+
+- E1 is the only error with potential implementation consequences. All other entries are
+  typographical and do not affect the mathematics or results.
+- This errata list covers errors identified during the 2026 IV&V review. It is not
+  claimed to be exhaustive.
+- The full IV&V report is maintained separately at `ivv/ivv-bliss-rs-2002.md`.

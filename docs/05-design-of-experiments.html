@@ -99,7 +99,7 @@ div.csl-indent {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-acf12a64177840b8d86f2d4f01b2e9fb.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-3d194f12a2c2dabb41c231d40457837f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-bb788d656281e096ec9423696c509281.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -304,14 +304,20 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./10-srm-application.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Application to Solid Propellant Rocket Motor Design</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./11-modern-mdo-landscape.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Modern MDO Landscape</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Modern MDO Landscape</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">References</span></span></a>
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">References</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -335,6 +341,12 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Appendix B: Julia Reference — Flutter Constraint and Module Listings</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendix-c-errata.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Appendix C: Errata — NASA/CR-2002-211652</span></span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -344,7 +356,7 @@ window.Quarto = {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
+    <h2 id="toc-title">On this page</h2>
    
   <ul>
   <li><a href="#context-for-computer-experiments" id="toc-context-for-computer-experiments" class="nav-link active" data-scroll-target="#context-for-computer-experiments"><span class="header-section-number">7.1</span> Context for Computer Experiments</a></li>
@@ -413,6 +425,19 @@ window.Quarto = {
 \hat{\mathbf{u}} = \frac{\mathbf{u}}{\|\mathbf{u}\|}
 \tag{7.1}\]</span></span></p>
 <p>The full algorithm is detailed in Appendix A. An important characteristic is that the number of points is limited only by the minimum required for the RS model — unlike CCD or Box-Behnken designs, whose point counts grow as specific functions of <span class="math inline">\(n\)</span>.</p>
+<div class="callout callout-style-default callout-important callout-titled" title="2002 Paper Errata — Fig. 19 caption">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>2002 Paper Errata — Fig. 19 caption
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>NASA/CR-2002-211652, Fig. 19 caption contains a typographical error: “Hypershpere” (missing ‘e’). Not a mathematical error, but noted for completeness. See <a href="./appendix-c-errata.html">Appendix C</a> for the full errata list.</p>
+</div>
+</div>
 <div id="cell-fig-hypersphere-2d" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1285,325 +1310,331 @@ Figure&nbsp;7.5: Minimum pairwise distance distribution for D-optimal vs.&nbsp;r
 <span id="cb10-61"><a href="#cb10-61"></a>unlike CCD or Box-Behnken designs, whose point counts grow as specific functions</span>
 <span id="cb10-62"><a href="#cb10-62"></a>of $n$.</span>
 <span id="cb10-63"><a href="#cb10-63"></a></span>
-<span id="cb10-66"><a href="#cb10-66"></a><span class="in">```{julia}</span></span>
-<span id="cb10-67"><a href="#cb10-67"></a><span class="co">#| label: fig-hypersphere-2d</span></span>
-<span id="cb10-68"><a href="#cb10-68"></a><span class="co">#| fig-cap: "Hypersphere point placement in 2D (left) vs. uniform random placement (right), both with 20 points. The hypersphere scheme distributes points more uniformly around the boundary, with fewer clustered points near the center."</span></span>
-<span id="cb10-69"><a href="#cb10-69"></a><span class="co">#| code-fold: true</span></span>
-<span id="cb10-70"><a href="#cb10-70"></a></span>
-<span id="cb10-71"><a href="#cb10-71"></a>rng <span class="op">=</span> <span class="fu">MersenneTwister</span>(<span class="fl">42</span>)</span>
-<span id="cb10-72"><a href="#cb10-72"></a></span>
-<span id="cb10-73"><a href="#cb10-73"></a>hs_pts <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">2</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb10-74"><a href="#cb10-74"></a>rn_pts <span class="op">=</span> <span class="fu">random_points</span>(<span class="fl">2</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb10-75"><a href="#cb10-75"></a></span>
-<span id="cb10-76"><a href="#cb10-76"></a>p1 <span class="op">=</span> <span class="fu">scatter</span>(hs_pts[<span class="op">:</span>,<span class="fl">1</span>], hs_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
-<span id="cb10-77"><a href="#cb10-77"></a>             xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
-<span id="cb10-78"><a href="#cb10-78"></a>             title<span class="op">=</span><span class="st">"Hypersphere (20 pts)"</span>, markersize<span class="op">=</span><span class="fl">6</span>,</span>
-<span id="cb10-79"><a href="#cb10-79"></a>             color<span class="op">=:</span>steelblue, markerstrokecolor<span class="op">=:</span>white, legend<span class="op">=</span><span class="cn">false</span>,</span>
-<span id="cb10-80"><a href="#cb10-80"></a>             xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
-<span id="cb10-81"><a href="#cb10-81"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
-<span id="cb10-82"><a href="#cb10-82"></a></span>
-<span id="cb10-83"><a href="#cb10-83"></a>p2 <span class="op">=</span> <span class="fu">scatter</span>(rn_pts[<span class="op">:</span>,<span class="fl">1</span>], rn_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
-<span id="cb10-84"><a href="#cb10-84"></a>             xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
-<span id="cb10-85"><a href="#cb10-85"></a>             title<span class="op">=</span><span class="st">"Random (20 pts)"</span>, markersize<span class="op">=</span><span class="fl">6</span>,</span>
-<span id="cb10-86"><a href="#cb10-86"></a>             color<span class="op">=:</span>crimson, markerstrokecolor<span class="op">=:</span>white, legend<span class="op">=</span><span class="cn">false</span>,</span>
-<span id="cb10-87"><a href="#cb10-87"></a>             xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
-<span id="cb10-88"><a href="#cb10-88"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
-<span id="cb10-89"><a href="#cb10-89"></a></span>
-<span id="cb10-90"><a href="#cb10-90"></a><span class="fu">plot</span>(p1, p2, size<span class="op">=</span>(<span class="fl">700</span>, <span class="fl">320</span>))</span>
-<span id="cb10-91"><a href="#cb10-91"></a><span class="in">```</span></span>
-<span id="cb10-92"><a href="#cb10-92"></a></span>
-<span id="cb10-93"><a href="#cb10-93"></a><span class="fu">## D-Optimal Point Placement</span></span>
-<span id="cb10-94"><a href="#cb10-94"></a></span>
-<span id="cb10-95"><a href="#cb10-95"></a>The **D-optimal design** criterion seeks to maximize the determinant of the</span>
-<span id="cb10-96"><a href="#cb10-96"></a>information matrix $<span class="co">[</span><span class="ot">X</span><span class="co">]</span>^T<span class="co">[</span><span class="ot">X</span><span class="co">]</span>$:</span>
-<span id="cb10-97"><a href="#cb10-97"></a></span>
-<span id="cb10-98"><a href="#cb10-98"></a>$$</span>
-<span id="cb10-99"><a href="#cb10-99"></a>\text{Maximize} \quad \det<span class="sc">\!</span>\left(<span class="co">[</span><span class="ot">X(\xi)</span><span class="co">]</span>^T<span class="co">[</span><span class="ot">X(\xi)</span><span class="co">]</span>\right)</span>
-<span id="cb10-100"><a href="#cb10-100"></a>$$ {#eq-d-optimal}</span>
-<span id="cb10-101"><a href="#cb10-101"></a></span>
-<span id="cb10-102"><a href="#cb10-102"></a>This is equivalent to minimizing the volume of the confidence ellipsoid for the</span>
-<span id="cb10-103"><a href="#cb10-103"></a>regression coefficients $\hat{\boldsymbol{\beta}}$. A design with a high</span>
-<span id="cb10-104"><a href="#cb10-104"></a>$\det(<span class="co">[</span><span class="ot">X</span><span class="co">]</span>^T<span class="co">[</span><span class="ot">X</span><span class="co">]</span>)$ estimates the coefficients with minimum overall uncertainty.</span>
-<span id="cb10-105"><a href="#cb10-105"></a></span>
-<span id="cb10-106"><a href="#cb10-106"></a>D-optimal designs are generated algorithmically. The **coordinate exchange**</span>
-<span id="cb10-107"><a href="#cb10-107"></a>algorithm (Cook &amp; Nachtsheim, 1980) works as follows:</span>
-<span id="cb10-108"><a href="#cb10-108"></a></span>
-<span id="cb10-109"><a href="#cb10-109"></a><span class="ss">1. </span>Initialize with a random set of candidate points $\xi_1, \ldots, \xi_m$.</span>
-<span id="cb10-110"><a href="#cb10-110"></a><span class="ss">2. </span>For each point $\xi_i$, for each coordinate $j$:</span>
-<span id="cb10-111"><a href="#cb10-111"></a><span class="ss">   - </span>Try replacing $\xi_{i,j}$ with a new candidate value.</span>
-<span id="cb10-112"><a href="#cb10-112"></a><span class="ss">   - </span>Accept if $\det(<span class="co">[</span><span class="ot">X</span><span class="co">]</span>^T<span class="co">[</span><span class="ot">X</span><span class="co">]</span>)$ increases.</span>
-<span id="cb10-113"><a href="#cb10-113"></a><span class="ss">3. </span>Repeat until no improvement is found.</span>
+<span id="cb10-64"><a href="#cb10-64"></a>::: {.callout-important title="2002 Paper Errata — Fig. 19 caption"}</span>
+<span id="cb10-65"><a href="#cb10-65"></a>NASA/CR-2002-211652, Fig. 19 caption contains a typographical error: "Hypershpere"</span>
+<span id="cb10-66"><a href="#cb10-66"></a>(missing 'e'). Not a mathematical error, but noted for completeness.</span>
+<span id="cb10-67"><a href="#cb10-67"></a>See <span class="co">[</span><span class="ot">Appendix C</span><span class="co">](appendix-c-errata.qmd)</span> for the full errata list.</span>
+<span id="cb10-68"><a href="#cb10-68"></a>:::</span>
+<span id="cb10-69"><a href="#cb10-69"></a></span>
+<span id="cb10-72"><a href="#cb10-72"></a><span class="in">```{julia}</span></span>
+<span id="cb10-73"><a href="#cb10-73"></a><span class="co">#| label: fig-hypersphere-2d</span></span>
+<span id="cb10-74"><a href="#cb10-74"></a><span class="co">#| fig-cap: "Hypersphere point placement in 2D (left) vs. uniform random placement (right), both with 20 points. The hypersphere scheme distributes points more uniformly around the boundary, with fewer clustered points near the center."</span></span>
+<span id="cb10-75"><a href="#cb10-75"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb10-76"><a href="#cb10-76"></a></span>
+<span id="cb10-77"><a href="#cb10-77"></a>rng <span class="op">=</span> <span class="fu">MersenneTwister</span>(<span class="fl">42</span>)</span>
+<span id="cb10-78"><a href="#cb10-78"></a></span>
+<span id="cb10-79"><a href="#cb10-79"></a>hs_pts <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">2</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb10-80"><a href="#cb10-80"></a>rn_pts <span class="op">=</span> <span class="fu">random_points</span>(<span class="fl">2</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb10-81"><a href="#cb10-81"></a></span>
+<span id="cb10-82"><a href="#cb10-82"></a>p1 <span class="op">=</span> <span class="fu">scatter</span>(hs_pts[<span class="op">:</span>,<span class="fl">1</span>], hs_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
+<span id="cb10-83"><a href="#cb10-83"></a>             xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
+<span id="cb10-84"><a href="#cb10-84"></a>             title<span class="op">=</span><span class="st">"Hypersphere (20 pts)"</span>, markersize<span class="op">=</span><span class="fl">6</span>,</span>
+<span id="cb10-85"><a href="#cb10-85"></a>             color<span class="op">=:</span>steelblue, markerstrokecolor<span class="op">=:</span>white, legend<span class="op">=</span><span class="cn">false</span>,</span>
+<span id="cb10-86"><a href="#cb10-86"></a>             xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
+<span id="cb10-87"><a href="#cb10-87"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb10-88"><a href="#cb10-88"></a></span>
+<span id="cb10-89"><a href="#cb10-89"></a>p2 <span class="op">=</span> <span class="fu">scatter</span>(rn_pts[<span class="op">:</span>,<span class="fl">1</span>], rn_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
+<span id="cb10-90"><a href="#cb10-90"></a>             xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
+<span id="cb10-91"><a href="#cb10-91"></a>             title<span class="op">=</span><span class="st">"Random (20 pts)"</span>, markersize<span class="op">=</span><span class="fl">6</span>,</span>
+<span id="cb10-92"><a href="#cb10-92"></a>             color<span class="op">=:</span>crimson, markerstrokecolor<span class="op">=:</span>white, legend<span class="op">=</span><span class="cn">false</span>,</span>
+<span id="cb10-93"><a href="#cb10-93"></a>             xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
+<span id="cb10-94"><a href="#cb10-94"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb10-95"><a href="#cb10-95"></a></span>
+<span id="cb10-96"><a href="#cb10-96"></a><span class="fu">plot</span>(p1, p2, size<span class="op">=</span>(<span class="fl">700</span>, <span class="fl">320</span>))</span>
+<span id="cb10-97"><a href="#cb10-97"></a><span class="in">```</span></span>
+<span id="cb10-98"><a href="#cb10-98"></a></span>
+<span id="cb10-99"><a href="#cb10-99"></a><span class="fu">## D-Optimal Point Placement</span></span>
+<span id="cb10-100"><a href="#cb10-100"></a></span>
+<span id="cb10-101"><a href="#cb10-101"></a>The **D-optimal design** criterion seeks to maximize the determinant of the</span>
+<span id="cb10-102"><a href="#cb10-102"></a>information matrix $<span class="co">[</span><span class="ot">X</span><span class="co">]</span>^T<span class="co">[</span><span class="ot">X</span><span class="co">]</span>$:</span>
+<span id="cb10-103"><a href="#cb10-103"></a></span>
+<span id="cb10-104"><a href="#cb10-104"></a>$$</span>
+<span id="cb10-105"><a href="#cb10-105"></a>\text{Maximize} \quad \det<span class="sc">\!</span>\left(<span class="co">[</span><span class="ot">X(\xi)</span><span class="co">]</span>^T<span class="co">[</span><span class="ot">X(\xi)</span><span class="co">]</span>\right)</span>
+<span id="cb10-106"><a href="#cb10-106"></a>$$ {#eq-d-optimal}</span>
+<span id="cb10-107"><a href="#cb10-107"></a></span>
+<span id="cb10-108"><a href="#cb10-108"></a>This is equivalent to minimizing the volume of the confidence ellipsoid for the</span>
+<span id="cb10-109"><a href="#cb10-109"></a>regression coefficients $\hat{\boldsymbol{\beta}}$. A design with a high</span>
+<span id="cb10-110"><a href="#cb10-110"></a>$\det(<span class="co">[</span><span class="ot">X</span><span class="co">]</span>^T<span class="co">[</span><span class="ot">X</span><span class="co">]</span>)$ estimates the coefficients with minimum overall uncertainty.</span>
+<span id="cb10-111"><a href="#cb10-111"></a></span>
+<span id="cb10-112"><a href="#cb10-112"></a>D-optimal designs are generated algorithmically. The **coordinate exchange**</span>
+<span id="cb10-113"><a href="#cb10-113"></a>algorithm (Cook &amp; Nachtsheim, 1980) works as follows:</span>
 <span id="cb10-114"><a href="#cb10-114"></a></span>
-<span id="cb10-117"><a href="#cb10-117"></a><span class="in">```{julia}</span></span>
-<span id="cb10-118"><a href="#cb10-118"></a><span class="co">#| label: fig-dopt-comparison</span></span>
-<span id="cb10-119"><a href="#cb10-119"></a><span class="co">#| fig-cap: "D-optimal design (left) vs. hypersphere placement (right) for n=2 variables, 15 points. The D-optimal design emphasises the edges and corners of the design space, which is where second-order model accuracy is most critical."</span></span>
-<span id="cb10-120"><a href="#cb10-120"></a><span class="co">#| code-fold: true</span></span>
-<span id="cb10-121"><a href="#cb10-121"></a></span>
-<span id="cb10-122"><a href="#cb10-122"></a>dopt_pts <span class="op">=</span> <span class="fu">d_optimal_points</span>(<span class="fl">2</span>, <span class="fl">15</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb10-123"><a href="#cb10-123"></a>hs15_pts <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">2</span>, <span class="fl">15</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb10-124"><a href="#cb10-124"></a></span>
-<span id="cb10-125"><a href="#cb10-125"></a>p1 <span class="op">=</span> <span class="fu">scatter</span>(dopt_pts[<span class="op">:</span>,<span class="fl">1</span>], dopt_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
-<span id="cb10-126"><a href="#cb10-126"></a>             xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
-<span id="cb10-127"><a href="#cb10-127"></a>             title<span class="op">=</span><span class="st">"D-Optimal (15 pts)"</span>, markersize<span class="op">=</span><span class="fl">7</span>,</span>
-<span id="cb10-128"><a href="#cb10-128"></a>             color<span class="op">=:</span>darkorange, markerstrokecolor<span class="op">=:</span>white, legend<span class="op">=</span><span class="cn">false</span>,</span>
-<span id="cb10-129"><a href="#cb10-129"></a>             xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
-<span id="cb10-130"><a href="#cb10-130"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
-<span id="cb10-131"><a href="#cb10-131"></a></span>
-<span id="cb10-132"><a href="#cb10-132"></a>p2 <span class="op">=</span> <span class="fu">scatter</span>(hs15_pts[<span class="op">:</span>,<span class="fl">1</span>], hs15_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
-<span id="cb10-133"><a href="#cb10-133"></a>             xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
-<span id="cb10-134"><a href="#cb10-134"></a>             title<span class="op">=</span><span class="st">"Hypersphere (15 pts)"</span>, markersize<span class="op">=</span><span class="fl">7</span>,</span>
-<span id="cb10-135"><a href="#cb10-135"></a>             color<span class="op">=:</span>steelblue, markerstrokecolor<span class="op">=:</span>white, legend<span class="op">=</span><span class="cn">false</span>,</span>
-<span id="cb10-136"><a href="#cb10-136"></a>             xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
-<span id="cb10-137"><a href="#cb10-137"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
-<span id="cb10-138"><a href="#cb10-138"></a></span>
-<span id="cb10-139"><a href="#cb10-139"></a><span class="fu">plot</span>(p1, p2, size<span class="op">=</span>(<span class="fl">700</span>, <span class="fl">320</span>))</span>
-<span id="cb10-140"><a href="#cb10-140"></a><span class="in">```</span></span>
-<span id="cb10-141"><a href="#cb10-141"></a></span>
-<span id="cb10-142"><a href="#cb10-142"></a><span class="fu">### Key Features of D-Optimal Designs</span></span>
-<span id="cb10-143"><a href="#cb10-143"></a></span>
-<span id="cb10-144"><a href="#cb10-144"></a>One particularly valuable feature of the D-optimal algorithm is that the user can</span>
-<span id="cb10-145"><a href="#cb10-145"></a>specify the *exact* number of points desired (regardless of the classic design</span>
-<span id="cb10-146"><a href="#cb10-146"></a>formulas). This is critical in BLISS-RS because:</span>
+<span id="cb10-115"><a href="#cb10-115"></a><span class="ss">1. </span>Initialize with a random set of candidate points $\xi_1, \ldots, \xi_m$.</span>
+<span id="cb10-116"><a href="#cb10-116"></a><span class="ss">2. </span>For each point $\xi_i$, for each coordinate $j$:</span>
+<span id="cb10-117"><a href="#cb10-117"></a><span class="ss">   - </span>Try replacing $\xi_{i,j}$ with a new candidate value.</span>
+<span id="cb10-118"><a href="#cb10-118"></a><span class="ss">   - </span>Accept if $\det(<span class="co">[</span><span class="ot">X</span><span class="co">]</span>^T<span class="co">[</span><span class="ot">X</span><span class="co">]</span>)$ increases.</span>
+<span id="cb10-119"><a href="#cb10-119"></a><span class="ss">3. </span>Repeat until no improvement is found.</span>
+<span id="cb10-120"><a href="#cb10-120"></a></span>
+<span id="cb10-123"><a href="#cb10-123"></a><span class="in">```{julia}</span></span>
+<span id="cb10-124"><a href="#cb10-124"></a><span class="co">#| label: fig-dopt-comparison</span></span>
+<span id="cb10-125"><a href="#cb10-125"></a><span class="co">#| fig-cap: "D-optimal design (left) vs. hypersphere placement (right) for n=2 variables, 15 points. The D-optimal design emphasises the edges and corners of the design space, which is where second-order model accuracy is most critical."</span></span>
+<span id="cb10-126"><a href="#cb10-126"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb10-127"><a href="#cb10-127"></a></span>
+<span id="cb10-128"><a href="#cb10-128"></a>dopt_pts <span class="op">=</span> <span class="fu">d_optimal_points</span>(<span class="fl">2</span>, <span class="fl">15</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb10-129"><a href="#cb10-129"></a>hs15_pts <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">2</span>, <span class="fl">15</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb10-130"><a href="#cb10-130"></a></span>
+<span id="cb10-131"><a href="#cb10-131"></a>p1 <span class="op">=</span> <span class="fu">scatter</span>(dopt_pts[<span class="op">:</span>,<span class="fl">1</span>], dopt_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
+<span id="cb10-132"><a href="#cb10-132"></a>             xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
+<span id="cb10-133"><a href="#cb10-133"></a>             title<span class="op">=</span><span class="st">"D-Optimal (15 pts)"</span>, markersize<span class="op">=</span><span class="fl">7</span>,</span>
+<span id="cb10-134"><a href="#cb10-134"></a>             color<span class="op">=:</span>darkorange, markerstrokecolor<span class="op">=:</span>white, legend<span class="op">=</span><span class="cn">false</span>,</span>
+<span id="cb10-135"><a href="#cb10-135"></a>             xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
+<span id="cb10-136"><a href="#cb10-136"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb10-137"><a href="#cb10-137"></a></span>
+<span id="cb10-138"><a href="#cb10-138"></a>p2 <span class="op">=</span> <span class="fu">scatter</span>(hs15_pts[<span class="op">:</span>,<span class="fl">1</span>], hs15_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
+<span id="cb10-139"><a href="#cb10-139"></a>             xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
+<span id="cb10-140"><a href="#cb10-140"></a>             title<span class="op">=</span><span class="st">"Hypersphere (15 pts)"</span>, markersize<span class="op">=</span><span class="fl">7</span>,</span>
+<span id="cb10-141"><a href="#cb10-141"></a>             color<span class="op">=:</span>steelblue, markerstrokecolor<span class="op">=:</span>white, legend<span class="op">=</span><span class="cn">false</span>,</span>
+<span id="cb10-142"><a href="#cb10-142"></a>             xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
+<span id="cb10-143"><a href="#cb10-143"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb10-144"><a href="#cb10-144"></a></span>
+<span id="cb10-145"><a href="#cb10-145"></a><span class="fu">plot</span>(p1, p2, size<span class="op">=</span>(<span class="fl">700</span>, <span class="fl">320</span>))</span>
+<span id="cb10-146"><a href="#cb10-146"></a><span class="in">```</span></span>
 <span id="cb10-147"><a href="#cb10-147"></a></span>
-<span id="cb10-148"><a href="#cb10-148"></a><span class="ss">- </span>The minimum $N_S$ from @eq-ns-second-order can be augmented by any number of</span>
-<span id="cb10-149"><a href="#cb10-149"></a>  additional points to improve fit robustness, without the rigidity of CCD or</span>
-<span id="cb10-150"><a href="#cb10-150"></a>  Box-Behnken counts.</span>
-<span id="cb10-151"><a href="#cb10-151"></a><span class="ss">- </span>In each BLISS iteration, if a particular sample point fails to converge in its</span>
-<span id="cb10-152"><a href="#cb10-152"></a>  local BB optimization, a replacement random point can be substituted without</span>
-<span id="cb10-153"><a href="#cb10-153"></a>  invalidating the design.</span>
-<span id="cb10-154"><a href="#cb10-154"></a></span>
-<span id="cb10-157"><a href="#cb10-157"></a><span class="in">```{julia}</span></span>
-<span id="cb10-158"><a href="#cb10-158"></a><span class="co">#| label: fig-det-comparison</span></span>
-<span id="cb10-159"><a href="#cb10-159"></a><span class="co">#| fig-cap: "Log-determinant of the information matrix X'X as a function of sample size, comparing D-optimal and hypersphere placement for n=3 variables. D-optimal consistently achieves higher det(X'X), indicating better-conditioned regression."</span></span>
-<span id="cb10-160"><a href="#cb10-160"></a><span class="co">#| code-fold: true</span></span>
-<span id="cb10-161"><a href="#cb10-161"></a></span>
-<span id="cb10-162"><a href="#cb10-162"></a>n_vars <span class="op">=</span> <span class="fl">3</span></span>
-<span id="cb10-163"><a href="#cb10-163"></a>ns_min <span class="op">=</span> <span class="fu">min_rs_points</span>(n_vars)</span>
-<span id="cb10-164"><a href="#cb10-164"></a>n_pts_range <span class="op">=</span> ns_min<span class="op">:</span><span class="fl">2</span><span class="op">:</span>(ns_min <span class="op">+</span> <span class="fl">30</span>)</span>
-<span id="cb10-165"><a href="#cb10-165"></a></span>
-<span id="cb10-166"><a href="#cb10-166"></a>log_det_dopt <span class="op">=</span> <span class="dt">Float64</span>[]</span>
-<span id="cb10-167"><a href="#cb10-167"></a>log_det_hs   <span class="op">=</span> <span class="dt">Float64</span>[]</span>
-<span id="cb10-168"><a href="#cb10-168"></a></span>
-<span id="cb10-169"><a href="#cb10-169"></a><span class="cf">for</span> n_pts <span class="kw">in</span> n_pts_range</span>
-<span id="cb10-170"><a href="#cb10-170"></a>    pts_d <span class="op">=</span> <span class="fu">d_optimal_points</span>(n_vars, n_pts; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb10-171"><a href="#cb10-171"></a>    pts_h <span class="op">=</span> <span class="fu">hypersphere_points</span>(n_vars, n_pts; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb10-172"><a href="#cb10-172"></a>    X_d <span class="op">=</span> <span class="fu">rs_design_matrix</span>(pts_d);  <span class="fu">push!</span>(log_det_dopt, <span class="fu">log</span>(<span class="fu">max</span>(<span class="fu">abs</span>(<span class="fu">det</span>(X_d<span class="op">'*</span>X_d)), <span class="fl">1e-300</span>)))</span>
-<span id="cb10-173"><a href="#cb10-173"></a>    X_h <span class="op">=</span> <span class="fu">rs_design_matrix</span>(pts_h);  <span class="fu">push!</span>(log_det_hs,   <span class="fu">log</span>(<span class="fu">max</span>(<span class="fu">abs</span>(<span class="fu">det</span>(X_h<span class="op">'*</span>X_h)), <span class="fl">1e-300</span>)))</span>
-<span id="cb10-174"><a href="#cb10-174"></a><span class="cf">end</span></span>
-<span id="cb10-175"><a href="#cb10-175"></a></span>
-<span id="cb10-176"><a href="#cb10-176"></a><span class="fu">plot</span>(<span class="fu">collect</span>(n_pts_range), log_det_dopt, lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>darkorange,</span>
-<span id="cb10-177"><a href="#cb10-177"></a>     label<span class="op">=</span><span class="st">"D-Optimal"</span>,</span>
-<span id="cb10-178"><a href="#cb10-178"></a>     xlabel<span class="op">=</span><span class="st">"Sample size NS"</span>, ylabel<span class="op">=</span>L<span class="st">"\log\,\det(X^TX)"</span>,</span>
-<span id="cb10-179"><a href="#cb10-179"></a>     title<span class="op">=</span><span class="st">"Information Matrix Det. vs. Sample Size (n=3)"</span>,</span>
-<span id="cb10-180"><a href="#cb10-180"></a>     legend<span class="op">=:</span>bottomright, grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>, marker<span class="op">=:</span>circle, markersize<span class="op">=</span><span class="fl">4</span>)</span>
-<span id="cb10-181"><a href="#cb10-181"></a><span class="fu">plot!</span>(<span class="fu">collect</span>(n_pts_range), log_det_hs, lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>steelblue,</span>
-<span id="cb10-182"><a href="#cb10-182"></a>     label<span class="op">=</span><span class="st">"Hypersphere"</span>, marker<span class="op">=:</span>square, markersize<span class="op">=</span><span class="fl">4</span>)</span>
-<span id="cb10-183"><a href="#cb10-183"></a><span class="fu">vline!</span>([ns_min], color<span class="op">=:</span>black, linestyle<span class="op">=:</span>dash, lw<span class="op">=</span><span class="fl">1.2</span>, label<span class="op">=</span><span class="st">"NS_min = </span><span class="sc">$</span>ns_min<span class="st">"</span>)</span>
-<span id="cb10-184"><a href="#cb10-184"></a><span class="in">```</span></span>
-<span id="cb10-185"><a href="#cb10-185"></a></span>
-<span id="cb10-186"><a href="#cb10-186"></a><span class="fu">## Latin Hypercube Sampling</span></span>
-<span id="cb10-187"><a href="#cb10-187"></a></span>
-<span id="cb10-188"><a href="#cb10-188"></a>Altus (2002) did not evaluate **Latin Hypercube Sampling** (LHS), yet it has become</span>
-<span id="cb10-189"><a href="#cb10-189"></a>the standard first-choice DOE for deterministic computer experiments in the years</span>
-<span id="cb10-190"><a href="#cb10-190"></a>since <span class="co">[</span><span class="ot">@sacks1989design; @stein1987large</span><span class="co">]</span>.</span>
+<span id="cb10-148"><a href="#cb10-148"></a><span class="fu">### Key Features of D-Optimal Designs</span></span>
+<span id="cb10-149"><a href="#cb10-149"></a></span>
+<span id="cb10-150"><a href="#cb10-150"></a>One particularly valuable feature of the D-optimal algorithm is that the user can</span>
+<span id="cb10-151"><a href="#cb10-151"></a>specify the *exact* number of points desired (regardless of the classic design</span>
+<span id="cb10-152"><a href="#cb10-152"></a>formulas). This is critical in BLISS-RS because:</span>
+<span id="cb10-153"><a href="#cb10-153"></a></span>
+<span id="cb10-154"><a href="#cb10-154"></a><span class="ss">- </span>The minimum $N_S$ from @eq-ns-second-order can be augmented by any number of</span>
+<span id="cb10-155"><a href="#cb10-155"></a>  additional points to improve fit robustness, without the rigidity of CCD or</span>
+<span id="cb10-156"><a href="#cb10-156"></a>  Box-Behnken counts.</span>
+<span id="cb10-157"><a href="#cb10-157"></a><span class="ss">- </span>In each BLISS iteration, if a particular sample point fails to converge in its</span>
+<span id="cb10-158"><a href="#cb10-158"></a>  local BB optimization, a replacement random point can be substituted without</span>
+<span id="cb10-159"><a href="#cb10-159"></a>  invalidating the design.</span>
+<span id="cb10-160"><a href="#cb10-160"></a></span>
+<span id="cb10-163"><a href="#cb10-163"></a><span class="in">```{julia}</span></span>
+<span id="cb10-164"><a href="#cb10-164"></a><span class="co">#| label: fig-det-comparison</span></span>
+<span id="cb10-165"><a href="#cb10-165"></a><span class="co">#| fig-cap: "Log-determinant of the information matrix X'X as a function of sample size, comparing D-optimal and hypersphere placement for n=3 variables. D-optimal consistently achieves higher det(X'X), indicating better-conditioned regression."</span></span>
+<span id="cb10-166"><a href="#cb10-166"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb10-167"><a href="#cb10-167"></a></span>
+<span id="cb10-168"><a href="#cb10-168"></a>n_vars <span class="op">=</span> <span class="fl">3</span></span>
+<span id="cb10-169"><a href="#cb10-169"></a>ns_min <span class="op">=</span> <span class="fu">min_rs_points</span>(n_vars)</span>
+<span id="cb10-170"><a href="#cb10-170"></a>n_pts_range <span class="op">=</span> ns_min<span class="op">:</span><span class="fl">2</span><span class="op">:</span>(ns_min <span class="op">+</span> <span class="fl">30</span>)</span>
+<span id="cb10-171"><a href="#cb10-171"></a></span>
+<span id="cb10-172"><a href="#cb10-172"></a>log_det_dopt <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb10-173"><a href="#cb10-173"></a>log_det_hs   <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb10-174"><a href="#cb10-174"></a></span>
+<span id="cb10-175"><a href="#cb10-175"></a><span class="cf">for</span> n_pts <span class="kw">in</span> n_pts_range</span>
+<span id="cb10-176"><a href="#cb10-176"></a>    pts_d <span class="op">=</span> <span class="fu">d_optimal_points</span>(n_vars, n_pts; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb10-177"><a href="#cb10-177"></a>    pts_h <span class="op">=</span> <span class="fu">hypersphere_points</span>(n_vars, n_pts; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb10-178"><a href="#cb10-178"></a>    X_d <span class="op">=</span> <span class="fu">rs_design_matrix</span>(pts_d);  <span class="fu">push!</span>(log_det_dopt, <span class="fu">log</span>(<span class="fu">max</span>(<span class="fu">abs</span>(<span class="fu">det</span>(X_d<span class="op">'*</span>X_d)), <span class="fl">1e-300</span>)))</span>
+<span id="cb10-179"><a href="#cb10-179"></a>    X_h <span class="op">=</span> <span class="fu">rs_design_matrix</span>(pts_h);  <span class="fu">push!</span>(log_det_hs,   <span class="fu">log</span>(<span class="fu">max</span>(<span class="fu">abs</span>(<span class="fu">det</span>(X_h<span class="op">'*</span>X_h)), <span class="fl">1e-300</span>)))</span>
+<span id="cb10-180"><a href="#cb10-180"></a><span class="cf">end</span></span>
+<span id="cb10-181"><a href="#cb10-181"></a></span>
+<span id="cb10-182"><a href="#cb10-182"></a><span class="fu">plot</span>(<span class="fu">collect</span>(n_pts_range), log_det_dopt, lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>darkorange,</span>
+<span id="cb10-183"><a href="#cb10-183"></a>     label<span class="op">=</span><span class="st">"D-Optimal"</span>,</span>
+<span id="cb10-184"><a href="#cb10-184"></a>     xlabel<span class="op">=</span><span class="st">"Sample size NS"</span>, ylabel<span class="op">=</span>L<span class="st">"\log\,\det(X^TX)"</span>,</span>
+<span id="cb10-185"><a href="#cb10-185"></a>     title<span class="op">=</span><span class="st">"Information Matrix Det. vs. Sample Size (n=3)"</span>,</span>
+<span id="cb10-186"><a href="#cb10-186"></a>     legend<span class="op">=:</span>bottomright, grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>, marker<span class="op">=:</span>circle, markersize<span class="op">=</span><span class="fl">4</span>)</span>
+<span id="cb10-187"><a href="#cb10-187"></a><span class="fu">plot!</span>(<span class="fu">collect</span>(n_pts_range), log_det_hs, lw<span class="op">=</span><span class="fl">2</span>, color<span class="op">=:</span>steelblue,</span>
+<span id="cb10-188"><a href="#cb10-188"></a>     label<span class="op">=</span><span class="st">"Hypersphere"</span>, marker<span class="op">=:</span>square, markersize<span class="op">=</span><span class="fl">4</span>)</span>
+<span id="cb10-189"><a href="#cb10-189"></a><span class="fu">vline!</span>([ns_min], color<span class="op">=:</span>black, linestyle<span class="op">=:</span>dash, lw<span class="op">=</span><span class="fl">1.2</span>, label<span class="op">=</span><span class="st">"NS_min = </span><span class="sc">$</span>ns_min<span class="st">"</span>)</span>
+<span id="cb10-190"><a href="#cb10-190"></a><span class="in">```</span></span>
 <span id="cb10-191"><a href="#cb10-191"></a></span>
-<span id="cb10-192"><a href="#cb10-192"></a><span class="fu">### Motivation</span></span>
+<span id="cb10-192"><a href="#cb10-192"></a><span class="fu">## Latin Hypercube Sampling</span></span>
 <span id="cb10-193"><a href="#cb10-193"></a></span>
-<span id="cb10-194"><a href="#cb10-194"></a>The D-optimal+random hybrid used in the original BLISS-RS has a structural weakness:</span>
-<span id="cb10-195"><a href="#cb10-195"></a>when a D-optimal design point fails to converge in its local BB optimization, it is</span>
-<span id="cb10-196"><a href="#cb10-196"></a>replaced by a random fallback point. This contaminates the $\det(<span class="co">[</span><span class="ot">X</span><span class="co">]</span>^T<span class="co">[</span><span class="ot">X</span><span class="co">]</span>)$ that the</span>
-<span id="cb10-197"><a href="#cb10-197"></a>D-optimal criterion maximises, and the resulting design's statistical properties are</span>
-<span id="cb10-198"><a href="#cb10-198"></a>never quantified. In the supersonic business jet application, the structures BB</span>
-<span id="cb10-199"><a href="#cb10-199"></a>($N_X = 11$, $N_S = 78$) and aerodynamics BB ($N_X = 14$, $N_S = 120$) both</span>
-<span id="cb10-200"><a href="#cb10-200"></a>required fallback points due to structural constraint violations at certain design</span>
-<span id="cb10-201"><a href="#cb10-201"></a>points.</span>
-<span id="cb10-202"><a href="#cb10-202"></a></span>
-<span id="cb10-203"><a href="#cb10-203"></a>LHS eliminates this problem by construction.</span>
-<span id="cb10-204"><a href="#cb10-204"></a></span>
-<span id="cb10-205"><a href="#cb10-205"></a><span class="fu">### Algorithm</span></span>
-<span id="cb10-206"><a href="#cb10-206"></a></span>
-<span id="cb10-207"><a href="#cb10-207"></a>A Latin Hypercube design with $m$ points in $n$ variables divides the range $<span class="co">[</span><span class="ot">0,1</span><span class="co">]</span>$</span>
-<span id="cb10-208"><a href="#cb10-208"></a>of each variable into $m$ equal-width strata and places exactly one point per stratum</span>
-<span id="cb10-209"><a href="#cb10-209"></a>per variable. The positions within each stratum are randomised independently:</span>
+<span id="cb10-194"><a href="#cb10-194"></a>Altus (2002) did not evaluate **Latin Hypercube Sampling** (LHS), yet it has become</span>
+<span id="cb10-195"><a href="#cb10-195"></a>the standard first-choice DOE for deterministic computer experiments in the years</span>
+<span id="cb10-196"><a href="#cb10-196"></a>since <span class="co">[</span><span class="ot">@sacks1989design; @stein1987large</span><span class="co">]</span>.</span>
+<span id="cb10-197"><a href="#cb10-197"></a></span>
+<span id="cb10-198"><a href="#cb10-198"></a><span class="fu">### Motivation</span></span>
+<span id="cb10-199"><a href="#cb10-199"></a></span>
+<span id="cb10-200"><a href="#cb10-200"></a>The D-optimal+random hybrid used in the original BLISS-RS has a structural weakness:</span>
+<span id="cb10-201"><a href="#cb10-201"></a>when a D-optimal design point fails to converge in its local BB optimization, it is</span>
+<span id="cb10-202"><a href="#cb10-202"></a>replaced by a random fallback point. This contaminates the $\det(<span class="co">[</span><span class="ot">X</span><span class="co">]</span>^T<span class="co">[</span><span class="ot">X</span><span class="co">]</span>)$ that the</span>
+<span id="cb10-203"><a href="#cb10-203"></a>D-optimal criterion maximises, and the resulting design's statistical properties are</span>
+<span id="cb10-204"><a href="#cb10-204"></a>never quantified. In the supersonic business jet application, the structures BB</span>
+<span id="cb10-205"><a href="#cb10-205"></a>($N_X = 11$, $N_S = 78$) and aerodynamics BB ($N_X = 14$, $N_S = 120$) both</span>
+<span id="cb10-206"><a href="#cb10-206"></a>required fallback points due to structural constraint violations at certain design</span>
+<span id="cb10-207"><a href="#cb10-207"></a>points.</span>
+<span id="cb10-208"><a href="#cb10-208"></a></span>
+<span id="cb10-209"><a href="#cb10-209"></a>LHS eliminates this problem by construction.</span>
 <span id="cb10-210"><a href="#cb10-210"></a></span>
-<span id="cb10-211"><a href="#cb10-211"></a>$$</span>
-<span id="cb10-212"><a href="#cb10-212"></a>x_{i,j} = \frac{\pi_j(i) - u_{i,j}}{m}, \quad u_{i,j} \sim \mathcal{U}(0,1)</span>
-<span id="cb10-213"><a href="#cb10-213"></a>$$ {#eq-lhs}</span>
-<span id="cb10-214"><a href="#cb10-214"></a></span>
-<span id="cb10-215"><a href="#cb10-215"></a>where $\pi_j$ is a random permutation of $<span class="sc">\{</span>1, \ldots, m<span class="sc">\}</span>$ for dimension $j$.</span>
-<span id="cb10-216"><a href="#cb10-216"></a>This guarantees that the projection of the design onto any single axis is perfectly</span>
-<span id="cb10-217"><a href="#cb10-217"></a>uniform — no stratum is empty, none is crowded. No convergence criterion, no</span>
-<span id="cb10-218"><a href="#cb10-218"></a>fallback points, no post-hoc D-efficiency check required.</span>
-<span id="cb10-219"><a href="#cb10-219"></a></span>
-<span id="cb10-222"><a href="#cb10-222"></a><span class="in">```{julia}</span></span>
-<span id="cb10-223"><a href="#cb10-223"></a><span class="co">#| label: fig-lhs-comparison</span></span>
-<span id="cb10-224"><a href="#cb10-224"></a><span class="co">#| fig-cap: "LHS, D-optimal, and random placement for n=2, m=20. LHS distributes points uniformly along each axis (perfect marginal uniformity) while D-optimal concentrates on the boundary. For the curved BB responses in BLISS-RS, LHS provides better interior coverage."</span></span>
-<span id="cb10-225"><a href="#cb10-225"></a><span class="co">#| code-fold: true</span></span>
-<span id="cb10-226"><a href="#cb10-226"></a></span>
-<span id="cb10-227"><a href="#cb10-227"></a>lhs_pts  <span class="op">=</span> <span class="fu">lhs_points</span>(<span class="fl">2</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb10-228"><a href="#cb10-228"></a>dopt_pts <span class="op">=</span> <span class="fu">d_optimal_points</span>(<span class="fl">2</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb10-229"><a href="#cb10-229"></a>rand_pts <span class="op">=</span> <span class="fu">random_points</span>(<span class="fl">2</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb10-230"><a href="#cb10-230"></a></span>
-<span id="cb10-231"><a href="#cb10-231"></a><span class="kw">function</span> <span class="fu">grid_lines_plot!</span>(p, m)</span>
-<span id="cb10-232"><a href="#cb10-232"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="fl">0</span><span class="op">:</span>m</span>
-<span id="cb10-233"><a href="#cb10-233"></a>        v <span class="op">=</span> k <span class="op">/</span> m</span>
-<span id="cb10-234"><a href="#cb10-234"></a>        <span class="fu">hline!</span>(p, [v], color<span class="op">=:</span>gray, lw<span class="op">=</span><span class="fl">0.3</span>, alpha<span class="op">=</span><span class="fl">0.4</span>, label<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb10-235"><a href="#cb10-235"></a>        <span class="fu">vline!</span>(p, [v], color<span class="op">=:</span>gray, lw<span class="op">=</span><span class="fl">0.3</span>, alpha<span class="op">=</span><span class="fl">0.4</span>, label<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb10-236"><a href="#cb10-236"></a>    <span class="cf">end</span></span>
-<span id="cb10-237"><a href="#cb10-237"></a><span class="kw">end</span></span>
-<span id="cb10-238"><a href="#cb10-238"></a></span>
-<span id="cb10-239"><a href="#cb10-239"></a>p1 <span class="op">=</span> <span class="fu">scatter</span>(lhs_pts[<span class="op">:</span>,<span class="fl">1</span>], lhs_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
-<span id="cb10-240"><a href="#cb10-240"></a>             title<span class="op">=</span><span class="st">"LHS (20 pts)"</span>, xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
-<span id="cb10-241"><a href="#cb10-241"></a>             markersize<span class="op">=</span><span class="fl">6</span>, color<span class="op">=:</span>forestgreen, markerstrokecolor<span class="op">=:</span>white,</span>
-<span id="cb10-242"><a href="#cb10-242"></a>             legend<span class="op">=</span><span class="cn">false</span>, xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.02</span>,<span class="fl">1.02</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.02</span>,<span class="fl">1.02</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
-<span id="cb10-243"><a href="#cb10-243"></a>             grid<span class="op">=</span><span class="cn">false</span>)</span>
-<span id="cb10-244"><a href="#cb10-244"></a><span class="fu">grid_lines_plot!</span>(p1, <span class="fl">20</span>)</span>
-<span id="cb10-245"><a href="#cb10-245"></a></span>
-<span id="cb10-246"><a href="#cb10-246"></a>p2 <span class="op">=</span> <span class="fu">scatter</span>(dopt_pts[<span class="op">:</span>,<span class="fl">1</span>], dopt_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
-<span id="cb10-247"><a href="#cb10-247"></a>             title<span class="op">=</span><span class="st">"D-Optimal (20 pts)"</span>, xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
-<span id="cb10-248"><a href="#cb10-248"></a>             markersize<span class="op">=</span><span class="fl">6</span>, color<span class="op">=:</span>darkorange, markerstrokecolor<span class="op">=:</span>white,</span>
-<span id="cb10-249"><a href="#cb10-249"></a>             legend<span class="op">=</span><span class="cn">false</span>, xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.02</span>,<span class="fl">1.02</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.02</span>,<span class="fl">1.02</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
-<span id="cb10-250"><a href="#cb10-250"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb10-211"><a href="#cb10-211"></a><span class="fu">### Algorithm</span></span>
+<span id="cb10-212"><a href="#cb10-212"></a></span>
+<span id="cb10-213"><a href="#cb10-213"></a>A Latin Hypercube design with $m$ points in $n$ variables divides the range $<span class="co">[</span><span class="ot">0,1</span><span class="co">]</span>$</span>
+<span id="cb10-214"><a href="#cb10-214"></a>of each variable into $m$ equal-width strata and places exactly one point per stratum</span>
+<span id="cb10-215"><a href="#cb10-215"></a>per variable. The positions within each stratum are randomised independently:</span>
+<span id="cb10-216"><a href="#cb10-216"></a></span>
+<span id="cb10-217"><a href="#cb10-217"></a>$$</span>
+<span id="cb10-218"><a href="#cb10-218"></a>x_{i,j} = \frac{\pi_j(i) - u_{i,j}}{m}, \quad u_{i,j} \sim \mathcal{U}(0,1)</span>
+<span id="cb10-219"><a href="#cb10-219"></a>$$ {#eq-lhs}</span>
+<span id="cb10-220"><a href="#cb10-220"></a></span>
+<span id="cb10-221"><a href="#cb10-221"></a>where $\pi_j$ is a random permutation of $<span class="sc">\{</span>1, \ldots, m<span class="sc">\}</span>$ for dimension $j$.</span>
+<span id="cb10-222"><a href="#cb10-222"></a>This guarantees that the projection of the design onto any single axis is perfectly</span>
+<span id="cb10-223"><a href="#cb10-223"></a>uniform — no stratum is empty, none is crowded. No convergence criterion, no</span>
+<span id="cb10-224"><a href="#cb10-224"></a>fallback points, no post-hoc D-efficiency check required.</span>
+<span id="cb10-225"><a href="#cb10-225"></a></span>
+<span id="cb10-228"><a href="#cb10-228"></a><span class="in">```{julia}</span></span>
+<span id="cb10-229"><a href="#cb10-229"></a><span class="co">#| label: fig-lhs-comparison</span></span>
+<span id="cb10-230"><a href="#cb10-230"></a><span class="co">#| fig-cap: "LHS, D-optimal, and random placement for n=2, m=20. LHS distributes points uniformly along each axis (perfect marginal uniformity) while D-optimal concentrates on the boundary. For the curved BB responses in BLISS-RS, LHS provides better interior coverage."</span></span>
+<span id="cb10-231"><a href="#cb10-231"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb10-232"><a href="#cb10-232"></a></span>
+<span id="cb10-233"><a href="#cb10-233"></a>lhs_pts  <span class="op">=</span> <span class="fu">lhs_points</span>(<span class="fl">2</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb10-234"><a href="#cb10-234"></a>dopt_pts <span class="op">=</span> <span class="fu">d_optimal_points</span>(<span class="fl">2</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb10-235"><a href="#cb10-235"></a>rand_pts <span class="op">=</span> <span class="fu">random_points</span>(<span class="fl">2</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb10-236"><a href="#cb10-236"></a></span>
+<span id="cb10-237"><a href="#cb10-237"></a><span class="kw">function</span> <span class="fu">grid_lines_plot!</span>(p, m)</span>
+<span id="cb10-238"><a href="#cb10-238"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="fl">0</span><span class="op">:</span>m</span>
+<span id="cb10-239"><a href="#cb10-239"></a>        v <span class="op">=</span> k <span class="op">/</span> m</span>
+<span id="cb10-240"><a href="#cb10-240"></a>        <span class="fu">hline!</span>(p, [v], color<span class="op">=:</span>gray, lw<span class="op">=</span><span class="fl">0.3</span>, alpha<span class="op">=</span><span class="fl">0.4</span>, label<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb10-241"><a href="#cb10-241"></a>        <span class="fu">vline!</span>(p, [v], color<span class="op">=:</span>gray, lw<span class="op">=</span><span class="fl">0.3</span>, alpha<span class="op">=</span><span class="fl">0.4</span>, label<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb10-242"><a href="#cb10-242"></a>    <span class="cf">end</span></span>
+<span id="cb10-243"><a href="#cb10-243"></a><span class="kw">end</span></span>
+<span id="cb10-244"><a href="#cb10-244"></a></span>
+<span id="cb10-245"><a href="#cb10-245"></a>p1 <span class="op">=</span> <span class="fu">scatter</span>(lhs_pts[<span class="op">:</span>,<span class="fl">1</span>], lhs_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
+<span id="cb10-246"><a href="#cb10-246"></a>             title<span class="op">=</span><span class="st">"LHS (20 pts)"</span>, xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
+<span id="cb10-247"><a href="#cb10-247"></a>             markersize<span class="op">=</span><span class="fl">6</span>, color<span class="op">=:</span>forestgreen, markerstrokecolor<span class="op">=:</span>white,</span>
+<span id="cb10-248"><a href="#cb10-248"></a>             legend<span class="op">=</span><span class="cn">false</span>, xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.02</span>,<span class="fl">1.02</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.02</span>,<span class="fl">1.02</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
+<span id="cb10-249"><a href="#cb10-249"></a>             grid<span class="op">=</span><span class="cn">false</span>)</span>
+<span id="cb10-250"><a href="#cb10-250"></a><span class="fu">grid_lines_plot!</span>(p1, <span class="fl">20</span>)</span>
 <span id="cb10-251"><a href="#cb10-251"></a></span>
-<span id="cb10-252"><a href="#cb10-252"></a>p3 <span class="op">=</span> <span class="fu">scatter</span>(rand_pts[<span class="op">:</span>,<span class="fl">1</span>], rand_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
-<span id="cb10-253"><a href="#cb10-253"></a>             title<span class="op">=</span><span class="st">"Random (20 pts)"</span>, xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
-<span id="cb10-254"><a href="#cb10-254"></a>             markersize<span class="op">=</span><span class="fl">6</span>, color<span class="op">=:</span>crimson, markerstrokecolor<span class="op">=:</span>white,</span>
+<span id="cb10-252"><a href="#cb10-252"></a>p2 <span class="op">=</span> <span class="fu">scatter</span>(dopt_pts[<span class="op">:</span>,<span class="fl">1</span>], dopt_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
+<span id="cb10-253"><a href="#cb10-253"></a>             title<span class="op">=</span><span class="st">"D-Optimal (20 pts)"</span>, xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
+<span id="cb10-254"><a href="#cb10-254"></a>             markersize<span class="op">=</span><span class="fl">6</span>, color<span class="op">=:</span>darkorange, markerstrokecolor<span class="op">=:</span>white,</span>
 <span id="cb10-255"><a href="#cb10-255"></a>             legend<span class="op">=</span><span class="cn">false</span>, xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.02</span>,<span class="fl">1.02</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.02</span>,<span class="fl">1.02</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
 <span id="cb10-256"><a href="#cb10-256"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
 <span id="cb10-257"><a href="#cb10-257"></a></span>
-<span id="cb10-258"><a href="#cb10-258"></a><span class="fu">plot</span>(p1, p2, p3, size<span class="op">=</span>(<span class="fl">900</span>, <span class="fl">300</span>), layout<span class="op">=</span>(<span class="fl">1</span>,<span class="fl">3</span>))</span>
-<span id="cb10-259"><a href="#cb10-259"></a><span class="in">```</span></span>
-<span id="cb10-260"><a href="#cb10-260"></a></span>
-<span id="cb10-261"><a href="#cb10-261"></a>The LHS grid lines in @fig-lhs-comparison illustrate the defining property: each</span>
-<span id="cb10-262"><a href="#cb10-262"></a>row and each column of the $m \times m$ grid contains exactly one point. D-optimal</span>
-<span id="cb10-263"><a href="#cb10-263"></a>placement concentrates points near the boundary (the region of maximum leverage for</span>
-<span id="cb10-264"><a href="#cb10-264"></a>coefficient estimation) but leaves the interior sparsely sampled. Random placement</span>
-<span id="cb10-265"><a href="#cb10-265"></a>can produce both gaps and clusters by chance.</span>
+<span id="cb10-258"><a href="#cb10-258"></a>p3 <span class="op">=</span> <span class="fu">scatter</span>(rand_pts[<span class="op">:</span>,<span class="fl">1</span>], rand_pts[<span class="op">:</span>,<span class="fl">2</span>],</span>
+<span id="cb10-259"><a href="#cb10-259"></a>             title<span class="op">=</span><span class="st">"Random (20 pts)"</span>, xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>,</span>
+<span id="cb10-260"><a href="#cb10-260"></a>             markersize<span class="op">=</span><span class="fl">6</span>, color<span class="op">=:</span>crimson, markerstrokecolor<span class="op">=:</span>white,</span>
+<span id="cb10-261"><a href="#cb10-261"></a>             legend<span class="op">=</span><span class="cn">false</span>, xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.02</span>,<span class="fl">1.02</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.02</span>,<span class="fl">1.02</span>), aspect_ratio<span class="op">=</span><span class="fl">1</span>,</span>
+<span id="cb10-262"><a href="#cb10-262"></a>             grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb10-263"><a href="#cb10-263"></a></span>
+<span id="cb10-264"><a href="#cb10-264"></a><span class="fu">plot</span>(p1, p2, p3, size<span class="op">=</span>(<span class="fl">900</span>, <span class="fl">300</span>), layout<span class="op">=</span>(<span class="fl">1</span>,<span class="fl">3</span>))</span>
+<span id="cb10-265"><a href="#cb10-265"></a><span class="in">```</span></span>
 <span id="cb10-266"><a href="#cb10-266"></a></span>
-<span id="cb10-267"><a href="#cb10-267"></a><span class="fu">### Comparative Validation on the Rosenbrock Function</span></span>
-<span id="cb10-268"><a href="#cb10-268"></a></span>
-<span id="cb10-271"><a href="#cb10-271"></a><span class="in">```{julia}</span></span>
-<span id="cb10-272"><a href="#cb10-272"></a><span class="co">#| label: tbl-doe-comparison</span></span>
-<span id="cb10-273"><a href="#cb10-273"></a><span class="co">#| tbl-cap: "LOOCV RMSE for quadratic RS fits using three DOE strategies on the Rosenbrock function, averaged over 30 random seeds. LHS outperforms random placement at all dimensions. D-optimal is competitive for low dimensions but degrades at higher dimensions where boundary-emphasis is less beneficial for nonlinear interiors."</span></span>
+<span id="cb10-267"><a href="#cb10-267"></a>The LHS grid lines in @fig-lhs-comparison illustrate the defining property: each</span>
+<span id="cb10-268"><a href="#cb10-268"></a>row and each column of the $m \times m$ grid contains exactly one point. D-optimal</span>
+<span id="cb10-269"><a href="#cb10-269"></a>placement concentrates points near the boundary (the region of maximum leverage for</span>
+<span id="cb10-270"><a href="#cb10-270"></a>coefficient estimation) but leaves the interior sparsely sampled. Random placement</span>
+<span id="cb10-271"><a href="#cb10-271"></a>can produce both gaps and clusters by chance.</span>
+<span id="cb10-272"><a href="#cb10-272"></a></span>
+<span id="cb10-273"><a href="#cb10-273"></a><span class="fu">### Comparative Validation on the Rosenbrock Function</span></span>
 <span id="cb10-274"><a href="#cb10-274"></a></span>
-<span id="cb10-275"><a href="#cb10-275"></a><span class="fu">rosenbrock</span>(x) <span class="op">=</span> <span class="fu">sum</span>(<span class="fl">100</span><span class="fu">*</span>(x[i<span class="op">+</span><span class="fl">1</span>] <span class="op">-</span> x[i]<span class="op">^</span><span class="fl">2</span>)<span class="op">^</span><span class="fl">2</span> <span class="op">+</span> (x[i]<span class="op">-</span><span class="fl">1</span>)<span class="op">^</span><span class="fl">2</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(x)<span class="op">-</span><span class="fl">1</span>)</span>
-<span id="cb10-276"><a href="#cb10-276"></a></span>
-<span id="cb10-277"><a href="#cb10-277"></a><span class="kw">function</span> <span class="fu">doe_comparison</span>(n_vars, ns_extra<span class="op">=</span><span class="fl">10</span>, n_trials<span class="op">=</span><span class="fl">30</span>)</span>
-<span id="cb10-278"><a href="#cb10-278"></a>    ns <span class="op">=</span> <span class="fu">min_rs_points</span>(n_vars) <span class="op">+</span> ns_extra</span>
-<span id="cb10-279"><a href="#cb10-279"></a>    rmse_lhs  <span class="op">=</span> <span class="dt">Float64</span>[]</span>
-<span id="cb10-280"><a href="#cb10-280"></a>    rmse_dopt <span class="op">=</span> <span class="dt">Float64</span>[]</span>
-<span id="cb10-281"><a href="#cb10-281"></a>    rmse_rand <span class="op">=</span> <span class="dt">Float64</span>[]</span>
-<span id="cb10-282"><a href="#cb10-282"></a>    <span class="cf">for</span> seed <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_trials</span>
-<span id="cb10-283"><a href="#cb10-283"></a>        <span class="cf">for</span> (pts_fn, vec) <span class="kw">in</span> [(s <span class="op">-&gt;</span> <span class="fu">lhs_points</span>(n_vars, ns; seed<span class="op">=</span>s),  rmse_lhs),</span>
-<span id="cb10-284"><a href="#cb10-284"></a>                               (s <span class="op">-&gt;</span> <span class="fu">d_optimal_points</span>(n_vars, ns; seed<span class="op">=</span>s), rmse_dopt),</span>
-<span id="cb10-285"><a href="#cb10-285"></a>                               (s <span class="op">-&gt;</span> <span class="fu">random_points</span>(n_vars, ns; seed<span class="op">=</span>s), rmse_rand)]</span>
-<span id="cb10-286"><a href="#cb10-286"></a>            pts <span class="op">=</span> <span class="fu">pts_fn</span>(seed)</span>
-<span id="cb10-287"><a href="#cb10-287"></a>            pts_coded <span class="op">=</span> <span class="fl">2</span> <span class="op">.*</span> pts <span class="op">.-</span> <span class="fl">1.0</span></span>
-<span id="cb10-288"><a href="#cb10-288"></a>            y <span class="op">=</span> [<span class="fu">rosenbrock</span>(pts_coded[i,<span class="op">:</span>]) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>ns]</span>
-<span id="cb10-289"><a href="#cb10-289"></a>            <span class="fu">push!</span>(vec, <span class="fu">loocv_error</span>(pts, y).rmse)</span>
-<span id="cb10-290"><a href="#cb10-290"></a>        <span class="cf">end</span></span>
-<span id="cb10-291"><a href="#cb10-291"></a>    <span class="cf">end</span></span>
-<span id="cb10-292"><a href="#cb10-292"></a>    <span class="cf">return</span> <span class="fu">mean</span>(rmse_lhs), <span class="fu">mean</span>(rmse_dopt), <span class="fu">mean</span>(rmse_rand)</span>
-<span id="cb10-293"><a href="#cb10-293"></a><span class="cf">end</span></span>
-<span id="cb10-294"><a href="#cb10-294"></a></span>
-<span id="cb10-295"><a href="#cb10-295"></a><span class="fu">println</span>(<span class="st">"| NX | NS | LHS RMSE | D-Opt RMSE | Random RMSE | LHS vs Random |"</span>)</span>
-<span id="cb10-296"><a href="#cb10-296"></a><span class="fu">println</span>(<span class="st">"|----|-----|----------|------------|-------------|---------------|"</span>)</span>
-<span id="cb10-297"><a href="#cb10-297"></a><span class="cf">for</span> (nv, extra) <span class="kw">in</span> [(<span class="fl">2</span>,<span class="fl">10</span>), (<span class="fl">3</span>,<span class="fl">15</span>), (<span class="fl">5</span>,<span class="fl">25</span>), (<span class="fl">8</span>,<span class="fl">50</span>)]</span>
-<span id="cb10-298"><a href="#cb10-298"></a>    ns <span class="op">=</span> <span class="fu">min_rs_points</span>(nv) <span class="op">+</span> extra</span>
-<span id="cb10-299"><a href="#cb10-299"></a>    r_lhs, r_dopt, r_rand <span class="op">=</span> <span class="fu">doe_comparison</span>(nv, extra)</span>
-<span id="cb10-300"><a href="#cb10-300"></a>    improvement <span class="op">=</span> (r_rand <span class="op">-</span> r_lhs) <span class="op">/</span> r_rand <span class="op">*</span> <span class="fl">100</span></span>
-<span id="cb10-301"><a href="#cb10-301"></a>    <span class="pp">@printf</span>(<span class="st">"| %2d | %3d | %.3f | %.3f | %.3f | %+.1f%% |</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb10-302"><a href="#cb10-302"></a>            nv, ns, r_lhs, r_dopt, r_rand, improvement)</span>
-<span id="cb10-303"><a href="#cb10-303"></a><span class="cf">end</span></span>
-<span id="cb10-304"><a href="#cb10-304"></a><span class="in">```</span></span>
-<span id="cb10-305"><a href="#cb10-305"></a></span>
-<span id="cb10-306"><a href="#cb10-306"></a><span class="fu">### LHS in the BLISS-RS Loop</span></span>
-<span id="cb10-307"><a href="#cb10-307"></a></span>
-<span id="cb10-308"><a href="#cb10-308"></a>Starting from BLISS-2026, all BLISS-RS iterations use LHS for DOE point generation.</span>
-<span id="cb10-309"><a href="#cb10-309"></a>The change to the iteration loop is a one-line substitution — <span class="in">`lhs_points`</span> replaces</span>
-<span id="cb10-310"><a href="#cb10-310"></a><span class="in">`d_optimal_points`</span> — with no other algorithmic changes required. The improvement in</span>
-<span id="cb10-311"><a href="#cb10-311"></a>RS quality at each iteration is the direct consequence of better interior coverage.</span>
-<span id="cb10-312"><a href="#cb10-312"></a></span>
-<span id="cb10-313"><a href="#cb10-313"></a><span class="fu">## Coded and Natural Variables</span></span>
-<span id="cb10-314"><a href="#cb10-314"></a></span>
-<span id="cb10-315"><a href="#cb10-315"></a>DOE algorithms work in a *coded* design space where all variables are normalised to</span>
-<span id="cb10-316"><a href="#cb10-316"></a>the interval $<span class="co">[</span><span class="ot">-1, 1</span><span class="co">]</span>$ (or equivalently $<span class="co">[</span><span class="ot">0, 1</span><span class="co">]</span>$). Physical design variables, by</span>
-<span id="cb10-317"><a href="#cb10-317"></a>contrast, occupy widely different scales and units (degrees, square feet, unitless</span>
-<span id="cb10-318"><a href="#cb10-318"></a>ratios). A coordinate mapping connects the two:</span>
-<span id="cb10-319"><a href="#cb10-319"></a></span>
-<span id="cb10-320"><a href="#cb10-320"></a>$$</span>
-<span id="cb10-321"><a href="#cb10-321"></a>\xi = \frac{X - X_C}{\Delta X / 2} = \frac{2(X - X_L)}{X_U - X_L} - 1</span>
-<span id="cb10-322"><a href="#cb10-322"></a>$$ {#eq-coded-to-natural}</span>
-<span id="cb10-323"><a href="#cb10-323"></a></span>
-<span id="cb10-324"><a href="#cb10-324"></a>where $X_L$ and $X_U$ are the lower and upper bounds on the physical variable $X$,</span>
-<span id="cb10-325"><a href="#cb10-325"></a>$X_C = (X_L + X_U)/2$ is the centre, and $\xi \in <span class="co">[</span><span class="ot">-1, 1</span><span class="co">]</span>$ is the coded variable.</span>
-<span id="cb10-326"><a href="#cb10-326"></a>Conversely:</span>
-<span id="cb10-327"><a href="#cb10-327"></a></span>
-<span id="cb10-328"><a href="#cb10-328"></a>$$</span>
-<span id="cb10-329"><a href="#cb10-329"></a>X = X_L + \frac{\xi + 1}{2}(X_U - X_L)</span>
-<span id="cb10-330"><a href="#cb10-330"></a>$$ {#eq-natural-to-coded}</span>
-<span id="cb10-331"><a href="#cb10-331"></a></span>
-<span id="cb10-334"><a href="#cb10-334"></a><span class="in">```{julia}</span></span>
-<span id="cb10-335"><a href="#cb10-335"></a><span class="co"># Demonstrate the mapping for wing sweep angle (40° to 70°)</span></span>
-<span id="cb10-336"><a href="#cb10-336"></a>x_L, x_H <span class="op">=</span> <span class="fl">40.0</span>, <span class="fl">70.0</span></span>
-<span id="cb10-337"><a href="#cb10-337"></a>coded_vals   <span class="op">=</span> [<span class="op">-</span><span class="fl">1.0</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.0</span>, <span class="fl">0.5</span>, <span class="fl">1.0</span>]</span>
-<span id="cb10-338"><a href="#cb10-338"></a>natural_vals <span class="op">=</span> <span class="fu">code_to_natural</span>.(coded_vals, x_L, x_H)</span>
-<span id="cb10-339"><a href="#cb10-339"></a></span>
-<span id="cb10-340"><a href="#cb10-340"></a><span class="fu">println</span>(<span class="st">"Wing Sweep Mapping (xL=40°, xH=70°)"</span>)</span>
-<span id="cb10-341"><a href="#cb10-341"></a><span class="fu">println</span>(<span class="st">"ξ (coded)  →  Λ_w (natural, deg)"</span>)</span>
-<span id="cb10-342"><a href="#cb10-342"></a><span class="cf">for</span> (ξ, x) <span class="kw">in</span> <span class="fu">zip</span>(coded_vals, natural_vals)</span>
-<span id="cb10-343"><a href="#cb10-343"></a>    <span class="pp">@printf</span>(<span class="st">"  %+5.2f   →  %6.2f°</span><span class="sc">\n</span><span class="st">"</span>, ξ, x)</span>
-<span id="cb10-344"><a href="#cb10-344"></a><span class="cf">end</span></span>
-<span id="cb10-345"><a href="#cb10-345"></a><span class="in">```</span></span>
-<span id="cb10-346"><a href="#cb10-346"></a></span>
-<span id="cb10-347"><a href="#cb10-347"></a>In BLISS-RS, the bounds $X_L$ and $X_U$ are *adaptive* — they start as the</span>
-<span id="cb10-348"><a href="#cb10-348"></a>physical design limits and are reduced each iteration to focus the RS on a smaller,</span>
-<span id="cb10-349"><a href="#cb10-349"></a>more reliably-approximated region around the current system optimum (Chapter 6).</span>
-<span id="cb10-350"><a href="#cb10-350"></a></span>
-<span id="cb10-351"><a href="#cb10-351"></a><span class="fu">## Space-Filling Diagnostics</span></span>
+<span id="cb10-277"><a href="#cb10-277"></a><span class="in">```{julia}</span></span>
+<span id="cb10-278"><a href="#cb10-278"></a><span class="co">#| label: tbl-doe-comparison</span></span>
+<span id="cb10-279"><a href="#cb10-279"></a><span class="co">#| tbl-cap: "LOOCV RMSE for quadratic RS fits using three DOE strategies on the Rosenbrock function, averaged over 30 random seeds. LHS outperforms random placement at all dimensions. D-optimal is competitive for low dimensions but degrades at higher dimensions where boundary-emphasis is less beneficial for nonlinear interiors."</span></span>
+<span id="cb10-280"><a href="#cb10-280"></a></span>
+<span id="cb10-281"><a href="#cb10-281"></a><span class="fu">rosenbrock</span>(x) <span class="op">=</span> <span class="fu">sum</span>(<span class="fl">100</span><span class="fu">*</span>(x[i<span class="op">+</span><span class="fl">1</span>] <span class="op">-</span> x[i]<span class="op">^</span><span class="fl">2</span>)<span class="op">^</span><span class="fl">2</span> <span class="op">+</span> (x[i]<span class="op">-</span><span class="fl">1</span>)<span class="op">^</span><span class="fl">2</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(x)<span class="op">-</span><span class="fl">1</span>)</span>
+<span id="cb10-282"><a href="#cb10-282"></a></span>
+<span id="cb10-283"><a href="#cb10-283"></a><span class="kw">function</span> <span class="fu">doe_comparison</span>(n_vars, ns_extra<span class="op">=</span><span class="fl">10</span>, n_trials<span class="op">=</span><span class="fl">30</span>)</span>
+<span id="cb10-284"><a href="#cb10-284"></a>    ns <span class="op">=</span> <span class="fu">min_rs_points</span>(n_vars) <span class="op">+</span> ns_extra</span>
+<span id="cb10-285"><a href="#cb10-285"></a>    rmse_lhs  <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb10-286"><a href="#cb10-286"></a>    rmse_dopt <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb10-287"><a href="#cb10-287"></a>    rmse_rand <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb10-288"><a href="#cb10-288"></a>    <span class="cf">for</span> seed <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_trials</span>
+<span id="cb10-289"><a href="#cb10-289"></a>        <span class="cf">for</span> (pts_fn, vec) <span class="kw">in</span> [(s <span class="op">-&gt;</span> <span class="fu">lhs_points</span>(n_vars, ns; seed<span class="op">=</span>s),  rmse_lhs),</span>
+<span id="cb10-290"><a href="#cb10-290"></a>                               (s <span class="op">-&gt;</span> <span class="fu">d_optimal_points</span>(n_vars, ns; seed<span class="op">=</span>s), rmse_dopt),</span>
+<span id="cb10-291"><a href="#cb10-291"></a>                               (s <span class="op">-&gt;</span> <span class="fu">random_points</span>(n_vars, ns; seed<span class="op">=</span>s), rmse_rand)]</span>
+<span id="cb10-292"><a href="#cb10-292"></a>            pts <span class="op">=</span> <span class="fu">pts_fn</span>(seed)</span>
+<span id="cb10-293"><a href="#cb10-293"></a>            pts_coded <span class="op">=</span> <span class="fl">2</span> <span class="op">.*</span> pts <span class="op">.-</span> <span class="fl">1.0</span></span>
+<span id="cb10-294"><a href="#cb10-294"></a>            y <span class="op">=</span> [<span class="fu">rosenbrock</span>(pts_coded[i,<span class="op">:</span>]) for i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>ns]</span>
+<span id="cb10-295"><a href="#cb10-295"></a>            <span class="fu">push!</span>(vec, <span class="fu">loocv_error</span>(pts, y).rmse)</span>
+<span id="cb10-296"><a href="#cb10-296"></a>        <span class="cf">end</span></span>
+<span id="cb10-297"><a href="#cb10-297"></a>    <span class="cf">end</span></span>
+<span id="cb10-298"><a href="#cb10-298"></a>    <span class="cf">return</span> <span class="fu">mean</span>(rmse_lhs), <span class="fu">mean</span>(rmse_dopt), <span class="fu">mean</span>(rmse_rand)</span>
+<span id="cb10-299"><a href="#cb10-299"></a><span class="cf">end</span></span>
+<span id="cb10-300"><a href="#cb10-300"></a></span>
+<span id="cb10-301"><a href="#cb10-301"></a><span class="fu">println</span>(<span class="st">"| NX | NS | LHS RMSE | D-Opt RMSE | Random RMSE | LHS vs Random |"</span>)</span>
+<span id="cb10-302"><a href="#cb10-302"></a><span class="fu">println</span>(<span class="st">"|----|-----|----------|------------|-------------|---------------|"</span>)</span>
+<span id="cb10-303"><a href="#cb10-303"></a><span class="cf">for</span> (nv, extra) <span class="kw">in</span> [(<span class="fl">2</span>,<span class="fl">10</span>), (<span class="fl">3</span>,<span class="fl">15</span>), (<span class="fl">5</span>,<span class="fl">25</span>), (<span class="fl">8</span>,<span class="fl">50</span>)]</span>
+<span id="cb10-304"><a href="#cb10-304"></a>    ns <span class="op">=</span> <span class="fu">min_rs_points</span>(nv) <span class="op">+</span> extra</span>
+<span id="cb10-305"><a href="#cb10-305"></a>    r_lhs, r_dopt, r_rand <span class="op">=</span> <span class="fu">doe_comparison</span>(nv, extra)</span>
+<span id="cb10-306"><a href="#cb10-306"></a>    improvement <span class="op">=</span> (r_rand <span class="op">-</span> r_lhs) <span class="op">/</span> r_rand <span class="op">*</span> <span class="fl">100</span></span>
+<span id="cb10-307"><a href="#cb10-307"></a>    <span class="pp">@printf</span>(<span class="st">"| %2d | %3d | %.3f | %.3f | %.3f | %+.1f%% |</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb10-308"><a href="#cb10-308"></a>            nv, ns, r_lhs, r_dopt, r_rand, improvement)</span>
+<span id="cb10-309"><a href="#cb10-309"></a><span class="cf">end</span></span>
+<span id="cb10-310"><a href="#cb10-310"></a><span class="in">```</span></span>
+<span id="cb10-311"><a href="#cb10-311"></a></span>
+<span id="cb10-312"><a href="#cb10-312"></a><span class="fu">### LHS in the BLISS-RS Loop</span></span>
+<span id="cb10-313"><a href="#cb10-313"></a></span>
+<span id="cb10-314"><a href="#cb10-314"></a>Starting from BLISS-2026, all BLISS-RS iterations use LHS for DOE point generation.</span>
+<span id="cb10-315"><a href="#cb10-315"></a>The change to the iteration loop is a one-line substitution — <span class="in">`lhs_points`</span> replaces</span>
+<span id="cb10-316"><a href="#cb10-316"></a><span class="in">`d_optimal_points`</span> — with no other algorithmic changes required. The improvement in</span>
+<span id="cb10-317"><a href="#cb10-317"></a>RS quality at each iteration is the direct consequence of better interior coverage.</span>
+<span id="cb10-318"><a href="#cb10-318"></a></span>
+<span id="cb10-319"><a href="#cb10-319"></a><span class="fu">## Coded and Natural Variables</span></span>
+<span id="cb10-320"><a href="#cb10-320"></a></span>
+<span id="cb10-321"><a href="#cb10-321"></a>DOE algorithms work in a *coded* design space where all variables are normalised to</span>
+<span id="cb10-322"><a href="#cb10-322"></a>the interval $<span class="co">[</span><span class="ot">-1, 1</span><span class="co">]</span>$ (or equivalently $<span class="co">[</span><span class="ot">0, 1</span><span class="co">]</span>$). Physical design variables, by</span>
+<span id="cb10-323"><a href="#cb10-323"></a>contrast, occupy widely different scales and units (degrees, square feet, unitless</span>
+<span id="cb10-324"><a href="#cb10-324"></a>ratios). A coordinate mapping connects the two:</span>
+<span id="cb10-325"><a href="#cb10-325"></a></span>
+<span id="cb10-326"><a href="#cb10-326"></a>$$</span>
+<span id="cb10-327"><a href="#cb10-327"></a>\xi = \frac{X - X_C}{\Delta X / 2} = \frac{2(X - X_L)}{X_U - X_L} - 1</span>
+<span id="cb10-328"><a href="#cb10-328"></a>$$ {#eq-coded-to-natural}</span>
+<span id="cb10-329"><a href="#cb10-329"></a></span>
+<span id="cb10-330"><a href="#cb10-330"></a>where $X_L$ and $X_U$ are the lower and upper bounds on the physical variable $X$,</span>
+<span id="cb10-331"><a href="#cb10-331"></a>$X_C = (X_L + X_U)/2$ is the centre, and $\xi \in <span class="co">[</span><span class="ot">-1, 1</span><span class="co">]</span>$ is the coded variable.</span>
+<span id="cb10-332"><a href="#cb10-332"></a>Conversely:</span>
+<span id="cb10-333"><a href="#cb10-333"></a></span>
+<span id="cb10-334"><a href="#cb10-334"></a>$$</span>
+<span id="cb10-335"><a href="#cb10-335"></a>X = X_L + \frac{\xi + 1}{2}(X_U - X_L)</span>
+<span id="cb10-336"><a href="#cb10-336"></a>$$ {#eq-natural-to-coded}</span>
+<span id="cb10-337"><a href="#cb10-337"></a></span>
+<span id="cb10-340"><a href="#cb10-340"></a><span class="in">```{julia}</span></span>
+<span id="cb10-341"><a href="#cb10-341"></a><span class="co"># Demonstrate the mapping for wing sweep angle (40° to 70°)</span></span>
+<span id="cb10-342"><a href="#cb10-342"></a>x_L, x_H <span class="op">=</span> <span class="fl">40.0</span>, <span class="fl">70.0</span></span>
+<span id="cb10-343"><a href="#cb10-343"></a>coded_vals   <span class="op">=</span> [<span class="op">-</span><span class="fl">1.0</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.0</span>, <span class="fl">0.5</span>, <span class="fl">1.0</span>]</span>
+<span id="cb10-344"><a href="#cb10-344"></a>natural_vals <span class="op">=</span> <span class="fu">code_to_natural</span>.(coded_vals, x_L, x_H)</span>
+<span id="cb10-345"><a href="#cb10-345"></a></span>
+<span id="cb10-346"><a href="#cb10-346"></a><span class="fu">println</span>(<span class="st">"Wing Sweep Mapping (xL=40°, xH=70°)"</span>)</span>
+<span id="cb10-347"><a href="#cb10-347"></a><span class="fu">println</span>(<span class="st">"ξ (coded)  →  Λ_w (natural, deg)"</span>)</span>
+<span id="cb10-348"><a href="#cb10-348"></a><span class="cf">for</span> (ξ, x) <span class="kw">in</span> <span class="fu">zip</span>(coded_vals, natural_vals)</span>
+<span id="cb10-349"><a href="#cb10-349"></a>    <span class="pp">@printf</span>(<span class="st">"  %+5.2f   →  %6.2f°</span><span class="sc">\n</span><span class="st">"</span>, ξ, x)</span>
+<span id="cb10-350"><a href="#cb10-350"></a><span class="cf">end</span></span>
+<span id="cb10-351"><a href="#cb10-351"></a><span class="in">```</span></span>
 <span id="cb10-352"><a href="#cb10-352"></a></span>
-<span id="cb10-353"><a href="#cb10-353"></a>Two useful diagnostics for assessing point placement quality are:</span>
-<span id="cb10-354"><a href="#cb10-354"></a></span>
-<span id="cb10-355"><a href="#cb10-355"></a>**Minimum distance** ($d_{\min}$) — the smallest Euclidean distance between any pair</span>
-<span id="cb10-356"><a href="#cb10-356"></a>of sample points. A high $d_{\min}$ indicates no two points are excessively close.</span>
-<span id="cb10-357"><a href="#cb10-357"></a></span>
-<span id="cb10-358"><a href="#cb10-358"></a>**Coverage** — the maximum distance from any point in the design space to its</span>
-<span id="cb10-359"><a href="#cb10-359"></a>nearest sample point. Low coverage means the design has explored the space</span>
-<span id="cb10-360"><a href="#cb10-360"></a>thoroughly.</span>
-<span id="cb10-361"><a href="#cb10-361"></a></span>
-<span id="cb10-364"><a href="#cb10-364"></a><span class="in">```{julia}</span></span>
-<span id="cb10-365"><a href="#cb10-365"></a><span class="co">#| label: fig-space-filling</span></span>
-<span id="cb10-366"><a href="#cb10-366"></a><span class="co">#| fig-cap: "Minimum pairwise distance distribution for D-optimal vs. random placement (n=3, NS=20, 200 random trials). D-optimal designs consistently avoid clustered points, while random placement occasionally generates pathologically clustered designs."</span></span>
-<span id="cb10-367"><a href="#cb10-367"></a><span class="co">#| code-fold: true</span></span>
-<span id="cb10-368"><a href="#cb10-368"></a></span>
-<span id="cb10-369"><a href="#cb10-369"></a><span class="kw">function</span> <span class="fu">min_pairwise_dist</span>(pts<span class="op">::</span><span class="dt">Matrix{Float64}</span>)</span>
-<span id="cb10-370"><a href="#cb10-370"></a>    m <span class="op">=</span> <span class="fu">size</span>(pts, <span class="fl">1</span>)</span>
-<span id="cb10-371"><a href="#cb10-371"></a>    d_min <span class="op">=</span> <span class="cn">Inf</span></span>
-<span id="cb10-372"><a href="#cb10-372"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>m, j <span class="kw">in</span> (i<span class="op">+</span><span class="fl">1</span>)<span class="op">:</span>m</span>
-<span id="cb10-373"><a href="#cb10-373"></a>        d <span class="op">=</span> <span class="fu">norm</span>(pts[i,<span class="op">:</span>] <span class="op">-</span> pts[j,<span class="op">:</span>])</span>
-<span id="cb10-374"><a href="#cb10-374"></a>        d_min <span class="op">=</span> <span class="fu">min</span>(d_min, d)</span>
-<span id="cb10-375"><a href="#cb10-375"></a>    <span class="cf">end</span></span>
-<span id="cb10-376"><a href="#cb10-376"></a>    <span class="cf">return</span> d_min</span>
-<span id="cb10-377"><a href="#cb10-377"></a><span class="kw">end</span></span>
-<span id="cb10-378"><a href="#cb10-378"></a></span>
-<span id="cb10-379"><a href="#cb10-379"></a>n_trials <span class="op">=</span> <span class="fl">200</span></span>
-<span id="cb10-380"><a href="#cb10-380"></a>d_random  <span class="op">=</span> [<span class="fu">min_pairwise_dist</span>(<span class="fu">random_points</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span>seed)) for seed <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_trials]</span>
-<span id="cb10-381"><a href="#cb10-381"></a>d_dopt    <span class="op">=</span> [<span class="fu">min_pairwise_dist</span>(<span class="fu">d_optimal_points</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span>seed, n_iter<span class="op">=</span><span class="fl">300</span>)) for seed <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_trials]</span>
-<span id="cb10-382"><a href="#cb10-382"></a>d_lhs     <span class="op">=</span> [<span class="fu">min_pairwise_dist</span>(<span class="fu">lhs_points</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span>seed)) for seed <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_trials]</span>
-<span id="cb10-383"><a href="#cb10-383"></a></span>
-<span id="cb10-384"><a href="#cb10-384"></a><span class="fu">stephist</span>(d_random, bins<span class="op">=</span><span class="fl">20</span>, label<span class="op">=</span><span class="st">"Random"</span>, color<span class="op">=:</span>crimson, alpha<span class="op">=</span><span class="fl">0.6</span>,</span>
-<span id="cb10-385"><a href="#cb10-385"></a>         xlabel<span class="op">=</span><span class="st">"Minimum pairwise distance"</span>, ylabel<span class="op">=</span><span class="st">"Count"</span>,</span>
-<span id="cb10-386"><a href="#cb10-386"></a>         title<span class="op">=</span><span class="st">"Space-Filling Quality (n=3, NS=20, 200 trials)"</span>)</span>
-<span id="cb10-387"><a href="#cb10-387"></a><span class="fu">stephist!</span>(d_dopt, bins<span class="op">=</span><span class="fl">20</span>, label<span class="op">=</span><span class="st">"D-Optimal"</span>, color<span class="op">=:</span>steelblue, alpha<span class="op">=</span><span class="fl">0.6</span>)</span>
-<span id="cb10-388"><a href="#cb10-388"></a><span class="fu">stephist!</span>(d_lhs, bins<span class="op">=</span><span class="fl">20</span>, label<span class="op">=</span><span class="st">"LHS"</span>, color<span class="op">=:</span>forestgreen, alpha<span class="op">=</span><span class="fl">0.6</span>)</span>
-<span id="cb10-389"><a href="#cb10-389"></a><span class="in">```</span></span>
-<span id="cb10-390"><a href="#cb10-390"></a></span>
-<span id="cb10-391"><a href="#cb10-391"></a>LHS consistently achieves larger minimum pairwise distances than both random and</span>
-<span id="cb10-392"><a href="#cb10-392"></a>D-optimal placement. D-optimal concentrates points near the boundary (maximising</span>
-<span id="cb10-393"><a href="#cb10-393"></a>coefficient estimation efficiency) but at the cost of interior space-filling. For</span>
-<span id="cb10-394"><a href="#cb10-394"></a>the nonlinear BB responses in BLISS-RS — particularly the aerodynamics BB, where</span>
-<span id="cb10-395"><a href="#cb10-395"></a>the drag polar is nonlinear in wing sweep and aspect ratio — interior coverage</span>
-<span id="cb10-396"><a href="#cb10-396"></a>matters as much as boundary accuracy.</span>
+<span id="cb10-353"><a href="#cb10-353"></a>In BLISS-RS, the bounds $X_L$ and $X_U$ are *adaptive* — they start as the</span>
+<span id="cb10-354"><a href="#cb10-354"></a>physical design limits and are reduced each iteration to focus the RS on a smaller,</span>
+<span id="cb10-355"><a href="#cb10-355"></a>more reliably-approximated region around the current system optimum (Chapter 6).</span>
+<span id="cb10-356"><a href="#cb10-356"></a></span>
+<span id="cb10-357"><a href="#cb10-357"></a><span class="fu">## Space-Filling Diagnostics</span></span>
+<span id="cb10-358"><a href="#cb10-358"></a></span>
+<span id="cb10-359"><a href="#cb10-359"></a>Two useful diagnostics for assessing point placement quality are:</span>
+<span id="cb10-360"><a href="#cb10-360"></a></span>
+<span id="cb10-361"><a href="#cb10-361"></a>**Minimum distance** ($d_{\min}$) — the smallest Euclidean distance between any pair</span>
+<span id="cb10-362"><a href="#cb10-362"></a>of sample points. A high $d_{\min}$ indicates no two points are excessively close.</span>
+<span id="cb10-363"><a href="#cb10-363"></a></span>
+<span id="cb10-364"><a href="#cb10-364"></a>**Coverage** — the maximum distance from any point in the design space to its</span>
+<span id="cb10-365"><a href="#cb10-365"></a>nearest sample point. Low coverage means the design has explored the space</span>
+<span id="cb10-366"><a href="#cb10-366"></a>thoroughly.</span>
+<span id="cb10-367"><a href="#cb10-367"></a></span>
+<span id="cb10-370"><a href="#cb10-370"></a><span class="in">```{julia}</span></span>
+<span id="cb10-371"><a href="#cb10-371"></a><span class="co">#| label: fig-space-filling</span></span>
+<span id="cb10-372"><a href="#cb10-372"></a><span class="co">#| fig-cap: "Minimum pairwise distance distribution for D-optimal vs. random placement (n=3, NS=20, 200 random trials). D-optimal designs consistently avoid clustered points, while random placement occasionally generates pathologically clustered designs."</span></span>
+<span id="cb10-373"><a href="#cb10-373"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb10-374"><a href="#cb10-374"></a></span>
+<span id="cb10-375"><a href="#cb10-375"></a><span class="kw">function</span> <span class="fu">min_pairwise_dist</span>(pts<span class="op">::</span><span class="dt">Matrix{Float64}</span>)</span>
+<span id="cb10-376"><a href="#cb10-376"></a>    m <span class="op">=</span> <span class="fu">size</span>(pts, <span class="fl">1</span>)</span>
+<span id="cb10-377"><a href="#cb10-377"></a>    d_min <span class="op">=</span> <span class="cn">Inf</span></span>
+<span id="cb10-378"><a href="#cb10-378"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>m, j <span class="kw">in</span> (i<span class="op">+</span><span class="fl">1</span>)<span class="op">:</span>m</span>
+<span id="cb10-379"><a href="#cb10-379"></a>        d <span class="op">=</span> <span class="fu">norm</span>(pts[i,<span class="op">:</span>] <span class="op">-</span> pts[j,<span class="op">:</span>])</span>
+<span id="cb10-380"><a href="#cb10-380"></a>        d_min <span class="op">=</span> <span class="fu">min</span>(d_min, d)</span>
+<span id="cb10-381"><a href="#cb10-381"></a>    <span class="cf">end</span></span>
+<span id="cb10-382"><a href="#cb10-382"></a>    <span class="cf">return</span> d_min</span>
+<span id="cb10-383"><a href="#cb10-383"></a><span class="kw">end</span></span>
+<span id="cb10-384"><a href="#cb10-384"></a></span>
+<span id="cb10-385"><a href="#cb10-385"></a>n_trials <span class="op">=</span> <span class="fl">200</span></span>
+<span id="cb10-386"><a href="#cb10-386"></a>d_random  <span class="op">=</span> [<span class="fu">min_pairwise_dist</span>(<span class="fu">random_points</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span>seed)) for seed <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_trials]</span>
+<span id="cb10-387"><a href="#cb10-387"></a>d_dopt    <span class="op">=</span> [<span class="fu">min_pairwise_dist</span>(<span class="fu">d_optimal_points</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span>seed, n_iter<span class="op">=</span><span class="fl">300</span>)) for seed <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_trials]</span>
+<span id="cb10-388"><a href="#cb10-388"></a>d_lhs     <span class="op">=</span> [<span class="fu">min_pairwise_dist</span>(<span class="fu">lhs_points</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span>seed)) for seed <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>n_trials]</span>
+<span id="cb10-389"><a href="#cb10-389"></a></span>
+<span id="cb10-390"><a href="#cb10-390"></a><span class="fu">stephist</span>(d_random, bins<span class="op">=</span><span class="fl">20</span>, label<span class="op">=</span><span class="st">"Random"</span>, color<span class="op">=:</span>crimson, alpha<span class="op">=</span><span class="fl">0.6</span>,</span>
+<span id="cb10-391"><a href="#cb10-391"></a>         xlabel<span class="op">=</span><span class="st">"Minimum pairwise distance"</span>, ylabel<span class="op">=</span><span class="st">"Count"</span>,</span>
+<span id="cb10-392"><a href="#cb10-392"></a>         title<span class="op">=</span><span class="st">"Space-Filling Quality (n=3, NS=20, 200 trials)"</span>)</span>
+<span id="cb10-393"><a href="#cb10-393"></a><span class="fu">stephist!</span>(d_dopt, bins<span class="op">=</span><span class="fl">20</span>, label<span class="op">=</span><span class="st">"D-Optimal"</span>, color<span class="op">=:</span>steelblue, alpha<span class="op">=</span><span class="fl">0.6</span>)</span>
+<span id="cb10-394"><a href="#cb10-394"></a><span class="fu">stephist!</span>(d_lhs, bins<span class="op">=</span><span class="fl">20</span>, label<span class="op">=</span><span class="st">"LHS"</span>, color<span class="op">=:</span>forestgreen, alpha<span class="op">=</span><span class="fl">0.6</span>)</span>
+<span id="cb10-395"><a href="#cb10-395"></a><span class="in">```</span></span>
+<span id="cb10-396"><a href="#cb10-396"></a></span>
+<span id="cb10-397"><a href="#cb10-397"></a>LHS consistently achieves larger minimum pairwise distances than both random and</span>
+<span id="cb10-398"><a href="#cb10-398"></a>D-optimal placement. D-optimal concentrates points near the boundary (maximising</span>
+<span id="cb10-399"><a href="#cb10-399"></a>coefficient estimation efficiency) but at the cost of interior space-filling. For</span>
+<span id="cb10-400"><a href="#cb10-400"></a>the nonlinear BB responses in BLISS-RS — particularly the aerodynamics BB, where</span>
+<span id="cb10-401"><a href="#cb10-401"></a>the drag polar is nonlinear in wing sweep and aspect ratio — interior coverage</span>
+<span id="cb10-402"><a href="#cb10-402"></a>matters as much as boundary accuracy.</span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

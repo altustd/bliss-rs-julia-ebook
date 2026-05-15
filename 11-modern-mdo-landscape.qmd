@@ -220,7 +220,7 @@ $$ {#eq-nn}
 
 ```{julia}
 #| label: lst-nn-demo
-#| code-fold: false
+#| code-fold: true
 
 struct TwoLayerNet
     W1::Matrix{Float64}; b1::Vector{Float64}
@@ -453,7 +453,7 @@ computes the full gradient in one pass regardless of $n$ — critical for $n \gg
 
 ```{julia}
 #| label: lst-ad-demo
-#| code-fold: false
+#| code-fold: true
 
 using ForwardDiff
 
@@ -645,7 +645,7 @@ analytically at each step.
 
 ```{julia}
 #| label: lst-rl-bandit
-#| code-fold: false
+#| code-fold: true
 
 # Simplified 1-D Bayesian bandit: compare EI vs. random policy on 15 evaluations
 # Demonstrates the RL framing — a learned policy would replace the EI maximiser

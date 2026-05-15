@@ -29,13 +29,28 @@ on the unit sphere.
 3. **Map** from $[-1, 1]^n$ (sphere surface coordinates) to $[0, 1]^n$:
    $$\mathbf{x}_i = \frac{\hat{\mathbf{u}}_i + \mathbf{1}}{2}$$
 
-### Anti-Bunching Property
+### Anti-Bunching Property {#sec-antibunching}
 
 For large $n$, the hypercube has most of its volume concentrated in the corners.
 Uniform random points in a hypercube tend to cluster in corners, leaving the interior
 sparsely sampled. The hypersphere scheme avoids this by ensuring points lie on a
 surface of equal radial distance from the origin — a strong anti-bunching mechanism
 that produces more even coverage of the design space.
+
+The 2002 paper defines the inter-point Euclidean distance in Appendix A, Eq. A2:
+
+$$
+d(\mathbf{X}_A, \mathbf{X}_B) = \sqrt{\sum_{i=1}^{n} (X_{A_i} - X_{B_i})^2}
+$$ {#eq-euclidean-distance}
+
+::: {.callout-important title="2002 Paper Errata — Eq. A2"}
+NASA/CR-2002-211652, Appendix A, Eq. A2 omits the square on the difference term.
+The printed equation reads $\sqrt{\sum (X_{A_i} - X_{B_i})}$, which is dimensionally
+inconsistent and would not produce a proper Euclidean distance. The correct form
+is $\sqrt{\sum (X_{A_i} - X_{B_i})^2}$ as shown in @eq-euclidean-distance above.
+This is a typographical error only — the Julia implementation uses the correct formula.
+See [Appendix C](appendix-c-errata.qmd) for the full errata list.
+:::
 
 ```{julia}
 #| label: fig-sphere-3d
@@ -80,7 +95,7 @@ end
 ## Julia Implementation (Full Detail)
 
 ```{julia}
-#| code-fold: false
+#| code-fold: true
 
 function hypersphere_points_full(n::Int, m::Int; seed::Int=42) :: Matrix{Float64}
     # Step 1: n-dimensional Gaussian samples

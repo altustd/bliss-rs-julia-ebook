@@ -194,7 +194,7 @@ where $ESF$ (engine scale factor) is the ratio of required thrust to the baselin
 engine's maximum thrust. The power BB requires only system variables $h$ and $M$,
 plus drag $D$ from the aerodynamics BB.
 
-### Performance Black Box: Breguet Range Equation
+### Performance Black Box: Breguet Range Equation {#sec-breguet}
 
 The performance BB closes the loop with the **Breguet range equation** — one of
 the most fundamental relations in aircraft design:
@@ -206,6 +206,13 @@ $$ {#eq-breguet}
 where $a$ is the speed of sound at cruise altitude, $M$ is the Mach number,
 $L/D$ is the lift-to-drag ratio, and $W_i / W_f$ is the ratio of initial to
 final cruise weight (i.e., how much fuel is burned).
+
+::: {.callout-important title="2002 Paper Errata — Fig. 41 units"}
+NASA/CR-2002-211652, Fig. 41 axis labels use lowercase "nm" (nanometres) where
+"NM" (nautical miles) is intended. Range values in the 2002 paper are in nautical
+miles throughout. This ebook uses "NM" consistently.
+See [Appendix C](appendix-c-errata.qmd) for the full errata list.
+:::
 
 ```{julia}
 #| label: fig-breguet-sensitivity

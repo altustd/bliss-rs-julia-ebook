@@ -59,6 +59,12 @@ the number of points is limited only by the minimum required for the RS model â€
 unlike CCD or Box-Behnken designs, whose point counts grow as specific functions
 of $n$.
 
+::: {.callout-important title="2002 Paper Errata â€” Fig. 19 caption"}
+NASA/CR-2002-211652, Fig. 19 caption contains a typographical error: "Hypershpere"
+(missing 'e'). Not a mathematical error, but noted for completeness.
+See [Appendix C](appendix-c-errata.qmd) for the full errata list.
+:::
+
 ```{julia}
 #| label: fig-hypersphere-2d
 #| fig-cap: "Hypersphere point placement in 2D (left) vs. uniform random placement (right), both with 20 points. The hypersphere scheme distributes points more uniformly around the boundary, with fewer clustered points near the center."

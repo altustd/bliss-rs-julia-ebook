@@ -99,7 +99,7 @@ div.csl-indent {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-acf12a64177840b8d86f2d4f01b2e9fb.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-3d194f12a2c2dabb41c231d40457837f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-bb788d656281e096ec9423696c509281.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -344,6 +344,12 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Appendix B: Julia Reference — Flutter Constraint and Module Listings</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendix-c-errata.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Appendix C: Errata — NASA/CR-2002-211652</span></span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -353,7 +359,7 @@ window.Quarto = {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
+    <h2 id="toc-title">On this page</h2>
    
   <ul>
   <li><a href="#system-architecture" id="toc-system-architecture" class="nav-link active" data-scroll-target="#system-architecture"><span class="header-section-number">4.1</span> System Architecture</a></li>
@@ -364,7 +370,7 @@ window.Quarto = {
   <li><a href="#structures-black-box-elaps" id="toc-structures-black-box-elaps" class="nav-link" data-scroll-target="#structures-black-box-elaps"><span class="header-section-number">4.4.1</span> Structures Black Box (ELAPS)</a></li>
   <li><a href="#aerodynamics-black-box-awave" id="toc-aerodynamics-black-box-awave" class="nav-link" data-scroll-target="#aerodynamics-black-box-awave"><span class="header-section-number">4.4.2</span> Aerodynamics Black Box (AWAVE)</a></li>
   <li><a href="#power-black-box" id="toc-power-black-box" class="nav-link" data-scroll-target="#power-black-box"><span class="header-section-number">4.4.3</span> Power Black Box</a></li>
-  <li><a href="#performance-black-box-breguet-range-equation" id="toc-performance-black-box-breguet-range-equation" class="nav-link" data-scroll-target="#performance-black-box-breguet-range-equation"><span class="header-section-number">4.4.4</span> Performance Black Box: Breguet Range Equation</a></li>
+  <li><a href="#sec-breguet" id="toc-sec-breguet" class="nav-link" data-scroll-target="#sec-breguet"><span class="header-section-number">4.4.4</span> Performance Black Box: Breguet Range Equation</a></li>
   </ul></li>
   <li><a href="#illustrative-system-analysis" id="toc-illustrative-system-analysis" class="nav-link" data-scroll-target="#illustrative-system-analysis"><span class="header-section-number">4.5</span> Illustrative System Analysis</a></li>
   </ul>
@@ -674,13 +680,26 @@ W_E = 1200 \cdot ESF^{0.9}
 \tag{4.3}\]</span></span></p>
 <p>where <span class="math inline">\(ESF\)</span> (engine scale factor) is the ratio of required thrust to the baseline engine’s maximum thrust. The power BB requires only system variables <span class="math inline">\(h\)</span> and <span class="math inline">\(M\)</span>, plus drag <span class="math inline">\(D\)</span> from the aerodynamics BB.</p>
 </section>
-<section id="performance-black-box-breguet-range-equation" class="level3" data-number="4.4.4">
-<h3 data-number="4.4.4" class="anchored" data-anchor-id="performance-black-box-breguet-range-equation"><span class="header-section-number">4.4.4</span> Performance Black Box: Breguet Range Equation</h3>
+<section id="sec-breguet" class="level3" data-number="4.4.4">
+<h3 data-number="4.4.4" class="anchored" data-anchor-id="sec-breguet"><span class="header-section-number">4.4.4</span> Performance Black Box: Breguet Range Equation</h3>
 <p>The performance BB closes the loop with the <strong>Breguet range equation</strong> — one of the most fundamental relations in aircraft design:</p>
 <p><span id="eq-breguet"><span class="math display">\[
 R = \frac{aM}{SFC} \cdot \frac{L}{D} \cdot \ln\!\left(\frac{W_i}{W_f}\right)
 \tag{4.4}\]</span></span></p>
 <p>where <span class="math inline">\(a\)</span> is the speed of sound at cruise altitude, <span class="math inline">\(M\)</span> is the Mach number, <span class="math inline">\(L/D\)</span> is the lift-to-drag ratio, and <span class="math inline">\(W_i / W_f\)</span> is the ratio of initial to final cruise weight (i.e., how much fuel is burned).</p>
+<div class="callout callout-style-default callout-important callout-titled" title="2002 Paper Errata — Fig. 41 units">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>2002 Paper Errata — Fig. 41 units
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>NASA/CR-2002-211652, Fig. 41 axis labels use lowercase “nm” (nanometres) where “NM” (nautical miles) is intended. Range values in the 2002 paper are in nautical miles throughout. This ebook uses “NM” consistently. See <a href="./appendix-c-errata.html">Appendix C</a> for the full errata list.</p>
+</div>
+</div>
 <div id="cell-fig-breguet-sensitivity" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1460,7 +1479,7 @@ Table&nbsp;4.2: Baseline supersonic business jet analysis at the initial design 
 <span id="cb5-200"><a href="#cb5-200"></a>engine's maximum thrust. The power BB requires only system variables $h$ and $M$,</span>
 <span id="cb5-201"><a href="#cb5-201"></a>plus drag $D$ from the aerodynamics BB.</span>
 <span id="cb5-202"><a href="#cb5-202"></a></span>
-<span id="cb5-203"><a href="#cb5-203"></a><span class="fu">### Performance Black Box: Breguet Range Equation</span></span>
+<span id="cb5-203"><a href="#cb5-203"></a><span class="fu">### Performance Black Box: Breguet Range Equation {#sec-breguet}</span></span>
 <span id="cb5-204"><a href="#cb5-204"></a></span>
 <span id="cb5-205"><a href="#cb5-205"></a>The performance BB closes the loop with the **Breguet range equation** — one of</span>
 <span id="cb5-206"><a href="#cb5-206"></a>the most fundamental relations in aircraft design:</span>
@@ -1473,79 +1492,86 @@ Table&nbsp;4.2: Baseline supersonic business jet analysis at the initial design 
 <span id="cb5-213"><a href="#cb5-213"></a>$L/D$ is the lift-to-drag ratio, and $W_i / W_f$ is the ratio of initial to</span>
 <span id="cb5-214"><a href="#cb5-214"></a>final cruise weight (i.e., how much fuel is burned).</span>
 <span id="cb5-215"><a href="#cb5-215"></a></span>
-<span id="cb5-218"><a href="#cb5-218"></a><span class="in">```{julia}</span></span>
-<span id="cb5-219"><a href="#cb5-219"></a><span class="co">#| label: fig-breguet-sensitivity</span></span>
-<span id="cb5-220"><a href="#cb5-220"></a><span class="co">#| fig-cap: "Breguet range sensitivity to L/D and fuel weight fraction. High L/D and high fuel fraction both contribute significantly to range. The logarithmic fuel term rewards structural efficiency."</span></span>
-<span id="cb5-221"><a href="#cb5-221"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb5-216"><a href="#cb5-216"></a>::: {.callout-important title="2002 Paper Errata — Fig. 41 units"}</span>
+<span id="cb5-217"><a href="#cb5-217"></a>NASA/CR-2002-211652, Fig. 41 axis labels use lowercase "nm" (nanometres) where</span>
+<span id="cb5-218"><a href="#cb5-218"></a>"NM" (nautical miles) is intended. Range values in the 2002 paper are in nautical</span>
+<span id="cb5-219"><a href="#cb5-219"></a>miles throughout. This ebook uses "NM" consistently.</span>
+<span id="cb5-220"><a href="#cb5-220"></a>See <span class="co">[</span><span class="ot">Appendix C</span><span class="co">](appendix-c-errata.qmd)</span> for the full errata list.</span>
+<span id="cb5-221"><a href="#cb5-221"></a>:::</span>
 <span id="cb5-222"><a href="#cb5-222"></a></span>
-<span id="cb5-223"><a href="#cb5-223"></a><span class="im">using</span> <span class="bu">Plots</span></span>
-<span id="cb5-224"><a href="#cb5-224"></a><span class="fu">gr</span>()</span>
-<span id="cb5-225"><a href="#cb5-225"></a></span>
-<span id="cb5-226"><a href="#cb5-226"></a><span class="co"># Parametric Breguet range study</span></span>
-<span id="cb5-227"><a href="#cb5-227"></a><span class="co"># Fix: h = 50,000 ft, M = 1.8, SFC = 1.2 lb/(lbf·hr), WT = 70,000 lbf</span></span>
-<span id="cb5-228"><a href="#cb5-228"></a>h_ft <span class="op">=</span> <span class="fl">50_000.0</span></span>
-<span id="cb5-229"><a href="#cb5-229"></a>M    <span class="op">=</span> <span class="fl">1.8</span></span>
-<span id="cb5-230"><a href="#cb5-230"></a>SFC  <span class="op">=</span> <span class="fl">1.2</span>     <span class="co"># lb/(lbf·hr)</span></span>
-<span id="cb5-231"><a href="#cb5-231"></a>WT   <span class="op">=</span> <span class="fl">70_000.0</span>  <span class="co"># lbf</span></span>
+<span id="cb5-225"><a href="#cb5-225"></a><span class="in">```{julia}</span></span>
+<span id="cb5-226"><a href="#cb5-226"></a><span class="co">#| label: fig-breguet-sensitivity</span></span>
+<span id="cb5-227"><a href="#cb5-227"></a><span class="co">#| fig-cap: "Breguet range sensitivity to L/D and fuel weight fraction. High L/D and high fuel fraction both contribute significantly to range. The logarithmic fuel term rewards structural efficiency."</span></span>
+<span id="cb5-228"><a href="#cb5-228"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb5-229"><a href="#cb5-229"></a></span>
+<span id="cb5-230"><a href="#cb5-230"></a><span class="im">using</span> <span class="bu">Plots</span></span>
+<span id="cb5-231"><a href="#cb5-231"></a><span class="fu">gr</span>()</span>
 <span id="cb5-232"><a href="#cb5-232"></a></span>
-<span id="cb5-233"><a href="#cb5-233"></a>LD_range  <span class="op">=</span> <span class="fu">range</span>(<span class="fl">3.0</span>, <span class="fl">10.0</span>, length<span class="op">=</span><span class="fl">50</span>)</span>
-<span id="cb5-234"><a href="#cb5-234"></a>WF_frac   <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0.15</span>, <span class="fl">0.55</span>, length<span class="op">=</span><span class="fl">50</span>)   <span class="co"># WF/WT</span></span>
-<span id="cb5-235"><a href="#cb5-235"></a></span>
-<span id="cb5-236"><a href="#cb5-236"></a><span class="fu">range_nm</span>(LD, wf_frac) <span class="op">=</span> <span class="cf">begin</span></span>
-<span id="cb5-237"><a href="#cb5-237"></a>    _, a <span class="op">=</span> <span class="fu">std_atmosphere</span>(h_ft)</span>
-<span id="cb5-238"><a href="#cb5-238"></a>    a_kts <span class="op">=</span> a <span class="op">/</span> <span class="fl">1.68781</span></span>
-<span id="cb5-239"><a href="#cb5-239"></a>    WF <span class="op">=</span> wf_frac <span class="op">*</span> WT</span>
-<span id="cb5-240"><a href="#cb5-240"></a>    Wf <span class="op">=</span> WT <span class="op">-</span> WF</span>
-<span id="cb5-241"><a href="#cb5-241"></a>    Wf <span class="op">&lt;=</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="cf">return</span> <span class="fl">0.0</span></span>
-<span id="cb5-242"><a href="#cb5-242"></a>    (a_kts <span class="op">*</span> M <span class="op">/</span> SFC) <span class="op">*</span> LD <span class="op">*</span> <span class="fu">log</span>(WT <span class="op">/</span> Wf)</span>
-<span id="cb5-243"><a href="#cb5-243"></a><span class="cf">end</span></span>
-<span id="cb5-244"><a href="#cb5-244"></a></span>
-<span id="cb5-245"><a href="#cb5-245"></a>R_grid <span class="op">=</span> [<span class="fu">range_nm</span>(ld, wf) for wf <span class="kw">in</span> WF_frac, ld <span class="kw">in</span> LD_range]</span>
-<span id="cb5-246"><a href="#cb5-246"></a></span>
-<span id="cb5-247"><a href="#cb5-247"></a><span class="fu">contourf</span>(LD_range, WF_frac, R_grid,</span>
-<span id="cb5-248"><a href="#cb5-248"></a>         xlabel<span class="op">=</span>L<span class="st">"Lift-to-drag ratio </span><span class="sc">$</span>L<span class="st">/D</span><span class="sc">$</span><span class="st">",</span></span>
-<span id="cb5-249"><a href="#cb5-249"></a><span class="st">         </span>ylabel<span class="st">=L"</span>Fuel weight fraction <span class="op">$</span>W_F<span class="op">/</span>W_T<span class="op">$</span><span class="st">",</span></span>
-<span id="cb5-250"><a href="#cb5-250"></a>         title<span class="op">=</span><span class="st">"Breguet Range (NM), M=1.8, h=50,000 ft"</span>,</span>
-<span id="cb5-251"><a href="#cb5-251"></a>         colorbar_title<span class="op">=</span><span class="st">"Range (NM)"</span>,</span>
-<span id="cb5-252"><a href="#cb5-252"></a>         color<span class="op">=:</span>viridis, levels<span class="op">=</span><span class="fl">15</span>,</span>
-<span id="cb5-253"><a href="#cb5-253"></a>         grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.2</span>)</span>
-<span id="cb5-254"><a href="#cb5-254"></a><span class="in">```</span></span>
-<span id="cb5-255"><a href="#cb5-255"></a></span>
-<span id="cb5-256"><a href="#cb5-256"></a><span class="fu">## Illustrative System Analysis</span></span>
-<span id="cb5-257"><a href="#cb5-257"></a></span>
-<span id="cb5-258"><a href="#cb5-258"></a>The Julia implementation in <span class="in">`src/supersonic_jet.jl`</span> provides a coupled system</span>
-<span id="cb5-259"><a href="#cb5-259"></a>analysis that chains all four black boxes. The following example evaluates the</span>
-<span id="cb5-260"><a href="#cb5-260"></a>baseline design from @altus2002blissrs:</span>
-<span id="cb5-261"><a href="#cb5-261"></a></span>
-<span id="cb5-264"><a href="#cb5-264"></a><span class="in">```{julia}</span></span>
-<span id="cb5-265"><a href="#cb5-265"></a><span class="co">#| label: tbl-baseline-analysis</span></span>
-<span id="cb5-266"><a href="#cb5-266"></a><span class="co">#| tbl-cap: "Baseline supersonic business jet analysis at the initial design point from Altus (2002), Table 1."</span></span>
-<span id="cb5-267"><a href="#cb5-267"></a></span>
-<span id="cb5-268"><a href="#cb5-268"></a><span class="co"># Baseline design vector: [t_c, ARw, Λw, Sw, SHT, ARHT, λ]</span></span>
-<span id="cb5-269"><a href="#cb5-269"></a>Z_baseline <span class="op">=</span> [<span class="fl">0.075</span>, <span class="fl">4.0</span>, <span class="fl">45.0</span>, <span class="fl">400.0</span>, <span class="fl">120.0</span>, <span class="fl">4.5</span>, <span class="fl">0.2</span>]</span>
-<span id="cb5-270"><a href="#cb5-270"></a>h_cruise   <span class="op">=</span> <span class="fl">45_000.0</span>   <span class="co"># ft</span></span>
-<span id="cb5-271"><a href="#cb5-271"></a>M_cruise   <span class="op">=</span> <span class="fl">1.8</span></span>
-<span id="cb5-272"><a href="#cb5-272"></a></span>
-<span id="cb5-273"><a href="#cb5-273"></a>result <span class="op">=</span> <span class="fu">ssbj_analysis</span>(Z_baseline, h_cruise, M_cruise;</span>
-<span id="cb5-274"><a href="#cb5-274"></a>                        WF_init<span class="op">=</span><span class="fl">15_000.0</span>, WT_empty<span class="op">=</span><span class="fl">28_000.0</span>)</span>
-<span id="cb5-275"><a href="#cb5-275"></a></span>
-<span id="cb5-276"><a href="#cb5-276"></a>rows <span class="op">=</span> [</span>
-<span id="cb5-277"><a href="#cb5-277"></a>    (<span class="st">"Total weight W_T"</span>,         <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WT)),</span>
-<span id="cb5-278"><a href="#cb5-278"></a>    (<span class="st">"Fuel weight W_F"</span>,          <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WF)),</span>
-<span id="cb5-279"><a href="#cb5-279"></a>    (<span class="st">"Engine scale factor ESF"</span>,  <span class="pp">@sprintf</span>(<span class="st">"%.3f"</span>,      result.ESF)),</span>
-<span id="cb5-280"><a href="#cb5-280"></a>    (<span class="st">"Lift L"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.L)),</span>
-<span id="cb5-281"><a href="#cb5-281"></a>    (<span class="st">"Drag D"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.D)),</span>
-<span id="cb5-282"><a href="#cb5-282"></a>    (<span class="st">"Lift-to-drag ratio L/D"</span>,   <span class="pp">@sprintf</span>(<span class="st">"%.2f"</span>,      result.LD)),</span>
-<span id="cb5-283"><a href="#cb5-283"></a>    (<span class="st">"SFC"</span>,                      <span class="pp">@sprintf</span>(<span class="st">"%.3f lb/(lbf·hr)"</span>, result.SFC)),</span>
-<span id="cb5-284"><a href="#cb5-284"></a>    (<span class="st">"Range"</span>,                    <span class="pp">@sprintf</span>(<span class="st">"%.0f NM"</span>,   result.<span class="dt">Range</span>)),</span>
-<span id="cb5-285"><a href="#cb5-285"></a>]</span>
-<span id="cb5-286"><a href="#cb5-286"></a></span>
-<span id="cb5-287"><a href="#cb5-287"></a><span class="fu">println</span>(<span class="st">"| Quantity | Value |"</span>)</span>
-<span id="cb5-288"><a href="#cb5-288"></a><span class="fu">println</span>(<span class="st">"|----------|-------|"</span>)</span>
-<span id="cb5-289"><a href="#cb5-289"></a><span class="cf">for</span> (name, val) <span class="kw">in</span> rows</span>
-<span id="cb5-290"><a href="#cb5-290"></a>    <span class="fu">println</span>(<span class="st">"| </span><span class="sc">$</span>name<span class="st"> | </span><span class="sc">$</span>val<span class="st"> |"</span>)</span>
-<span id="cb5-291"><a href="#cb5-291"></a><span class="cf">end</span></span>
-<span id="cb5-292"><a href="#cb5-292"></a><span class="in">```</span></span>
+<span id="cb5-233"><a href="#cb5-233"></a><span class="co"># Parametric Breguet range study</span></span>
+<span id="cb5-234"><a href="#cb5-234"></a><span class="co"># Fix: h = 50,000 ft, M = 1.8, SFC = 1.2 lb/(lbf·hr), WT = 70,000 lbf</span></span>
+<span id="cb5-235"><a href="#cb5-235"></a>h_ft <span class="op">=</span> <span class="fl">50_000.0</span></span>
+<span id="cb5-236"><a href="#cb5-236"></a>M    <span class="op">=</span> <span class="fl">1.8</span></span>
+<span id="cb5-237"><a href="#cb5-237"></a>SFC  <span class="op">=</span> <span class="fl">1.2</span>     <span class="co"># lb/(lbf·hr)</span></span>
+<span id="cb5-238"><a href="#cb5-238"></a>WT   <span class="op">=</span> <span class="fl">70_000.0</span>  <span class="co"># lbf</span></span>
+<span id="cb5-239"><a href="#cb5-239"></a></span>
+<span id="cb5-240"><a href="#cb5-240"></a>LD_range  <span class="op">=</span> <span class="fu">range</span>(<span class="fl">3.0</span>, <span class="fl">10.0</span>, length<span class="op">=</span><span class="fl">50</span>)</span>
+<span id="cb5-241"><a href="#cb5-241"></a>WF_frac   <span class="op">=</span> <span class="fu">range</span>(<span class="fl">0.15</span>, <span class="fl">0.55</span>, length<span class="op">=</span><span class="fl">50</span>)   <span class="co"># WF/WT</span></span>
+<span id="cb5-242"><a href="#cb5-242"></a></span>
+<span id="cb5-243"><a href="#cb5-243"></a><span class="fu">range_nm</span>(LD, wf_frac) <span class="op">=</span> <span class="cf">begin</span></span>
+<span id="cb5-244"><a href="#cb5-244"></a>    _, a <span class="op">=</span> <span class="fu">std_atmosphere</span>(h_ft)</span>
+<span id="cb5-245"><a href="#cb5-245"></a>    a_kts <span class="op">=</span> a <span class="op">/</span> <span class="fl">1.68781</span></span>
+<span id="cb5-246"><a href="#cb5-246"></a>    WF <span class="op">=</span> wf_frac <span class="op">*</span> WT</span>
+<span id="cb5-247"><a href="#cb5-247"></a>    Wf <span class="op">=</span> WT <span class="op">-</span> WF</span>
+<span id="cb5-248"><a href="#cb5-248"></a>    Wf <span class="op">&lt;=</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="cf">return</span> <span class="fl">0.0</span></span>
+<span id="cb5-249"><a href="#cb5-249"></a>    (a_kts <span class="op">*</span> M <span class="op">/</span> SFC) <span class="op">*</span> LD <span class="op">*</span> <span class="fu">log</span>(WT <span class="op">/</span> Wf)</span>
+<span id="cb5-250"><a href="#cb5-250"></a><span class="cf">end</span></span>
+<span id="cb5-251"><a href="#cb5-251"></a></span>
+<span id="cb5-252"><a href="#cb5-252"></a>R_grid <span class="op">=</span> [<span class="fu">range_nm</span>(ld, wf) for wf <span class="kw">in</span> WF_frac, ld <span class="kw">in</span> LD_range]</span>
+<span id="cb5-253"><a href="#cb5-253"></a></span>
+<span id="cb5-254"><a href="#cb5-254"></a><span class="fu">contourf</span>(LD_range, WF_frac, R_grid,</span>
+<span id="cb5-255"><a href="#cb5-255"></a>         xlabel<span class="op">=</span>L<span class="st">"Lift-to-drag ratio </span><span class="sc">$</span>L<span class="st">/D</span><span class="sc">$</span><span class="st">",</span></span>
+<span id="cb5-256"><a href="#cb5-256"></a><span class="st">         </span>ylabel<span class="st">=L"</span>Fuel weight fraction <span class="op">$</span>W_F<span class="op">/</span>W_T<span class="op">$</span><span class="st">",</span></span>
+<span id="cb5-257"><a href="#cb5-257"></a>         title<span class="op">=</span><span class="st">"Breguet Range (NM), M=1.8, h=50,000 ft"</span>,</span>
+<span id="cb5-258"><a href="#cb5-258"></a>         colorbar_title<span class="op">=</span><span class="st">"Range (NM)"</span>,</span>
+<span id="cb5-259"><a href="#cb5-259"></a>         color<span class="op">=:</span>viridis, levels<span class="op">=</span><span class="fl">15</span>,</span>
+<span id="cb5-260"><a href="#cb5-260"></a>         grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb5-261"><a href="#cb5-261"></a><span class="in">```</span></span>
+<span id="cb5-262"><a href="#cb5-262"></a></span>
+<span id="cb5-263"><a href="#cb5-263"></a><span class="fu">## Illustrative System Analysis</span></span>
+<span id="cb5-264"><a href="#cb5-264"></a></span>
+<span id="cb5-265"><a href="#cb5-265"></a>The Julia implementation in <span class="in">`src/supersonic_jet.jl`</span> provides a coupled system</span>
+<span id="cb5-266"><a href="#cb5-266"></a>analysis that chains all four black boxes. The following example evaluates the</span>
+<span id="cb5-267"><a href="#cb5-267"></a>baseline design from @altus2002blissrs:</span>
+<span id="cb5-268"><a href="#cb5-268"></a></span>
+<span id="cb5-271"><a href="#cb5-271"></a><span class="in">```{julia}</span></span>
+<span id="cb5-272"><a href="#cb5-272"></a><span class="co">#| label: tbl-baseline-analysis</span></span>
+<span id="cb5-273"><a href="#cb5-273"></a><span class="co">#| tbl-cap: "Baseline supersonic business jet analysis at the initial design point from Altus (2002), Table 1."</span></span>
+<span id="cb5-274"><a href="#cb5-274"></a></span>
+<span id="cb5-275"><a href="#cb5-275"></a><span class="co"># Baseline design vector: [t_c, ARw, Λw, Sw, SHT, ARHT, λ]</span></span>
+<span id="cb5-276"><a href="#cb5-276"></a>Z_baseline <span class="op">=</span> [<span class="fl">0.075</span>, <span class="fl">4.0</span>, <span class="fl">45.0</span>, <span class="fl">400.0</span>, <span class="fl">120.0</span>, <span class="fl">4.5</span>, <span class="fl">0.2</span>]</span>
+<span id="cb5-277"><a href="#cb5-277"></a>h_cruise   <span class="op">=</span> <span class="fl">45_000.0</span>   <span class="co"># ft</span></span>
+<span id="cb5-278"><a href="#cb5-278"></a>M_cruise   <span class="op">=</span> <span class="fl">1.8</span></span>
+<span id="cb5-279"><a href="#cb5-279"></a></span>
+<span id="cb5-280"><a href="#cb5-280"></a>result <span class="op">=</span> <span class="fu">ssbj_analysis</span>(Z_baseline, h_cruise, M_cruise;</span>
+<span id="cb5-281"><a href="#cb5-281"></a>                        WF_init<span class="op">=</span><span class="fl">15_000.0</span>, WT_empty<span class="op">=</span><span class="fl">28_000.0</span>)</span>
+<span id="cb5-282"><a href="#cb5-282"></a></span>
+<span id="cb5-283"><a href="#cb5-283"></a>rows <span class="op">=</span> [</span>
+<span id="cb5-284"><a href="#cb5-284"></a>    (<span class="st">"Total weight W_T"</span>,         <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WT)),</span>
+<span id="cb5-285"><a href="#cb5-285"></a>    (<span class="st">"Fuel weight W_F"</span>,          <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.WF)),</span>
+<span id="cb5-286"><a href="#cb5-286"></a>    (<span class="st">"Engine scale factor ESF"</span>,  <span class="pp">@sprintf</span>(<span class="st">"%.3f"</span>,      result.ESF)),</span>
+<span id="cb5-287"><a href="#cb5-287"></a>    (<span class="st">"Lift L"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.L)),</span>
+<span id="cb5-288"><a href="#cb5-288"></a>    (<span class="st">"Drag D"</span>,                   <span class="pp">@sprintf</span>(<span class="st">"%.0f lbf"</span>,  result.D)),</span>
+<span id="cb5-289"><a href="#cb5-289"></a>    (<span class="st">"Lift-to-drag ratio L/D"</span>,   <span class="pp">@sprintf</span>(<span class="st">"%.2f"</span>,      result.LD)),</span>
+<span id="cb5-290"><a href="#cb5-290"></a>    (<span class="st">"SFC"</span>,                      <span class="pp">@sprintf</span>(<span class="st">"%.3f lb/(lbf·hr)"</span>, result.SFC)),</span>
+<span id="cb5-291"><a href="#cb5-291"></a>    (<span class="st">"Range"</span>,                    <span class="pp">@sprintf</span>(<span class="st">"%.0f NM"</span>,   result.<span class="dt">Range</span>)),</span>
+<span id="cb5-292"><a href="#cb5-292"></a>]</span>
+<span id="cb5-293"><a href="#cb5-293"></a></span>
+<span id="cb5-294"><a href="#cb5-294"></a><span class="fu">println</span>(<span class="st">"| Quantity | Value |"</span>)</span>
+<span id="cb5-295"><a href="#cb5-295"></a><span class="fu">println</span>(<span class="st">"|----------|-------|"</span>)</span>
+<span id="cb5-296"><a href="#cb5-296"></a><span class="cf">for</span> (name, val) <span class="kw">in</span> rows</span>
+<span id="cb5-297"><a href="#cb5-297"></a>    <span class="fu">println</span>(<span class="st">"| </span><span class="sc">$</span>name<span class="st"> | </span><span class="sc">$</span>val<span class="st"> |"</span>)</span>
+<span id="cb5-298"><a href="#cb5-298"></a><span class="cf">end</span></span>
+<span id="cb5-299"><a href="#cb5-299"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

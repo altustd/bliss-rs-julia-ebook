@@ -82,11 +82,13 @@ Two additional heuristics prevent pathological behaviour:
 
 ```{julia}
 #| label: lst-interval-demo
-#| code-fold: false
+#| code-fold: true
 
 # Demonstrate interval reduction on a 1D example
-# True function: f(x) = (x - 0.65)^2 + 0.1*sin(5x)  (optimum near x=0.65)
+# True function: f(x) = (x - 0.65)^2 + 0.1*sin(5x)
+# True minimum: x* ≈ 0.8068 (NOT 0.65 — sine term shifts optimum significantly)
 f_true(x) = (x - 0.65)^2 + 0.1 * sin(5 * x)
+x_true_opt = 0.80684301   # Newton-converged: f'(x*)=2(x-0.65)+0.5cos(5x)=0
 
 # Simulate BLISS-RS iteration: fit RS, find optimum, reduce interval
 function bliss_interval_demo(n_iter::Int=10, K::Float64=0.8)
@@ -128,8 +130,8 @@ function bliss_interval_demo(n_iter::Int=10, K::Float64=0.8)
 end
 
 x_hist, obj_hist, lo_hist, hi_hist = bliss_interval_demo(10)
-@printf("True optimum at x ≈ 0.650, f* ≈ %.5f\n", f_true(0.65))
-@printf("BLISS-RS final: x* = %.4f, f* = %.5f\n", x_hist[end], obj_hist[end])
+@printf("True optimum at x* ≈ %.5f, f* ≈ %.5f\n", x_true_opt, f_true(x_true_opt))
+@printf("BLISS-RS final:  x* = %.5f, f* = %.5f\n", x_hist[end], obj_hist[end])
 ```
 
 ```{julia}
@@ -139,7 +141,7 @@ x_hist, obj_hist, lo_hist, hi_hist = bliss_interval_demo(10)
 
 x_hist, obj_hist, lo_hist, hi_hist = bliss_interval_demo(10)
 iters = 1:10
-x_true_opt = 0.65
+x_true_opt = 0.80684301   # true minimum of f_true, not 0.65
 
 # Top plot: interval bounds vs. iteration
 p1 = plot(iters, (lo_hist .+ hi_hist) ./ 2,

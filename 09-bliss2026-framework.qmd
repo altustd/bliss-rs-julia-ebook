@@ -140,7 +140,7 @@ $$ {#eq-cholesky-inference}
 
 ```{julia}
 #| label: lst-gp-demo
-#| code-fold: false
+#| code-fold: true
 
 # Demonstrate GP fitting and prediction on the 1-D example
 rng2 = MersenneTwister(99)
@@ -346,7 +346,7 @@ outer iterations progressively refine $\mathcal{D}_k$ via the trust-region updat
 
 ```{julia}
 #| label: lst-bliss2026-demo
-#| code-fold: false
+#| code-fold: true
 
 # Quick demonstration on the 2-variable Rosenbrock function
 rosen2(Z) = -(100*(Z[2] - Z[1]^2)^2 + (Z[1]-1)^2)   # negated → maximise at (1,1)

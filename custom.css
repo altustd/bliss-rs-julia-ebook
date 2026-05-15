@@ -1,3 +1,5 @@
+/*-- scss:rules --*/
+
 /* ============================================================
    BLISS-2026 — Claude Design System
    Primary: Teal #1D9E75 | Accent: Purple #7F77DD | Highlight: Coral #D85A30
@@ -537,3 +539,17 @@ div.sourceCode .op { color: #CDD6F4; } /* operator  → text      */
 div.sourceCode .cn { color: #F38BA8; } /* constant  → red       */
 div.sourceCode .im { color: #CBA6F7; } /* import    → purple    */
 div.sourceCode .pp { color: #F5C2E7; } /* preprocessor → pink   */
+
+/* ── 2002 Paper Errata Callout ─────────────────────────────── */
+div.callout-errata {
+  border-left: 4px solid #D85A30;
+  background: #FDF0EB;
+}
+div.callout-errata .callout-title {
+  background: #D85A30;
+  color: #ffffff;
+  font-weight: 600;
+}
+div.callout-errata .callout-title-container::before {
+  content: "⚠ ";
+}

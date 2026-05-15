@@ -33,6 +33,7 @@ book:
   appendices:
     - appendix-a-hypersphere.qmd
     - appendix-b-julia-reference.qmd
+    - appendix-c-errata.qmd
 
 format:
   html:

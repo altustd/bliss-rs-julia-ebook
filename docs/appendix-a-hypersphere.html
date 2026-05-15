@@ -79,7 +79,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-acf12a64177840b8d86f2d4f01b2e9fb.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-3d194f12a2c2dabb41c231d40457837f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-bb788d656281e096ec9423696c509281.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -284,14 +284,20 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./10-srm-application.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Application to Solid Propellant Rocket Motor Design</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./11-modern-mdo-landscape.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Modern MDO Landscape</span></span></a>
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Modern MDO Landscape</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">References</span></span></a>
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">References</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -315,6 +321,12 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Appendix B: Julia Reference — Flutter Constraint and Module Listings</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendix-c-errata.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Appendix C: Errata — NASA/CR-2002-211652</span></span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -324,13 +336,13 @@ window.Quarto = {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
+    <h2 id="toc-title">On this page</h2>
    
   <ul>
   <li><a href="#algorithm-description" id="toc-algorithm-description" class="nav-link active" data-scroll-target="#algorithm-description"><span class="header-section-number">A.1</span> Algorithm Description</a>
   <ul class="collapse">
   <li><a href="#step-by-step-algorithm" id="toc-step-by-step-algorithm" class="nav-link" data-scroll-target="#step-by-step-algorithm"><span class="header-section-number">A.1.1</span> Step-by-Step Algorithm</a></li>
-  <li><a href="#anti-bunching-property" id="toc-anti-bunching-property" class="nav-link" data-scroll-target="#anti-bunching-property"><span class="header-section-number">A.1.2</span> Anti-Bunching Property</a></li>
+  <li><a href="#sec-antibunching" id="toc-sec-antibunching" class="nav-link" data-scroll-target="#sec-antibunching"><span class="header-section-number">A.1.2</span> Anti-Bunching Property</a></li>
   </ul></li>
   <li><a href="#minimum-point-count" id="toc-minimum-point-count" class="nav-link" data-scroll-target="#minimum-point-count"><span class="header-section-number">A.2</span> Minimum Point Count</a></li>
   <li><a href="#julia-implementation-full-detail" id="toc-julia-implementation-full-detail" class="nav-link" data-scroll-target="#julia-implementation-full-detail"><span class="header-section-number">A.3</span> Julia Implementation (Full Detail)</a></li>
@@ -371,9 +383,26 @@ window.Quarto = {
 <li><p><strong>Map</strong> from <span class="math inline">\([-1, 1]^n\)</span> (sphere surface coordinates) to <span class="math inline">\([0, 1]^n\)</span>: <span class="math display">\[\mathbf{x}_i = \frac{\hat{\mathbf{u}}_i + \mathbf{1}}{2}\]</span></p></li>
 </ol>
 </section>
-<section id="anti-bunching-property" class="level3" data-number="A.1.2">
-<h3 data-number="A.1.2" class="anchored" data-anchor-id="anti-bunching-property"><span class="header-section-number">A.1.2</span> Anti-Bunching Property</h3>
+<section id="sec-antibunching" class="level3" data-number="A.1.2">
+<h3 data-number="A.1.2" class="anchored" data-anchor-id="sec-antibunching"><span class="header-section-number">A.1.2</span> Anti-Bunching Property</h3>
 <p>For large <span class="math inline">\(n\)</span>, the hypercube has most of its volume concentrated in the corners. Uniform random points in a hypercube tend to cluster in corners, leaving the interior sparsely sampled. The hypersphere scheme avoids this by ensuring points lie on a surface of equal radial distance from the origin — a strong anti-bunching mechanism that produces more even coverage of the design space.</p>
+<p>The 2002 paper defines the inter-point Euclidean distance in Appendix A, Eq. A2:</p>
+<p><span id="eq-euclidean-distance"><span class="math display">\[
+d(\mathbf{X}_A, \mathbf{X}_B) = \sqrt{\sum_{i=1}^{n} (X_{A_i} - X_{B_i})^2}
+\tag{A.1}\]</span></span></p>
+<div class="callout callout-style-default callout-important callout-titled" title="2002 Paper Errata — Eq. A2">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>2002 Paper Errata — Eq. A2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>NASA/CR-2002-211652, Appendix A, Eq. A2 omits the square on the difference term. The printed equation reads <span class="math inline">\(\sqrt{\sum (X_{A_i} - X_{B_i})}\)</span>, which is dimensionally inconsistent and would not produce a proper Euclidean distance. The correct form is <span class="math inline">\(\sqrt{\sum (X_{A_i} - X_{B_i})^2}\)</span> as shown in <a href="#eq-euclidean-distance" class="quarto-xref">Equation&nbsp;<span>A.1</span></a> above. This is a typographical error only — the Julia implementation uses the correct formula. See <a href="./appendix-c-errata.html">Appendix C</a> for the full errata list.</p>
+</div>
+</div>
 <div id="cell-fig-sphere-3d" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -441,6 +470,8 @@ Figure&nbsp;A.1: Hypersphere points projected into 3D: 50 points projected from 
 <section id="julia-implementation-full-detail" class="level2" data-number="A.3">
 <h2 data-number="A.3" class="anchored" data-anchor-id="julia-implementation-full-detail"><span class="header-section-number">A.3</span> Julia Implementation (Full Detail)</h2>
 <div id="8" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">function</span> <span class="fu">hypersphere_points_full</span>(n<span class="op">::</span><span class="dt">Int</span>, m<span class="op">::</span><span class="dt">Int</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>) <span class="op">::</span><span class="dt"> Matrix{Float64}</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a>    <span class="co"># Step 1: n-dimensional Gaussian samples</span></span>
 <span id="cb4-3"><a href="#cb4-3"></a>    rng  <span class="op">=</span> <span class="fu">MersenneTwister</span>(seed)</span>
@@ -460,6 +491,7 @@ Figure&nbsp;A.1: Hypersphere points projected into 3D: 50 points projected from 
 <span id="cb4-17"><a href="#cb4-17"></a>pts_ref  <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">99</span>)</span>
 <span id="cb4-18"><a href="#cb4-18"></a>pts_full <span class="op">=</span> <span class="fu">hypersphere_points_full</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">99</span>)</span>
 <span id="cb4-19"><a href="#cb4-19"></a><span class="pp">@printf</span>(<span class="st">"Max discrepancy vs. reference: %.2e</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">maximum</span>(<span class="fu">abs</span>.(pts_ref <span class="op">.-</span> pts_full)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Max discrepancy vs. reference: 0.00e+00</code></pre>
 </div>
@@ -971,7 +1003,7 @@ Figure&nbsp;A.2: Four point placement strategies for n=2, m=15 points. The CCD i
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="./references.html" class="pagination-link" aria-label="References">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">References</span></span>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">References</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
@@ -1011,7 +1043,7 @@ Figure&nbsp;A.2: Four point placement strategies for n=2, m=15 points. The CCD i
 <span id="cb7-31"><a href="#cb7-31"></a><span class="ss">3. </span>**Map** from $<span class="co">[</span><span class="ot">-1, 1</span><span class="co">]</span>^n$ (sphere surface coordinates) to $<span class="co">[</span><span class="ot">0, 1</span><span class="co">]</span>^n$:</span>
 <span id="cb7-32"><a href="#cb7-32"></a>   $$\mathbf{x}_i = \frac{\hat{\mathbf{u}}_i + \mathbf{1}}{2}$$</span>
 <span id="cb7-33"><a href="#cb7-33"></a></span>
-<span id="cb7-34"><a href="#cb7-34"></a><span class="fu">### Anti-Bunching Property</span></span>
+<span id="cb7-34"><a href="#cb7-34"></a><span class="fu">### Anti-Bunching Property {#sec-antibunching}</span></span>
 <span id="cb7-35"><a href="#cb7-35"></a></span>
 <span id="cb7-36"><a href="#cb7-36"></a>For large $n$, the hypercube has most of its volume concentrated in the corners.</span>
 <span id="cb7-37"><a href="#cb7-37"></a>Uniform random points in a hypercube tend to cluster in corners, leaving the interior</span>
@@ -1019,108 +1051,123 @@ Figure&nbsp;A.2: Four point placement strategies for n=2, m=15 points. The CCD i
 <span id="cb7-39"><a href="#cb7-39"></a>surface of equal radial distance from the origin — a strong anti-bunching mechanism</span>
 <span id="cb7-40"><a href="#cb7-40"></a>that produces more even coverage of the design space.</span>
 <span id="cb7-41"><a href="#cb7-41"></a></span>
-<span id="cb7-44"><a href="#cb7-44"></a><span class="in">```{julia}</span></span>
-<span id="cb7-45"><a href="#cb7-45"></a><span class="co">#| label: fig-sphere-3d</span></span>
-<span id="cb7-46"><a href="#cb7-46"></a><span class="co">#| fig-cap: "Hypersphere points projected into 3D: 50 points projected from the unit sphere surface into [0,1]³. Points cover the faces of the cube more uniformly than pure random placement."</span></span>
-<span id="cb7-47"><a href="#cb7-47"></a><span class="co">#| code-fold: true</span></span>
-<span id="cb7-48"><a href="#cb7-48"></a></span>
-<span id="cb7-49"><a href="#cb7-49"></a>rng <span class="op">=</span> <span class="fu">MersenneTwister</span>(<span class="fl">42</span>)</span>
-<span id="cb7-50"><a href="#cb7-50"></a>pts_hs <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">3</span>, <span class="fl">50</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb7-51"><a href="#cb7-51"></a>pts_rn <span class="op">=</span> <span class="fu">random_points</span>(<span class="fl">3</span>, <span class="fl">50</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb7-52"><a href="#cb7-52"></a></span>
-<span id="cb7-53"><a href="#cb7-53"></a>p1 <span class="op">=</span> <span class="fu">scatter3d</span>(pts_hs[<span class="op">:</span>,<span class="fl">1</span>], pts_hs[<span class="op">:</span>,<span class="fl">2</span>], pts_hs[<span class="op">:</span>,<span class="fl">3</span>],</span>
-<span id="cb7-54"><a href="#cb7-54"></a>               xlabel<span class="op">=</span><span class="st">"x₁"</span>, ylabel<span class="op">=</span><span class="st">"x₂"</span>, zlabel<span class="op">=</span><span class="st">"x₃"</span>,</span>
-<span id="cb7-55"><a href="#cb7-55"></a>               title<span class="op">=</span><span class="st">"Hypersphere (50 pts)"</span>, markersize<span class="op">=</span><span class="fl">3</span>,</span>
-<span id="cb7-56"><a href="#cb7-56"></a>               color<span class="op">=:</span>steelblue, alpha<span class="op">=</span><span class="fl">0.7</span>, legend<span class="op">=</span><span class="cn">false</span>)</span>
-<span id="cb7-57"><a href="#cb7-57"></a></span>
-<span id="cb7-58"><a href="#cb7-58"></a>p2 <span class="op">=</span> <span class="fu">scatter3d</span>(pts_rn[<span class="op">:</span>,<span class="fl">1</span>], pts_rn[<span class="op">:</span>,<span class="fl">2</span>], pts_rn[<span class="op">:</span>,<span class="fl">3</span>],</span>
-<span id="cb7-59"><a href="#cb7-59"></a>               xlabel<span class="op">=</span><span class="st">"x₁"</span>, ylabel<span class="op">=</span><span class="st">"x₂"</span>, zlabel<span class="op">=</span><span class="st">"x₃"</span>,</span>
-<span id="cb7-60"><a href="#cb7-60"></a>               title<span class="op">=</span><span class="st">"Random (50 pts)"</span>, markersize<span class="op">=</span><span class="fl">3</span>,</span>
-<span id="cb7-61"><a href="#cb7-61"></a>               color<span class="op">=:</span>crimson, alpha<span class="op">=</span><span class="fl">0.7</span>, legend<span class="op">=</span><span class="cn">false</span>)</span>
-<span id="cb7-62"><a href="#cb7-62"></a></span>
-<span id="cb7-63"><a href="#cb7-63"></a><span class="fu">plot</span>(p1, p2, size<span class="op">=</span>(<span class="fl">800</span>, <span class="fl">380</span>))</span>
-<span id="cb7-64"><a href="#cb7-64"></a><span class="in">```</span></span>
-<span id="cb7-65"><a href="#cb7-65"></a></span>
-<span id="cb7-66"><a href="#cb7-66"></a><span class="fu">## Minimum Point Count</span></span>
+<span id="cb7-42"><a href="#cb7-42"></a>The 2002 paper defines the inter-point Euclidean distance in Appendix A, Eq. A2:</span>
+<span id="cb7-43"><a href="#cb7-43"></a></span>
+<span id="cb7-44"><a href="#cb7-44"></a>$$</span>
+<span id="cb7-45"><a href="#cb7-45"></a>d(\mathbf{X}_A, \mathbf{X}_B) = \sqrt{\sum_{i=1}^{n} (X_{A_i} - X_{B_i})^2}</span>
+<span id="cb7-46"><a href="#cb7-46"></a>$$ {#eq-euclidean-distance}</span>
+<span id="cb7-47"><a href="#cb7-47"></a></span>
+<span id="cb7-48"><a href="#cb7-48"></a>::: {.callout-important title="2002 Paper Errata — Eq. A2"}</span>
+<span id="cb7-49"><a href="#cb7-49"></a>NASA/CR-2002-211652, Appendix A, Eq. A2 omits the square on the difference term.</span>
+<span id="cb7-50"><a href="#cb7-50"></a>The printed equation reads $\sqrt{\sum (X_{A_i} - X_{B_i})}$, which is dimensionally</span>
+<span id="cb7-51"><a href="#cb7-51"></a>inconsistent and would not produce a proper Euclidean distance. The correct form</span>
+<span id="cb7-52"><a href="#cb7-52"></a>is $\sqrt{\sum (X_{A_i} - X_{B_i})^2}$ as shown in @eq-euclidean-distance above.</span>
+<span id="cb7-53"><a href="#cb7-53"></a>This is a typographical error only — the Julia implementation uses the correct formula.</span>
+<span id="cb7-54"><a href="#cb7-54"></a>See <span class="co">[</span><span class="ot">Appendix C</span><span class="co">](appendix-c-errata.qmd)</span> for the full errata list.</span>
+<span id="cb7-55"><a href="#cb7-55"></a>:::</span>
+<span id="cb7-56"><a href="#cb7-56"></a></span>
+<span id="cb7-59"><a href="#cb7-59"></a><span class="in">```{julia}</span></span>
+<span id="cb7-60"><a href="#cb7-60"></a><span class="co">#| label: fig-sphere-3d</span></span>
+<span id="cb7-61"><a href="#cb7-61"></a><span class="co">#| fig-cap: "Hypersphere points projected into 3D: 50 points projected from the unit sphere surface into [0,1]³. Points cover the faces of the cube more uniformly than pure random placement."</span></span>
+<span id="cb7-62"><a href="#cb7-62"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb7-63"><a href="#cb7-63"></a></span>
+<span id="cb7-64"><a href="#cb7-64"></a>rng <span class="op">=</span> <span class="fu">MersenneTwister</span>(<span class="fl">42</span>)</span>
+<span id="cb7-65"><a href="#cb7-65"></a>pts_hs <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">3</span>, <span class="fl">50</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb7-66"><a href="#cb7-66"></a>pts_rn <span class="op">=</span> <span class="fu">random_points</span>(<span class="fl">3</span>, <span class="fl">50</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
 <span id="cb7-67"><a href="#cb7-67"></a></span>
-<span id="cb7-68"><a href="#cb7-68"></a>A key advantage of the hypersphere scheme is that the number of points is determined</span>
-<span id="cb7-69"><a href="#cb7-69"></a>solely by the minimum required for the RS model ($N_S$ from @eq-ns-second-order),</span>
-<span id="cb7-70"><a href="#cb7-70"></a>not by the formula of any specific classical design. This gives the designer freedom</span>
-<span id="cb7-71"><a href="#cb7-71"></a>to generate exactly as many points as needed.</span>
+<span id="cb7-68"><a href="#cb7-68"></a>p1 <span class="op">=</span> <span class="fu">scatter3d</span>(pts_hs[<span class="op">:</span>,<span class="fl">1</span>], pts_hs[<span class="op">:</span>,<span class="fl">2</span>], pts_hs[<span class="op">:</span>,<span class="fl">3</span>],</span>
+<span id="cb7-69"><a href="#cb7-69"></a>               xlabel<span class="op">=</span><span class="st">"x₁"</span>, ylabel<span class="op">=</span><span class="st">"x₂"</span>, zlabel<span class="op">=</span><span class="st">"x₃"</span>,</span>
+<span id="cb7-70"><a href="#cb7-70"></a>               title<span class="op">=</span><span class="st">"Hypersphere (50 pts)"</span>, markersize<span class="op">=</span><span class="fl">3</span>,</span>
+<span id="cb7-71"><a href="#cb7-71"></a>               color<span class="op">=:</span>steelblue, alpha<span class="op">=</span><span class="fl">0.7</span>, legend<span class="op">=</span><span class="cn">false</span>)</span>
 <span id="cb7-72"><a href="#cb7-72"></a></span>
-<span id="cb7-75"><a href="#cb7-75"></a><span class="in">```{julia}</span></span>
-<span id="cb7-76"><a href="#cb7-76"></a><span class="co"># For each dimensionality, show the minimum required and a recommended augmented count</span></span>
-<span id="cb7-77"><a href="#cb7-77"></a><span class="fu">println</span>(<span class="st">"n | NS_min | Recommended (NS_min + 10%)"</span>)</span>
-<span id="cb7-78"><a href="#cb7-78"></a><span class="fu">println</span>(<span class="st">"-"</span> <span class="op">^</span> <span class="fl">42</span>)</span>
-<span id="cb7-79"><a href="#cb7-79"></a><span class="cf">for</span> n <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fl">12</span></span>
-<span id="cb7-80"><a href="#cb7-80"></a>    ns_min <span class="op">=</span> <span class="fu">min_rs_points</span>(n)</span>
-<span id="cb7-81"><a href="#cb7-81"></a>    ns_rec <span class="op">=</span> <span class="fu">ceil</span>(<span class="dt">Int</span>, <span class="fl">1.1</span> <span class="op">*</span> ns_min)</span>
-<span id="cb7-82"><a href="#cb7-82"></a>    <span class="pp">@printf</span>(<span class="st">"%2d | %6d | %25d</span><span class="sc">\n</span><span class="st">"</span>, n, ns_min, ns_rec)</span>
-<span id="cb7-83"><a href="#cb7-83"></a><span class="cf">end</span></span>
-<span id="cb7-84"><a href="#cb7-84"></a><span class="in">```</span></span>
-<span id="cb7-85"><a href="#cb7-85"></a></span>
-<span id="cb7-86"><a href="#cb7-86"></a><span class="fu">## Julia Implementation (Full Detail)</span></span>
+<span id="cb7-73"><a href="#cb7-73"></a>p2 <span class="op">=</span> <span class="fu">scatter3d</span>(pts_rn[<span class="op">:</span>,<span class="fl">1</span>], pts_rn[<span class="op">:</span>,<span class="fl">2</span>], pts_rn[<span class="op">:</span>,<span class="fl">3</span>],</span>
+<span id="cb7-74"><a href="#cb7-74"></a>               xlabel<span class="op">=</span><span class="st">"x₁"</span>, ylabel<span class="op">=</span><span class="st">"x₂"</span>, zlabel<span class="op">=</span><span class="st">"x₃"</span>,</span>
+<span id="cb7-75"><a href="#cb7-75"></a>               title<span class="op">=</span><span class="st">"Random (50 pts)"</span>, markersize<span class="op">=</span><span class="fl">3</span>,</span>
+<span id="cb7-76"><a href="#cb7-76"></a>               color<span class="op">=:</span>crimson, alpha<span class="op">=</span><span class="fl">0.7</span>, legend<span class="op">=</span><span class="cn">false</span>)</span>
+<span id="cb7-77"><a href="#cb7-77"></a></span>
+<span id="cb7-78"><a href="#cb7-78"></a><span class="fu">plot</span>(p1, p2, size<span class="op">=</span>(<span class="fl">800</span>, <span class="fl">380</span>))</span>
+<span id="cb7-79"><a href="#cb7-79"></a><span class="in">```</span></span>
+<span id="cb7-80"><a href="#cb7-80"></a></span>
+<span id="cb7-81"><a href="#cb7-81"></a><span class="fu">## Minimum Point Count</span></span>
+<span id="cb7-82"><a href="#cb7-82"></a></span>
+<span id="cb7-83"><a href="#cb7-83"></a>A key advantage of the hypersphere scheme is that the number of points is determined</span>
+<span id="cb7-84"><a href="#cb7-84"></a>solely by the minimum required for the RS model ($N_S$ from @eq-ns-second-order),</span>
+<span id="cb7-85"><a href="#cb7-85"></a>not by the formula of any specific classical design. This gives the designer freedom</span>
+<span id="cb7-86"><a href="#cb7-86"></a>to generate exactly as many points as needed.</span>
 <span id="cb7-87"><a href="#cb7-87"></a></span>
 <span id="cb7-90"><a href="#cb7-90"></a><span class="in">```{julia}</span></span>
-<span id="cb7-91"><a href="#cb7-91"></a><span class="co">#| code-fold: false</span></span>
-<span id="cb7-92"><a href="#cb7-92"></a></span>
-<span id="cb7-93"><a href="#cb7-93"></a><span class="kw">function</span> <span class="fu">hypersphere_points_full</span>(n<span class="op">::</span><span class="dt">Int</span>, m<span class="op">::</span><span class="dt">Int</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>) <span class="op">::</span><span class="dt"> Matrix{Float64}</span></span>
-<span id="cb7-94"><a href="#cb7-94"></a>    <span class="co"># Step 1: n-dimensional Gaussian samples</span></span>
-<span id="cb7-95"><a href="#cb7-95"></a>    rng  <span class="op">=</span> <span class="fu">MersenneTwister</span>(seed)</span>
-<span id="cb7-96"><a href="#cb7-96"></a>    U    <span class="op">=</span> <span class="fu">randn</span>(rng, m, n)             <span class="co"># m × n matrix of raw Gaussian samples</span></span>
-<span id="cb7-97"><a href="#cb7-97"></a></span>
-<span id="cb7-98"><a href="#cb7-98"></a>    <span class="co"># Step 2: normalise each row to unit Euclidean norm</span></span>
-<span id="cb7-99"><a href="#cb7-99"></a>    norms <span class="op">=</span> <span class="fu">sqrt</span>.(<span class="fu">sum</span>(U <span class="op">.^</span> <span class="fl">2</span>, dims<span class="op">=</span><span class="fl">2</span>))  <span class="co"># m × 1 column of norms</span></span>
-<span id="cb7-100"><a href="#cb7-100"></a>    U_hat <span class="op">=</span> U <span class="op">./</span> norms                  <span class="co"># each row now has norm = 1</span></span>
-<span id="cb7-101"><a href="#cb7-101"></a></span>
-<span id="cb7-102"><a href="#cb7-102"></a>    <span class="co"># Step 3: map from [-1,1]ⁿ to [0,1]ⁿ</span></span>
-<span id="cb7-103"><a href="#cb7-103"></a>    X <span class="op">=</span> (U_hat <span class="op">.+</span> <span class="fl">1.0</span>) <span class="op">./</span> <span class="fl">2.0</span></span>
-<span id="cb7-104"><a href="#cb7-104"></a></span>
-<span id="cb7-105"><a href="#cb7-105"></a>    <span class="cf">return</span> X</span>
-<span id="cb7-106"><a href="#cb7-106"></a><span class="kw">end</span></span>
+<span id="cb7-91"><a href="#cb7-91"></a><span class="co"># For each dimensionality, show the minimum required and a recommended augmented count</span></span>
+<span id="cb7-92"><a href="#cb7-92"></a><span class="fu">println</span>(<span class="st">"n | NS_min | Recommended (NS_min + 10%)"</span>)</span>
+<span id="cb7-93"><a href="#cb7-93"></a><span class="fu">println</span>(<span class="st">"-"</span> <span class="op">^</span> <span class="fl">42</span>)</span>
+<span id="cb7-94"><a href="#cb7-94"></a><span class="cf">for</span> n <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fl">12</span></span>
+<span id="cb7-95"><a href="#cb7-95"></a>    ns_min <span class="op">=</span> <span class="fu">min_rs_points</span>(n)</span>
+<span id="cb7-96"><a href="#cb7-96"></a>    ns_rec <span class="op">=</span> <span class="fu">ceil</span>(<span class="dt">Int</span>, <span class="fl">1.1</span> <span class="op">*</span> ns_min)</span>
+<span id="cb7-97"><a href="#cb7-97"></a>    <span class="pp">@printf</span>(<span class="st">"%2d | %6d | %25d</span><span class="sc">\n</span><span class="st">"</span>, n, ns_min, ns_rec)</span>
+<span id="cb7-98"><a href="#cb7-98"></a><span class="cf">end</span></span>
+<span id="cb7-99"><a href="#cb7-99"></a><span class="in">```</span></span>
+<span id="cb7-100"><a href="#cb7-100"></a></span>
+<span id="cb7-101"><a href="#cb7-101"></a><span class="fu">## Julia Implementation (Full Detail)</span></span>
+<span id="cb7-102"><a href="#cb7-102"></a></span>
+<span id="cb7-105"><a href="#cb7-105"></a><span class="in">```{julia}</span></span>
+<span id="cb7-106"><a href="#cb7-106"></a><span class="co">#| code-fold: true</span></span>
 <span id="cb7-107"><a href="#cb7-107"></a></span>
-<span id="cb7-108"><a href="#cb7-108"></a><span class="co"># Verify the implementation matches src/bliss_rs.jl</span></span>
-<span id="cb7-109"><a href="#cb7-109"></a>pts_ref  <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">99</span>)</span>
-<span id="cb7-110"><a href="#cb7-110"></a>pts_full <span class="op">=</span> <span class="fu">hypersphere_points_full</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">99</span>)</span>
-<span id="cb7-111"><a href="#cb7-111"></a><span class="pp">@printf</span>(<span class="st">"Max discrepancy vs. reference: %.2e</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">maximum</span>(<span class="fu">abs</span>.(pts_ref <span class="op">.-</span> pts_full)))</span>
-<span id="cb7-112"><a href="#cb7-112"></a><span class="in">```</span></span>
-<span id="cb7-113"><a href="#cb7-113"></a></span>
-<span id="cb7-114"><a href="#cb7-114"></a><span class="fu">## Comparison with Classical Designs in 2D</span></span>
-<span id="cb7-115"><a href="#cb7-115"></a></span>
-<span id="cb7-118"><a href="#cb7-118"></a><span class="in">```{julia}</span></span>
-<span id="cb7-119"><a href="#cb7-119"></a><span class="co">#| label: fig-design-comparison</span></span>
-<span id="cb7-120"><a href="#cb7-120"></a><span class="co">#| fig-cap: "Four point placement strategies for n=2, m=15 points. The CCD includes fixed axial points at ±α; Box-Behnken uses midpoints of cube edges. D-optimal adapts to the regression model; hypersphere fills the unit sphere surface."</span></span>
-<span id="cb7-121"><a href="#cb7-121"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb7-108"><a href="#cb7-108"></a><span class="kw">function</span> <span class="fu">hypersphere_points_full</span>(n<span class="op">::</span><span class="dt">Int</span>, m<span class="op">::</span><span class="dt">Int</span>; seed<span class="op">::</span><span class="dt">Int</span>=<span class="fl">42</span>) <span class="op">::</span><span class="dt"> Matrix{Float64}</span></span>
+<span id="cb7-109"><a href="#cb7-109"></a>    <span class="co"># Step 1: n-dimensional Gaussian samples</span></span>
+<span id="cb7-110"><a href="#cb7-110"></a>    rng  <span class="op">=</span> <span class="fu">MersenneTwister</span>(seed)</span>
+<span id="cb7-111"><a href="#cb7-111"></a>    U    <span class="op">=</span> <span class="fu">randn</span>(rng, m, n)             <span class="co"># m × n matrix of raw Gaussian samples</span></span>
+<span id="cb7-112"><a href="#cb7-112"></a></span>
+<span id="cb7-113"><a href="#cb7-113"></a>    <span class="co"># Step 2: normalise each row to unit Euclidean norm</span></span>
+<span id="cb7-114"><a href="#cb7-114"></a>    norms <span class="op">=</span> <span class="fu">sqrt</span>.(<span class="fu">sum</span>(U <span class="op">.^</span> <span class="fl">2</span>, dims<span class="op">=</span><span class="fl">2</span>))  <span class="co"># m × 1 column of norms</span></span>
+<span id="cb7-115"><a href="#cb7-115"></a>    U_hat <span class="op">=</span> U <span class="op">./</span> norms                  <span class="co"># each row now has norm = 1</span></span>
+<span id="cb7-116"><a href="#cb7-116"></a></span>
+<span id="cb7-117"><a href="#cb7-117"></a>    <span class="co"># Step 3: map from [-1,1]ⁿ to [0,1]ⁿ</span></span>
+<span id="cb7-118"><a href="#cb7-118"></a>    X <span class="op">=</span> (U_hat <span class="op">.+</span> <span class="fl">1.0</span>) <span class="op">./</span> <span class="fl">2.0</span></span>
+<span id="cb7-119"><a href="#cb7-119"></a></span>
+<span id="cb7-120"><a href="#cb7-120"></a>    <span class="cf">return</span> X</span>
+<span id="cb7-121"><a href="#cb7-121"></a><span class="kw">end</span></span>
 <span id="cb7-122"><a href="#cb7-122"></a></span>
-<span id="cb7-123"><a href="#cb7-123"></a><span class="co"># Central Composite Design (2 factors, α = √2 for rotatable)</span></span>
-<span id="cb7-124"><a href="#cb7-124"></a>α <span class="op">=</span> <span class="fu">sqrt</span>(<span class="fl">2.0</span>)</span>
-<span id="cb7-125"><a href="#cb7-125"></a>cube_pts <span class="op">=</span> [[<span class="op">-</span><span class="fl">1</span>,<span class="op">-</span><span class="fl">1</span>],[<span class="fl">1</span>,<span class="op">-</span><span class="fl">1</span>],[<span class="op">-</span><span class="fl">1</span>,<span class="fl">1</span>],[<span class="fl">1</span>,<span class="fl">1</span>]]</span>
-<span id="cb7-126"><a href="#cb7-126"></a>axial_pts <span class="op">=</span> [[<span class="op">-</span>α,<span class="fl">0</span>],[α,<span class="fl">0</span>],[<span class="fl">0</span>,<span class="op">-</span>α],[<span class="fl">0</span>,α]]</span>
-<span id="cb7-127"><a href="#cb7-127"></a>center_pt <span class="op">=</span> [[<span class="fl">0.0</span>,<span class="fl">0.0</span>],[<span class="fl">0</span>,<span class="fl">0</span>],[<span class="fl">0</span>,<span class="fl">0</span>]]</span>
-<span id="cb7-128"><a href="#cb7-128"></a>ccd_pts <span class="op">=</span> <span class="fu">vcat</span>(cube_pts, axial_pts, center_pt)</span>
-<span id="cb7-129"><a href="#cb7-129"></a>ccd_mat <span class="op">=</span> <span class="fu">hcat</span>([[p[<span class="fl">1</span>] for p <span class="kw">in</span> ccd_pts], [p[<span class="fl">2</span>] for p <span class="kw">in</span> ccd_pts]]<span class="op">...</span>)<span class="ch">'</span></span>
-<span id="cb7-130"><a href="#cb7-130"></a>ccd_mat <span class="op">=</span> (ccd_mat <span class="op">.+</span> α) <span class="op">./</span> (<span class="fl">2</span>α)   <span class="co"># scale to [0,1]</span></span>
-<span id="cb7-131"><a href="#cb7-131"></a></span>
-<span id="cb7-132"><a href="#cb7-132"></a><span class="co"># Other designs</span></span>
-<span id="cb7-133"><a href="#cb7-133"></a>hs_pts   <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">2</span>, <span class="fl">15</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb7-134"><a href="#cb7-134"></a>dopt_pts <span class="op">=</span> <span class="fu">d_optimal_points</span>(<span class="fl">2</span>, <span class="fl">15</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb7-135"><a href="#cb7-135"></a>rnd_pts  <span class="op">=</span> <span class="fu">random_points</span>(<span class="fl">2</span>, <span class="fl">15</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
-<span id="cb7-136"><a href="#cb7-136"></a></span>
-<span id="cb7-137"><a href="#cb7-137"></a>scatter_kw <span class="op">=</span> (xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>,<span class="fl">1.05</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>,<span class="fl">1.05</span>),</span>
-<span id="cb7-138"><a href="#cb7-138"></a>              aspect_ratio<span class="op">=</span><span class="fl">1</span>, legend<span class="op">=</span><span class="cn">false</span>, grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>,</span>
-<span id="cb7-139"><a href="#cb7-139"></a>              xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>)</span>
-<span id="cb7-140"><a href="#cb7-140"></a></span>
-<span id="cb7-141"><a href="#cb7-141"></a>p1 <span class="op">=</span> <span class="fu">scatter</span>(ccd_mat[<span class="op">:</span>,<span class="fl">1</span>], ccd_mat[<span class="op">:</span>,<span class="fl">2</span>]; title<span class="op">=</span><span class="st">"CCD (11 pts)"</span>,</span>
-<span id="cb7-142"><a href="#cb7-142"></a>             markersize<span class="op">=</span><span class="fl">7</span>, color<span class="op">=:</span>darkorange, markerstrokecolor<span class="op">=:</span>white, scatter_kw<span class="op">...</span>)</span>
-<span id="cb7-143"><a href="#cb7-143"></a>p2 <span class="op">=</span> <span class="fu">scatter</span>(hs_pts[<span class="op">:</span>,<span class="fl">1</span>], hs_pts[<span class="op">:</span>,<span class="fl">2</span>]; title<span class="op">=</span><span class="st">"Hypersphere (15 pts)"</span>,</span>
-<span id="cb7-144"><a href="#cb7-144"></a>             markersize<span class="op">=</span><span class="fl">7</span>, color<span class="op">=:</span>steelblue, markerstrokecolor<span class="op">=:</span>white, scatter_kw<span class="op">...</span>)</span>
-<span id="cb7-145"><a href="#cb7-145"></a>p3 <span class="op">=</span> <span class="fu">scatter</span>(dopt_pts[<span class="op">:</span>,<span class="fl">1</span>], dopt_pts[<span class="op">:</span>,<span class="fl">2</span>]; title<span class="op">=</span><span class="st">"D-Optimal (15 pts)"</span>,</span>
-<span id="cb7-146"><a href="#cb7-146"></a>             markersize<span class="op">=</span><span class="fl">7</span>, color<span class="op">=:</span>forestgreen, markerstrokecolor<span class="op">=:</span>white, scatter_kw<span class="op">...</span>)</span>
-<span id="cb7-147"><a href="#cb7-147"></a>p4 <span class="op">=</span> <span class="fu">scatter</span>(rnd_pts[<span class="op">:</span>,<span class="fl">1</span>], rnd_pts[<span class="op">:</span>,<span class="fl">2</span>]; title<span class="op">=</span><span class="st">"Random (15 pts)"</span>,</span>
-<span id="cb7-148"><a href="#cb7-148"></a>             markersize<span class="op">=</span><span class="fl">7</span>, color<span class="op">=:</span>crimson, markerstrokecolor<span class="op">=:</span>white, scatter_kw<span class="op">...</span>)</span>
-<span id="cb7-149"><a href="#cb7-149"></a></span>
-<span id="cb7-150"><a href="#cb7-150"></a><span class="fu">plot</span>(p1, p2, p3, p4, layout<span class="op">=</span>(<span class="fl">2</span>,<span class="fl">2</span>), size<span class="op">=</span>(<span class="fl">680</span>, <span class="fl">580</span>))</span>
-<span id="cb7-151"><a href="#cb7-151"></a><span class="in">```</span></span>
+<span id="cb7-123"><a href="#cb7-123"></a><span class="co"># Verify the implementation matches src/bliss_rs.jl</span></span>
+<span id="cb7-124"><a href="#cb7-124"></a>pts_ref  <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">99</span>)</span>
+<span id="cb7-125"><a href="#cb7-125"></a>pts_full <span class="op">=</span> <span class="fu">hypersphere_points_full</span>(<span class="fl">3</span>, <span class="fl">20</span>; seed<span class="op">=</span><span class="fl">99</span>)</span>
+<span id="cb7-126"><a href="#cb7-126"></a><span class="pp">@printf</span>(<span class="st">"Max discrepancy vs. reference: %.2e</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">maximum</span>(<span class="fu">abs</span>.(pts_ref <span class="op">.-</span> pts_full)))</span>
+<span id="cb7-127"><a href="#cb7-127"></a><span class="in">```</span></span>
+<span id="cb7-128"><a href="#cb7-128"></a></span>
+<span id="cb7-129"><a href="#cb7-129"></a><span class="fu">## Comparison with Classical Designs in 2D</span></span>
+<span id="cb7-130"><a href="#cb7-130"></a></span>
+<span id="cb7-133"><a href="#cb7-133"></a><span class="in">```{julia}</span></span>
+<span id="cb7-134"><a href="#cb7-134"></a><span class="co">#| label: fig-design-comparison</span></span>
+<span id="cb7-135"><a href="#cb7-135"></a><span class="co">#| fig-cap: "Four point placement strategies for n=2, m=15 points. The CCD includes fixed axial points at ±α; Box-Behnken uses midpoints of cube edges. D-optimal adapts to the regression model; hypersphere fills the unit sphere surface."</span></span>
+<span id="cb7-136"><a href="#cb7-136"></a><span class="co">#| code-fold: true</span></span>
+<span id="cb7-137"><a href="#cb7-137"></a></span>
+<span id="cb7-138"><a href="#cb7-138"></a><span class="co"># Central Composite Design (2 factors, α = √2 for rotatable)</span></span>
+<span id="cb7-139"><a href="#cb7-139"></a>α <span class="op">=</span> <span class="fu">sqrt</span>(<span class="fl">2.0</span>)</span>
+<span id="cb7-140"><a href="#cb7-140"></a>cube_pts <span class="op">=</span> [[<span class="op">-</span><span class="fl">1</span>,<span class="op">-</span><span class="fl">1</span>],[<span class="fl">1</span>,<span class="op">-</span><span class="fl">1</span>],[<span class="op">-</span><span class="fl">1</span>,<span class="fl">1</span>],[<span class="fl">1</span>,<span class="fl">1</span>]]</span>
+<span id="cb7-141"><a href="#cb7-141"></a>axial_pts <span class="op">=</span> [[<span class="op">-</span>α,<span class="fl">0</span>],[α,<span class="fl">0</span>],[<span class="fl">0</span>,<span class="op">-</span>α],[<span class="fl">0</span>,α]]</span>
+<span id="cb7-142"><a href="#cb7-142"></a>center_pt <span class="op">=</span> [[<span class="fl">0.0</span>,<span class="fl">0.0</span>],[<span class="fl">0</span>,<span class="fl">0</span>],[<span class="fl">0</span>,<span class="fl">0</span>]]</span>
+<span id="cb7-143"><a href="#cb7-143"></a>ccd_pts <span class="op">=</span> <span class="fu">vcat</span>(cube_pts, axial_pts, center_pt)</span>
+<span id="cb7-144"><a href="#cb7-144"></a>ccd_mat <span class="op">=</span> <span class="fu">hcat</span>([[p[<span class="fl">1</span>] for p <span class="kw">in</span> ccd_pts], [p[<span class="fl">2</span>] for p <span class="kw">in</span> ccd_pts]]<span class="op">...</span>)<span class="ch">'</span></span>
+<span id="cb7-145"><a href="#cb7-145"></a>ccd_mat <span class="op">=</span> (ccd_mat <span class="op">.+</span> α) <span class="op">./</span> (<span class="fl">2</span>α)   <span class="co"># scale to [0,1]</span></span>
+<span id="cb7-146"><a href="#cb7-146"></a></span>
+<span id="cb7-147"><a href="#cb7-147"></a><span class="co"># Other designs</span></span>
+<span id="cb7-148"><a href="#cb7-148"></a>hs_pts   <span class="op">=</span> <span class="fu">hypersphere_points</span>(<span class="fl">2</span>, <span class="fl">15</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb7-149"><a href="#cb7-149"></a>dopt_pts <span class="op">=</span> <span class="fu">d_optimal_points</span>(<span class="fl">2</span>, <span class="fl">15</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb7-150"><a href="#cb7-150"></a>rnd_pts  <span class="op">=</span> <span class="fu">random_points</span>(<span class="fl">2</span>, <span class="fl">15</span>; seed<span class="op">=</span><span class="fl">42</span>)</span>
+<span id="cb7-151"><a href="#cb7-151"></a></span>
+<span id="cb7-152"><a href="#cb7-152"></a>scatter_kw <span class="op">=</span> (xlim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>,<span class="fl">1.05</span>), ylim<span class="op">=</span>(<span class="op">-</span><span class="fl">0.05</span>,<span class="fl">1.05</span>),</span>
+<span id="cb7-153"><a href="#cb7-153"></a>              aspect_ratio<span class="op">=</span><span class="fl">1</span>, legend<span class="op">=</span><span class="cn">false</span>, grid<span class="op">=</span><span class="cn">true</span>, gridalpha<span class="op">=</span><span class="fl">0.3</span>,</span>
+<span id="cb7-154"><a href="#cb7-154"></a>              xlabel<span class="op">=</span>L<span class="st">"x_1"</span>, ylabel<span class="op">=</span>L<span class="st">"x_2"</span>)</span>
+<span id="cb7-155"><a href="#cb7-155"></a></span>
+<span id="cb7-156"><a href="#cb7-156"></a>p1 <span class="op">=</span> <span class="fu">scatter</span>(ccd_mat[<span class="op">:</span>,<span class="fl">1</span>], ccd_mat[<span class="op">:</span>,<span class="fl">2</span>]; title<span class="op">=</span><span class="st">"CCD (11 pts)"</span>,</span>
+<span id="cb7-157"><a href="#cb7-157"></a>             markersize<span class="op">=</span><span class="fl">7</span>, color<span class="op">=:</span>darkorange, markerstrokecolor<span class="op">=:</span>white, scatter_kw<span class="op">...</span>)</span>
+<span id="cb7-158"><a href="#cb7-158"></a>p2 <span class="op">=</span> <span class="fu">scatter</span>(hs_pts[<span class="op">:</span>,<span class="fl">1</span>], hs_pts[<span class="op">:</span>,<span class="fl">2</span>]; title<span class="op">=</span><span class="st">"Hypersphere (15 pts)"</span>,</span>
+<span id="cb7-159"><a href="#cb7-159"></a>             markersize<span class="op">=</span><span class="fl">7</span>, color<span class="op">=:</span>steelblue, markerstrokecolor<span class="op">=:</span>white, scatter_kw<span class="op">...</span>)</span>
+<span id="cb7-160"><a href="#cb7-160"></a>p3 <span class="op">=</span> <span class="fu">scatter</span>(dopt_pts[<span class="op">:</span>,<span class="fl">1</span>], dopt_pts[<span class="op">:</span>,<span class="fl">2</span>]; title<span class="op">=</span><span class="st">"D-Optimal (15 pts)"</span>,</span>
+<span id="cb7-161"><a href="#cb7-161"></a>             markersize<span class="op">=</span><span class="fl">7</span>, color<span class="op">=:</span>forestgreen, markerstrokecolor<span class="op">=:</span>white, scatter_kw<span class="op">...</span>)</span>
+<span id="cb7-162"><a href="#cb7-162"></a>p4 <span class="op">=</span> <span class="fu">scatter</span>(rnd_pts[<span class="op">:</span>,<span class="fl">1</span>], rnd_pts[<span class="op">:</span>,<span class="fl">2</span>]; title<span class="op">=</span><span class="st">"Random (15 pts)"</span>,</span>
+<span id="cb7-163"><a href="#cb7-163"></a>             markersize<span class="op">=</span><span class="fl">7</span>, color<span class="op">=:</span>crimson, markerstrokecolor<span class="op">=:</span>white, scatter_kw<span class="op">...</span>)</span>
+<span id="cb7-164"><a href="#cb7-164"></a></span>
+<span id="cb7-165"><a href="#cb7-165"></a><span class="fu">plot</span>(p1, p2, p3, p4, layout<span class="op">=</span>(<span class="fl">2</span>,<span class="fl">2</span>), size<span class="op">=</span>(<span class="fl">680</span>, <span class="fl">580</span>))</span>
+<span id="cb7-166"><a href="#cb7-166"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

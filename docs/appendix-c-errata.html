@@ -6,10 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Troy David Altus">
-<meta name="dcterms.date" content="2026-05-01">
 
-<title>BLISS-2026</title>
+<title>Appendix C — Appendix C: Errata — NASA/CR-2002-211652 – BLISS-2026</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -60,27 +58,7 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-  margin-bottom: 0em;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -90,7 +68,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./foreword.html" rel="next">
+<link href="./appendix-b-julia-reference.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -222,7 +200,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./appendix-a-hypersphere.html">Appendices</a></li><li class="breadcrumb-item"><a href="./appendix-c-errata.html"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Appendix C: Errata — NASA/CR-2002-211652</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -236,7 +214,7 @@ window.Quarto = {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
   </div>
 </li>
@@ -341,7 +319,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./appendix-c-errata.html" class="sidebar-item-text sidebar-link">
+  <a href="./appendix-c-errata.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Appendix C: Errata — NASA/CR-2002-211652</span></span></a>
   </div>
 </li>
@@ -357,43 +335,24 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#about-this-book" id="toc-about-this-book" class="nav-link active" data-scroll-target="#about-this-book">About This Book</a>
-  <ul class="collapse">
-  <li><a href="#what-changed-since-2002" id="toc-what-changed-since-2002" class="nav-link" data-scroll-target="#what-changed-since-2002">What Changed Since 2002</a></li>
-  <li><a href="#what-this-book-contains" id="toc-what-this-book-contains" class="nav-link" data-scroll-target="#what-this-book-contains">What This Book Contains</a></li>
-  <li><a href="#running-this-book" id="toc-running-this-book" class="nav-link" data-scroll-target="#running-this-book">Running This Book</a></li>
-  <li><a href="#notation" id="toc-notation" class="nav-link" data-scroll-target="#notation">Notation</a></li>
-  <li><a href="#citation" id="toc-citation" class="nav-link" data-scroll-target="#citation">Citation</a></li>
-  </ul></li>
+  <li><a href="#errata-table" id="toc-errata-table" class="nav-link active" data-scroll-target="#errata-table"><span class="header-section-number">C.1</span> Errata Table</a></li>
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes"><span class="header-section-number">C.2</span> Notes</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/altustd/bliss2026/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss2026/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/altustd/bliss2026/edit/main/appendix-c-errata.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss2026/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./appendix-a-hypersphere.html">Appendices</a></li><li class="breadcrumb-item"><a href="./appendix-c-errata.html"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Appendix C: Errata — NASA/CR-2002-211652</span></a></li></ol></nav>
 <div class="quarto-title">
-<div class="quarto-title-block"><div><h1 class="title">BLISS-2026</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
-<p class="subtitle lead">Decomposition-Based Multidisciplinary Design Optimization — A Modern Julia Treatment</p>
+<div class="quarto-title-block"><div><h1 class="title">Appendix C — Appendix C: Errata — NASA/CR-2002-211652</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Troy David Altus </p>
-          </div>
-  </div>
     
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">May 1, 2026</p>
-    </div>
-  </div>
   
     
   </div>
@@ -403,159 +362,89 @@ window.Quarto = {
 </header>
 
 
-<section id="about-this-book" class="level1 unnumbered">
-<h1 class="unnumbered">About This Book</h1>
-<p><strong>BLISS-2026</strong> is an updated thesis that takes the <em>Bi-Level Integrated System Synthesis</em> (BLISS) framework from its 2002 origins into the modern era of surrogate-based optimization, Gaussian processes, and high-performance Julia computing.</p>
-<p>The starting point is the author’s 2002 Master’s thesis completed at George Washington University under Dr.&nbsp;Jaroslaw Sobieszczanski-Sobieski at NASA Langley Research Center, published as NASA Contractor Report NASA/CR-2002-211652 <span class="citation" data-cites="altus2002blissrs">[<a href="references.html#ref-altus2002blissrs" role="doc-biblioref">1</a>]</span>. That work introduced <em>BLISS-RS</em>: quadratic response surface surrogates as the coupling mechanism between local disciplinary optimizations and a global system optimizer.</p>
-<p>Twenty-four years later, the surrogate-modeling landscape has changed fundamentally. This book asks: if you were designing BLISS today, what would you do differently?</p>
-<section id="what-changed-since-2002" class="level2">
-<h2 class="anchored" data-anchor-id="what-changed-since-2002">What Changed Since 2002</h2>
-<p>The 2002 implementation used quadratic polynomials as surrogates because they were cheap to fit, analytically differentiable, and computationally trivial. Those properties still matter — but the toolkit has expanded significantly:</p>
+<p>This appendix documents confirmed errors in the original 2002 reference:</p>
+<blockquote class="blockquote">
+<p>Altus, T.D. (2002). <em>A Response Surface Methodology for Bi-Level Integrated System Synthesis (BLISS)</em>. NASA/CR-2002-211652. May 2002.</p>
+</blockquote>
+<p>Errors are classified as <strong>mathematical</strong> (affect results or implementation) or <strong>typographical</strong> (presentation only, no effect on correctness).</p>
+<hr>
+<section id="errata-table" class="level2" data-number="C.1">
+<h2 data-number="C.1" class="anchored" data-anchor-id="errata-table"><span class="header-section-number">C.1</span> Errata Table</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 54%">
-<col style="width: 45%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Then (2002)</th>
-<th>Now (2026)</th>
+<th>ID</th>
+<th>Location in 2002 Paper</th>
+<th>Type</th>
+<th>Description</th>
+<th>Effect on Implementation</th>
+<th>Status in This Work</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Quadratic polynomial surrogates</td>
-<td>Gaussian Process (Kriging) surrogates</td>
+<td>E1</td>
+<td>App. A, Eq. A2</td>
+<td><strong>Mathematical</strong></td>
+<td>Distance formula prints <span class="math inline">\(\sqrt{\sum(X_{A_i} - X_{B_i})}\)</span> — missing square on difference term. Correct: <span class="math inline">\(\sqrt{\sum(X_{A_i} - X_{B_i})^2}\)</span></td>
+<td>Would produce incorrect inter-point distances and broken antibunching if implemented as printed</td>
+<td>Julia uses correct squared Euclidean distance. See <a href="appendix-a-hypersphere.html#sec-antibunching" class="quarto-xref"><span>Section A.1.2</span></a>.</td>
 </tr>
 <tr class="even">
-<td>Least-squares fit, fixed once</td>
-<td>Marginal-likelihood hyperparameter tuning</td>
+<td>E2</td>
+<td>Fig. 41, axis label</td>
+<td>Typographical</td>
+<td>Units label reads “nm” (nanometres). Intended: “NM” (nautical miles). Range values throughout paper are in nautical miles.</td>
+<td>None</td>
+<td>This work uses “NM” consistently. See <a href="02-bliss98.html#sec-breguet" class="quarto-xref"><span>Section 4.4.4</span></a>.</td>
 </tr>
 <tr class="odd">
-<td>D-Optimal DOE, fixed budget</td>
-<td>Latin Hypercube + adaptive Expected Improvement</td>
+<td>E3</td>
+<td>Fig. 19, caption</td>
+<td>Typographical</td>
+<td>“Hypershpere” — missing letter ‘e’.</td>
+<td>None</td>
+<td>Corrected throughout.</td>
 </tr>
 <tr class="even">
-<td>Nelder-Mead over polynomial</td>
-<td>Bayesian optimization with EI acquisition</td>
+<td>E4</td>
+<td>Fig. 6, caption</td>
+<td>Typographical</td>
+<td>“Cross-sectionl” — missing letter ‘a’.</td>
+<td>None</td>
+<td>Corrected throughout.</td>
 </tr>
 <tr class="odd">
-<td>No uncertainty estimates</td>
-<td>Full predictive distributions</td>
-</tr>
-<tr class="even">
-<td>Serial BB evaluation</td>
-<td>Parallel <code>Threads.@threads</code> in Julia</td>
-</tr>
-<tr class="odd">
-<td>Fixed 20% interval shrinkage</td>
-<td>Trust-region bounds management</td>
+<td>E5</td>
+<td>p.&nbsp;20, body text</td>
+<td>Typographical</td>
+<td>“Aany” — double ‘a’, should be “Any”.</td>
+<td>None</td>
+<td>Corrected throughout.</td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="what-this-book-contains" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-book-contains">What This Book Contains</h2>
-<p>The first eight chapters closely follow the original 2002 thesis — faithfully reproduced with all algorithms implemented in Julia. They establish the classical BLISS-RS framework in complete, executable detail.</p>
-<p>The modern contribution begins at Chapter 9:</p>
-<ul>
-<li><p><strong>Chapter 9 — BLISS-2026 Framework</strong>: The full Gaussian-process-based redesign. GP theory, kernel functions, marginal likelihood, Expected Improvement acquisition, and a complete working implementation that runs the supersonic business jet benchmark. Direct comparison against BLISS-RS shows where GP surrogates win and where they add cost.</p></li>
-<li><p><strong>Chapter 10 — Modern MDO Landscape</strong>: A survey of where MDO decomposition is heading: multi-fidelity co-kriging, neural-network surrogates, uncertainty quantification, and digital-twin integration.</p></li>
-</ul>
-</section>
-<section id="running-this-book" class="level2">
-<h2 class="anchored" data-anchor-id="running-this-book">Running This Book</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># Requires Julia 1.10+ (brew install julia) and pixi (pixi.sh)</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="ex">pixi</span> run setup    <span class="co"># one-time: install Julia packages</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="ex">pixi</span> run render   <span class="co"># build HTML → docs/</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="ex">pixi</span> run preview  <span class="co"># live preview at localhost:4000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="notation" class="level2">
-<h2 class="anchored" data-anchor-id="notation">Notation</h2>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Symbol</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><span class="math inline">\(Z\)</span></td>
-<td>System-level design variables</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(X\)</span></td>
-<td>Local design variables (private to one BB)</td>
-</tr>
-<tr class="odd">
-<td><span class="math inline">\(Y^*, Y^A\)</span></td>
-<td>Coupling variable targets / actual outputs</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(w\)</span></td>
-<td>Weighting factors for synthetic local objective</td>
-</tr>
-<tr class="odd">
-<td><span class="math inline">\(\mathbf{k}\)</span></td>
-<td>GP kernel (covariance) function</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(\mu(\cdot), \sigma^2(\cdot)\)</span></td>
-<td>GP posterior mean and variance</td>
-</tr>
-<tr class="odd">
-<td><span class="math inline">\(\text{EI}(\cdot)\)</span></td>
-<td>Expected Improvement acquisition function</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(\ell\)</span></td>
-<td>GP length-scale hyperparameter</td>
-</tr>
-<tr class="odd">
-<td>BB</td>
-<td>Black box (disciplinary analysis module)</td>
-</tr>
-<tr class="even">
-<td>RS</td>
-<td>Response surface (quadratic polynomial surrogate)</td>
-</tr>
-<tr class="odd">
-<td>GP</td>
-<td>Gaussian process surrogate</td>
-</tr>
-<tr class="even">
-<td>DOE</td>
-<td>Design of experiments</td>
-</tr>
-<tr class="odd">
-<td>LHS</td>
-<td>Latin Hypercube Sampling</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="citation" class="level2">
-<h2 class="anchored" data-anchor-id="citation">Citation</h2>
-<p>If you use material from this work, please cite both the original report and this book:</p>
-<blockquote class="blockquote">
-<p>Altus, T. D., “A Response Surface Methodology for Bi-Level Integrated System Synthesis (BLISS),” NASA/CR-2002-211652, NASA Langley Research Center, May 2002.</p>
-</blockquote>
-<blockquote class="blockquote">
-<p>Altus, T. D., <em>BLISS-2026: Decomposition-Based MDO — A Modern Julia Treatment</em>, 2026. <a href="https://altustd.github.io/bliss2026">altustd.github.io/bliss2026</a></p>
-</blockquote>
 <hr>
-<p><em>Troy David Altus · 2026</em></p>
+</section>
+<section id="notes" class="level2" data-number="C.2">
+<h2 data-number="C.2" class="anchored" data-anchor-id="notes"><span class="header-section-number">C.2</span> Notes</h2>
+<ul>
+<li>E1 is the only error with potential implementation consequences. All other entries are typographical and do not affect the mathematics or results.</li>
+<li>This errata list covers errors identified during the 2026 IV&amp;V review. It is not claimed to be exhaustive.</li>
+<li>The full IV&amp;V report is maintained separately at <code>ivv/ivv-bliss-rs-2002.md</code>.</li>
+</ul>
 
 
 <!-- -->
 
-<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list" style="display: none">
-<div id="ref-altus2002blissrs" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[1] </div><div class="csl-right-inline">Altus, T. D., <span>“A Response Surface Methodology for Bi-Level Integrated System Synthesis (<span>BLISS</span>),”</span> NASA/CR-2002-211652, NASA Langley Research Center / George Washington University, Hampton, VA, 2002.</div>
-</div>
-</div>
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -1012,112 +901,51 @@ window.Quarto = {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="./appendix-b-julia-reference.html" class="pagination-link" aria-label="Appendix B: Julia Reference — Flutter Constraint and Module Listings">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Appendix B: Julia Reference — Flutter Constraint and Module Listings</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./foreword.html" class="pagination-link" aria-label="Foreword to the Revised Edition">
-        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Foreword to the Revised Edition</span></span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" data-shortcodes="false"><pre class="sourceCode numberSource markdown number-lines code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">---</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="an">title:</span><span class="co"> "Preface"</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a><span class="an">number-sections:</span><span class="co"> false</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co">---</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a></span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="fu"># About This Book {.unnumbered}</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a></span>
-<span id="cb2-8"><a href="#cb2-8"></a>**BLISS-2026** is an updated thesis that takes the *Bi-Level Integrated System</span>
-<span id="cb2-9"><a href="#cb2-9"></a>Synthesis* (BLISS) framework from its 2002 origins into the modern era of</span>
-<span id="cb2-10"><a href="#cb2-10"></a>surrogate-based optimization, Gaussian processes, and high-performance Julia computing.</span>
-<span id="cb2-11"><a href="#cb2-11"></a></span>
-<span id="cb2-12"><a href="#cb2-12"></a>The starting point is the author's 2002 Master's thesis completed at George Washington</span>
-<span id="cb2-13"><a href="#cb2-13"></a>University under Dr. Jaroslaw Sobieszczanski-Sobieski at NASA Langley Research Center,</span>
-<span id="cb2-14"><a href="#cb2-14"></a>published as NASA Contractor Report NASA/CR-2002-211652 <span class="co">[</span><span class="ot">@altus2002blissrs</span><span class="co">]</span>. That work</span>
-<span id="cb2-15"><a href="#cb2-15"></a>introduced *BLISS-RS*: quadratic response surface surrogates as the coupling mechanism</span>
-<span id="cb2-16"><a href="#cb2-16"></a>between local disciplinary optimizations and a global system optimizer.</span>
-<span id="cb2-17"><a href="#cb2-17"></a></span>
-<span id="cb2-18"><a href="#cb2-18"></a>Twenty-four years later, the surrogate-modeling landscape has changed fundamentally.</span>
-<span id="cb2-19"><a href="#cb2-19"></a>This book asks: if you were designing BLISS today, what would you do differently?</span>
-<span id="cb2-20"><a href="#cb2-20"></a></span>
-<span id="cb2-21"><a href="#cb2-21"></a><span class="fu">## What Changed Since 2002</span></span>
-<span id="cb2-22"><a href="#cb2-22"></a></span>
-<span id="cb2-23"><a href="#cb2-23"></a>The 2002 implementation used quadratic polynomials as surrogates because they were</span>
-<span id="cb2-24"><a href="#cb2-24"></a>cheap to fit, analytically differentiable, and computationally trivial. Those</span>
-<span id="cb2-25"><a href="#cb2-25"></a>properties still matter — but the toolkit has expanded significantly:</span>
-<span id="cb2-26"><a href="#cb2-26"></a></span>
-<span id="cb2-27"><a href="#cb2-27"></a><span class="pp">|</span> Then (2002) <span class="pp">|</span> Now (2026) <span class="pp">|</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a><span class="pp">|-------------|-----------|</span></span>
-<span id="cb2-29"><a href="#cb2-29"></a><span class="pp">|</span> Quadratic polynomial surrogates <span class="pp">|</span> Gaussian Process (Kriging) surrogates <span class="pp">|</span></span>
-<span id="cb2-30"><a href="#cb2-30"></a><span class="pp">|</span> Least-squares fit, fixed once <span class="pp">|</span> Marginal-likelihood hyperparameter tuning <span class="pp">|</span></span>
-<span id="cb2-31"><a href="#cb2-31"></a><span class="pp">|</span> D-Optimal DOE, fixed budget <span class="pp">|</span> Latin Hypercube + adaptive Expected Improvement <span class="pp">|</span></span>
-<span id="cb2-32"><a href="#cb2-32"></a><span class="pp">|</span> Nelder-Mead over polynomial <span class="pp">|</span> Bayesian optimization with EI acquisition <span class="pp">|</span></span>
-<span id="cb2-33"><a href="#cb2-33"></a><span class="pp">|</span> No uncertainty estimates <span class="pp">|</span> Full predictive distributions <span class="pp">|</span></span>
-<span id="cb2-34"><a href="#cb2-34"></a><span class="pp">|</span> Serial BB evaluation <span class="pp">|</span> Parallel <span class="in">`Threads.@threads`</span> in Julia <span class="pp">|</span></span>
-<span id="cb2-35"><a href="#cb2-35"></a><span class="pp">|</span> Fixed 20% interval shrinkage <span class="pp">|</span> Trust-region bounds management <span class="pp">|</span></span>
-<span id="cb2-36"><a href="#cb2-36"></a></span>
-<span id="cb2-37"><a href="#cb2-37"></a><span class="fu">## What This Book Contains</span></span>
-<span id="cb2-38"><a href="#cb2-38"></a></span>
-<span id="cb2-39"><a href="#cb2-39"></a>The first eight chapters closely follow the original 2002 thesis — faithfully</span>
-<span id="cb2-40"><a href="#cb2-40"></a>reproduced with all algorithms implemented in Julia. They establish the classical</span>
-<span id="cb2-41"><a href="#cb2-41"></a>BLISS-RS framework in complete, executable detail.</span>
-<span id="cb2-42"><a href="#cb2-42"></a></span>
-<span id="cb2-43"><a href="#cb2-43"></a>The modern contribution begins at Chapter 9:</span>
-<span id="cb2-44"><a href="#cb2-44"></a></span>
-<span id="cb2-45"><a href="#cb2-45"></a><span class="ss">- </span>**Chapter 9 — BLISS-2026 Framework**: The full Gaussian-process-based redesign.</span>
-<span id="cb2-46"><a href="#cb2-46"></a>  GP theory, kernel functions, marginal likelihood, Expected Improvement acquisition,</span>
-<span id="cb2-47"><a href="#cb2-47"></a>  and a complete working implementation that runs the supersonic business jet</span>
-<span id="cb2-48"><a href="#cb2-48"></a>  benchmark. Direct comparison against BLISS-RS shows where GP surrogates win and</span>
-<span id="cb2-49"><a href="#cb2-49"></a>  where they add cost.</span>
-<span id="cb2-50"><a href="#cb2-50"></a></span>
-<span id="cb2-51"><a href="#cb2-51"></a><span class="ss">- </span>**Chapter 10 — Modern MDO Landscape**: A survey of where MDO decomposition is</span>
-<span id="cb2-52"><a href="#cb2-52"></a>  heading: multi-fidelity co-kriging, neural-network surrogates, uncertainty</span>
-<span id="cb2-53"><a href="#cb2-53"></a>  quantification, and digital-twin integration.</span>
-<span id="cb2-54"><a href="#cb2-54"></a></span>
-<span id="cb2-55"><a href="#cb2-55"></a><span class="fu">## Running This Book</span></span>
-<span id="cb2-56"><a href="#cb2-56"></a></span>
-<span id="cb2-57"><a href="#cb2-57"></a><span class="in">```bash</span></span>
-<span id="cb2-58"><a href="#cb2-58"></a><span class="co"># Requires Julia 1.10+ (brew install julia) and pixi (pixi.sh)</span></span>
-<span id="cb2-59"><a href="#cb2-59"></a><span class="ex">pixi</span> run setup    <span class="co"># one-time: install Julia packages</span></span>
-<span id="cb2-60"><a href="#cb2-60"></a><span class="ex">pixi</span> run render   <span class="co"># build HTML → docs/</span></span>
-<span id="cb2-61"><a href="#cb2-61"></a><span class="ex">pixi</span> run preview  <span class="co"># live preview at localhost:4000</span></span>
-<span id="cb2-62"><a href="#cb2-62"></a><span class="in">```</span></span>
-<span id="cb2-63"><a href="#cb2-63"></a></span>
-<span id="cb2-64"><a href="#cb2-64"></a><span class="fu">## Notation</span></span>
-<span id="cb2-65"><a href="#cb2-65"></a></span>
-<span id="cb2-66"><a href="#cb2-66"></a><span class="pp">|</span> Symbol <span class="pp">|</span> Meaning <span class="pp">|</span></span>
-<span id="cb2-67"><a href="#cb2-67"></a><span class="pp">|--------|---------|</span></span>
-<span id="cb2-68"><a href="#cb2-68"></a><span class="pp">|</span> $Z$ <span class="pp">|</span> System-level design variables <span class="pp">|</span></span>
-<span id="cb2-69"><a href="#cb2-69"></a><span class="pp">|</span> $X$ <span class="pp">|</span> Local design variables (private to one BB) <span class="pp">|</span></span>
-<span id="cb2-70"><a href="#cb2-70"></a><span class="pp">|</span> $Y^*, Y^A$ <span class="pp">|</span> Coupling variable targets / actual outputs <span class="pp">|</span></span>
-<span id="cb2-71"><a href="#cb2-71"></a><span class="pp">|</span> $w$ <span class="pp">|</span> Weighting factors for synthetic local objective <span class="pp">|</span></span>
-<span id="cb2-72"><a href="#cb2-72"></a><span class="pp">|</span> $\mathbf{k}$ <span class="pp">|</span> GP kernel (covariance) function <span class="pp">|</span></span>
-<span id="cb2-73"><a href="#cb2-73"></a><span class="pp">|</span> $\mu(\cdot), \sigma^2(\cdot)$ <span class="pp">|</span> GP posterior mean and variance <span class="pp">|</span></span>
-<span id="cb2-74"><a href="#cb2-74"></a><span class="pp">|</span> $\text{EI}(\cdot)$ <span class="pp">|</span> Expected Improvement acquisition function <span class="pp">|</span></span>
-<span id="cb2-75"><a href="#cb2-75"></a><span class="pp">|</span> $\ell$ <span class="pp">|</span> GP length-scale hyperparameter <span class="pp">|</span></span>
-<span id="cb2-76"><a href="#cb2-76"></a><span class="pp">|</span> BB <span class="pp">|</span> Black box (disciplinary analysis module) <span class="pp">|</span></span>
-<span id="cb2-77"><a href="#cb2-77"></a><span class="pp">|</span> RS <span class="pp">|</span> Response surface (quadratic polynomial surrogate) <span class="pp">|</span></span>
-<span id="cb2-78"><a href="#cb2-78"></a><span class="pp">|</span> GP <span class="pp">|</span> Gaussian process surrogate <span class="pp">|</span></span>
-<span id="cb2-79"><a href="#cb2-79"></a><span class="pp">|</span> DOE <span class="pp">|</span> Design of experiments <span class="pp">|</span></span>
-<span id="cb2-80"><a href="#cb2-80"></a><span class="pp">|</span> LHS <span class="pp">|</span> Latin Hypercube Sampling <span class="pp">|</span></span>
-<span id="cb2-81"><a href="#cb2-81"></a></span>
-<span id="cb2-82"><a href="#cb2-82"></a><span class="fu">## Citation</span></span>
-<span id="cb2-83"><a href="#cb2-83"></a></span>
-<span id="cb2-84"><a href="#cb2-84"></a>If you use material from this work, please cite both the original report and this book:</span>
-<span id="cb2-85"><a href="#cb2-85"></a></span>
-<span id="cb2-86"><a href="#cb2-86"></a><span class="at">&gt; Altus, T. D., "A Response Surface Methodology for Bi-Level Integrated System</span></span>
-<span id="cb2-87"><a href="#cb2-87"></a><span class="at">&gt; Synthesis (BLISS)," NASA/CR-2002-211652, NASA Langley Research Center, May 2002.</span></span>
-<span id="cb2-88"><a href="#cb2-88"></a></span>
-<span id="cb2-89"><a href="#cb2-89"></a><span class="at">&gt; Altus, T. D., *BLISS-2026: Decomposition-Based MDO — A Modern Julia Treatment*,</span></span>
-<span id="cb2-90"><a href="#cb2-90"></a><span class="at">&gt; 2026. </span><span class="co">[</span><span class="ot">altustd.github.io/bliss2026</span><span class="co">](https://altustd.github.io/bliss2026)</span></span>
-<span id="cb2-91"><a href="#cb2-91"></a></span>
-<span id="cb2-92"><a href="#cb2-92"></a>---</span>
-<span id="cb2-93"><a href="#cb2-93"></a></span>
-<span id="cb2-94"><a href="#cb2-94"></a>*Troy David Altus · 2026*</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode numberSource markdown number-lines code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">---</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="an">title:</span><span class="co"> "Appendix C: Errata — NASA/CR-2002-211652"</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="co">---</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a></span>
+<span id="cb1-5"><a href="#cb1-5"></a>This appendix documents confirmed errors in the original 2002 reference:</span>
+<span id="cb1-6"><a href="#cb1-6"></a></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="at">&gt; Altus, T.D. (2002). *A Response Surface Methodology for Bi-Level Integrated</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="at">&gt; System Synthesis (BLISS)*. NASA/CR-2002-211652. May 2002.</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a></span>
+<span id="cb1-10"><a href="#cb1-10"></a>Errors are classified as **mathematical** (affect results or implementation) or</span>
+<span id="cb1-11"><a href="#cb1-11"></a>**typographical** (presentation only, no effect on correctness).</span>
+<span id="cb1-12"><a href="#cb1-12"></a></span>
+<span id="cb1-13"><a href="#cb1-13"></a>---</span>
+<span id="cb1-14"><a href="#cb1-14"></a></span>
+<span id="cb1-15"><a href="#cb1-15"></a><span class="fu">## Errata Table</span></span>
+<span id="cb1-16"><a href="#cb1-16"></a></span>
+<span id="cb1-17"><a href="#cb1-17"></a><span class="pp">|</span> ID <span class="pp">|</span> Location in 2002 Paper <span class="pp">|</span> Type <span class="pp">|</span> Description <span class="pp">|</span> Effect on Implementation <span class="pp">|</span> Status in This Work <span class="pp">|</span></span>
+<span id="cb1-18"><a href="#cb1-18"></a><span class="pp">|---|---|---|---|---|---|</span></span>
+<span id="cb1-19"><a href="#cb1-19"></a><span class="pp">|</span> E1 <span class="pp">|</span> App. A, Eq. A2 <span class="pp">|</span> **Mathematical** <span class="pp">|</span> Distance formula prints $\sqrt{\sum(X_{A_i} - X_{B_i})}$ — missing square on difference term. Correct: $\sqrt{\sum(X_{A_i} - X_{B_i})^2}$ <span class="pp">|</span> Would produce incorrect inter-point distances and broken antibunching if implemented as printed <span class="pp">|</span> Julia uses correct squared Euclidean distance. See @sec-antibunching. <span class="pp">|</span></span>
+<span id="cb1-20"><a href="#cb1-20"></a><span class="pp">|</span> E2 <span class="pp">|</span> Fig. 41, axis label <span class="pp">|</span> Typographical <span class="pp">|</span> Units label reads "nm" (nanometres). Intended: "NM" (nautical miles). Range values throughout paper are in nautical miles. <span class="pp">|</span> None <span class="pp">|</span> This work uses "NM" consistently. See @sec-breguet. <span class="pp">|</span></span>
+<span id="cb1-21"><a href="#cb1-21"></a><span class="pp">|</span> E3 <span class="pp">|</span> Fig. 19, caption <span class="pp">|</span> Typographical <span class="pp">|</span> "Hypershpere" — missing letter 'e'. <span class="pp">|</span> None <span class="pp">|</span> Corrected throughout. <span class="pp">|</span></span>
+<span id="cb1-22"><a href="#cb1-22"></a><span class="pp">|</span> E4 <span class="pp">|</span> Fig. 6, caption <span class="pp">|</span> Typographical <span class="pp">|</span> "Cross-sectionl" — missing letter 'a'. <span class="pp">|</span> None <span class="pp">|</span> Corrected throughout. <span class="pp">|</span></span>
+<span id="cb1-23"><a href="#cb1-23"></a><span class="pp">|</span> E5 <span class="pp">|</span> p. 20, body text <span class="pp">|</span> Typographical <span class="pp">|</span> "Aany" — double 'a', should be "Any". <span class="pp">|</span> None <span class="pp">|</span> Corrected throughout. <span class="pp">|</span></span>
+<span id="cb1-24"><a href="#cb1-24"></a></span>
+<span id="cb1-25"><a href="#cb1-25"></a>---</span>
+<span id="cb1-26"><a href="#cb1-26"></a></span>
+<span id="cb1-27"><a href="#cb1-27"></a><span class="fu">## Notes</span></span>
+<span id="cb1-28"><a href="#cb1-28"></a></span>
+<span id="cb1-29"><a href="#cb1-29"></a><span class="ss">- </span>E1 is the only error with potential implementation consequences. All other entries are</span>
+<span id="cb1-30"><a href="#cb1-30"></a>  typographical and do not affect the mathematics or results.</span>
+<span id="cb1-31"><a href="#cb1-31"></a><span class="ss">- </span>This errata list covers errors identified during the 2026 IV&amp;V review. It is not</span>
+<span id="cb1-32"><a href="#cb1-32"></a>  claimed to be exhaustive.</span>
+<span id="cb1-33"><a href="#cb1-33"></a><span class="ss">- </span>The full IV&amp;V report is maintained separately at <span class="in">`ivv/ivv-bliss-rs-2002.md`</span>.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/altustd/bliss2026/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss2026/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-html/zenscroll-min.js"></script>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/altustd/bliss2026/edit/main/appendix-c-errata.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/altustd/bliss2026/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

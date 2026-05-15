@@ -126,7 +126,7 @@ points (over-determined system) to improve conditioning and fit robustness.
 
 ```{julia}
 #| label: lst-rs-functions
-#| code-fold: false
+#| code-fold: true
 
 # Build the [X] design matrix for a second-order model
 # (duplicated here for clarity; full implementation in src/bliss_rs.jl)
