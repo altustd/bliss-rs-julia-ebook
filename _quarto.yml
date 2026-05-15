@@ -36,19 +36,27 @@ book:
 
 format:
   html:
-    theme: cosmo
+    theme:
+      - cosmo
+      - custom.css
     include-in-header: chapter-offset.html
     toc: true
     toc-depth: 3
+    toc-title: "On this page"
     number-sections: true
     code-fold: true
     code-tools: true
     code-line-numbers: true
+    code-copy: true
     fig-align: center
     fig-responsive: true
     self-contained: false
     smooth-scroll: true
     highlight-style: github
+    grid:
+      sidebar-width: 270px
+      body-width: 860px
+      margin-width: 220px
   pdf:
     documentclass: scrbook
     classoption: [12pt, letterpaper, oneside]
