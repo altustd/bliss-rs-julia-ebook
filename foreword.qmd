@@ -1,5 +1,6 @@
 ---
 title: "Foreword to the Revised Edition"
+number-sections: false
 ---
 
 # Foreword {.unnumbered}
